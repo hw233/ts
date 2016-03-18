@@ -1,0 +1,36 @@
+﻿//本服务器配置文件仅支持带BOM的UTF8编码格式
+//支持三种行注释：使用#号、使用;号、使用//号。
+//不支持行内注释。
+//配置文件中=两边分别为关键字和值，=号两边支持空格和制表符。
+
+;服务器ID，这个字段必须有，且大小写为ServerId
+ServerId = 1
+
+#LSNode=登录服务器节点名称，默认=lserver@127.0.0.1
+LSNode=loginserver@127.0.0.1
+
+#DSNode=数据库服务器节点名称，默认=dbserver@127.0.0.1
+DSNode=dbserver@127.0.0.1
+
+#LogDSNode=log数据库服务器节点名称，默认=logserver@127.0.0.1
+LogDSNode=logserver@127.0.0.1
+
+#talkingdata充值统计参数 参数为空，则不给talkingdata发充值统计
+talkingDataAppID = 3A6F6894E6437566D42F1BF012AFA431
+
+#CSNode=公共服务器节点名称
+CSNode=commonserver@127.0.0.1
+
+#CrosNode=跨服服务器
+#CrosNode=gameserver@Witton
+
+#name=用户组服务器列表中看到的服务器名字，默认=本机IP
+name=Hello
+
+#ListenToUserIP=面向用户的监听IP，默认=本机IP
+ListenToUserIP=127.0.0.1
+#192.168.4.37
+
+#ListenToUserPort=面向用户的监听端口，默认=6789
+ListenToUserPort=16789
+
