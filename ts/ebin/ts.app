@@ -15,9 +15,9 @@
                         log_filter_codegen,log_formatter,log_manager,logger,
                         logger_guard,lqueue,md5,misc,monitorVMOtp,myEts,
                         myGenServer,netPacker,netmsg,netmsgCmdStr,netmsgRead,
-                        netmsgWrite,psMgr,reload,reloadMod,reloader,rfc4627,
-                        serverSup,smtp_appender,smtp_fsm,socketAccepter,
-                        socketHandler,socketSup,str,subSup,syslog_appender,
-                        time,timeOtp,ts_app,ts_sup,update,userState,
-                        usrOtpHandler,utils,vm_memory_monitor,window,
-                        xml_appender]}]}.
+                        netmsgWrite,psMgr,reload,reloadMod,reloadOtp,reloader,
+                        rfc4627,serverSup,smtp_appender,smtp_fsm,
+                        socketAccepter,socketHandler,socketSup,str,subSup,
+                        syslog_appender,time,timeOtp,ts_app,ts_sup,update,
+                        userState,usrOtpHandler,utils,vm_memory_monitor,
+                        window,xml_appender]}]}.

@@ -13,9 +13,15 @@
 %%Exported Functions
 -export([
 	closeMyTcp/2,
+	ip/1,
 	ceil/1,
-	clamp/3,
+	floor/1,
+	mid/3,
+	md5/1,
 	calcDistSquare/4,
+	list_random/1,
+	shuffle_list/1,
+	shuffle_list/2,
 	rand/2,
 	randUniqueFromList/2,
 	rand/3,
@@ -59,7 +65,7 @@
 
 -compile({inline,
 	[
-		clamp/3,
+		mid/3,
 		calcDistSquare/4,
 		rand/2,
 		isPossible/1,
@@ -75,27 +81,71 @@ closeMyTcp( Socket, Sender ) ->
 	logger:info("server close socket pid:~p,sender:~p",[self(),Sender]),
 	gen_tcp:close(Socket).
 
+%% @doc get IP address string from Socket
+-spec ip( Socket:: port() ) -> binary().
+ip(Socket) ->
+	{ok , {IP , _Port}} = inet:peername(Socket) ,
+	{Ip0 , Ip1 , Ip2 , Ip3} = IP ,
+	list_to_binary(integer_to_list(Ip0) ++ "." ++ integer_to_list(Ip1) ++ "." ++ integer_to_list(Ip2) ++ "." ++ integer_to_list(Ip3)).
+
+
 %%返回大于或者等于指定表达式的最小整数，即向上取整函数
 -spec ceil(Number) -> int() when
 	Number::number().
-ceil(Number) ->
-	Int = erlang:trunc(Number),
-	case Number - Int of
-		Remain when Remain > 0 ->
-			Int + 1;
+ceil(X) ->
+	T = trunc(X) ,
+	if
+		X - T == 0 ->
+			T;
+		true ->
+			if
+				X > 0 ->
+					T + 1;
+				true ->
+					T
+			end
+	end.
+
+
+%% @doc get the maximum number that is smaller than X
+-spec floor(Number) -> int() when
+	Number::number().
+floor(X) when X >= 0 ->
+	trunc(X);
+floor(X) ->
+	T = trunc(X) ,
+	case X of
+		T ->
+			T;
 		_ ->
-			Int
+			T - 1
 	end.
 
 %%限定X的范围
--spec clamp(X,Min,Max) -> Min | X | Max when
+-spec mid(X,Min,Max) -> Min | X | Max when
 		  X::number(),Min::number(),Max::number().
-clamp(X,Min,Max) when Min =< Max andalso X < Min ->
+mid(X,Min,Max) when Min =< Max andalso X < Min ->
 	Min;
-clamp(X,Min,Max) when Min =< Max andalso X > Max ->
+mid(X,Min,Max) when Min =< Max andalso X > Max ->
 	Max;
-clamp(X,Min,Max) when Min =< Max ->
+mid(X,Min,Max) when Min =< Max ->
 	X.
+
+md5(S) ->
+	Md5_bin = erlang:md5(S) ,
+	Md5_list = binary_to_list(Md5_bin) ,
+	lists:flatten(list_to_hex(Md5_list)).
+
+list_to_hex(L) ->
+	lists:map(fun(X) -> int_to_hex(X) end , L).
+
+int_to_hex(N) when N < 256 ->
+	[hex(N div 16) , hex(N rem 16)].
+hex(N) when N < 10 ->
+	$0 + N;
+hex(N) when N >= 10 , N < 16 ->
+	$a + (N - 10).
+
 
 %%计算两点之间的距离平方
 -spec calcDistSquare(X1,Y1,X2,Y2) -> number() when
@@ -104,6 +154,30 @@ calcDistSquare(X1,Y1,X2,Y2) ->
 	DX = X2 - X1,
 	DY = Y2 - Y1,
 	DX * DX + DY * DY.
+
+%% 随机重排列表
+shuffle_list(L) ->
+	random:seed(erlang:now()) ,
+	List1 = [{random:uniform() , X} || X <- L] ,
+	List2 = lists:keysort(1 , List1) ,
+	[E || {_ , E} <- List2].
+
+shuffle_list(L , N) ->
+	random:seed(erlang:now()) ,
+	List1 = [{random:uniform() , X} || X <- L] ,
+	List2 = lists:keysort(1 , List1) ,
+	lists:sublist([E || {_ , E} <- List2] , N).
+
+%% @doc get random list
+list_random(List) ->
+	case List of
+		[] ->
+			{};
+		_ ->
+			RS = lists:nth(random:uniform(length(List)) , List) ,
+			ListTail = lists:delete(RS , List) ,
+			{RS , ListTail}
+	end.
 
 %%随机生成Min到Max之间的数，范围[Min,Max]
 -spec rand(Min,Max) -> number()|error when
