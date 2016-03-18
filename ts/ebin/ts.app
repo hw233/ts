@@ -17,6 +17,7 @@
                         myGenServer,netPacker,netmsg,netmsgCmdStr,netmsgRead,
                         netmsgWrite,psMgr,reload,reloadMod,reloader,rfc4627,
                         serverSup,smtp_appender,smtp_fsm,socketAccepter,
-                        socketHandler,socketSup,str,syslog_appender,time,
-                        timeOtp,ts_app,ts_sup,update,userState,usrOtpHandler,
-                        utils,vm_memory_monitor,window,xml_appender]}]}.
+                        socketHandler,socketSup,str,subSup,syslog_appender,
+                        time,timeOtp,ts_app,ts_sup,update,userState,
+                        usrOtpHandler,utils,vm_memory_monitor,window,
+                        xml_appender]}]}.

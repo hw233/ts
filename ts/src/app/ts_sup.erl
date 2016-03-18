@@ -35,17 +35,15 @@ init([]) ->
         [serverSup]                           					% Modules  = [Module] | dynamic
     },
 
-    Port = config:rpc_get_int("ListenToUserPort", 6789),
-    ClientOtpOption = #listenTcpOptions{port = Port,packetLen = 4, listenDelay = 0,isSendSessionKey = false},
-    NetServerSup = {
-        socketSup,
-        {socketSup, start_link, [usrOtpHandler,ClientOtpOption]},
+    SubSup = {
+        subSup,
+        {subSup, start_link, []},
         permanent,
         infinity,
         supervisor,
-        [socketSup]
+        [subSup]
     },
 
 
-    {ok, { {one_for_one, 5, 10}, [SrvSup, NetServerSup]} }.
+    {ok, { {one_for_one, 5, 10}, [SrvSup, SubSup]} }.
 
