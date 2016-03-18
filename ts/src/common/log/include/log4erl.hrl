@@ -22,6 +22,11 @@
 -define(LOG2(_X,_D), ok).
 -endif.
 
+-ifdef(DEBUG).
+-define(LLOG(X,D), io:format("[~p:~p] " ++ X ++ "~n",[?MODULE, ?LINE | D])).
+-else.
+-define(LLOG(_X,_D), ok).
+-endif.
 %% type = time | size
 %% max = seconds (for time) | or kiloBytes (for size)L
 -record(log_type,{type, max}).

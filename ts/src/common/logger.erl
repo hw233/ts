@@ -19,7 +19,7 @@ start( ) ->
   log4erl:conf("log4erl.conf") ,
 
 %%  initWindow(WinName),
-  log4erl:info("load log4erl.conf ok.").
+  logger:info("load log4erl.conf ok.").
 
 %%initWindow(WinName)->
 %%  erlang:process_flag(trap_exit, true),

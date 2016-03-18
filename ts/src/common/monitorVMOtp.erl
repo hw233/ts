@@ -200,7 +200,7 @@ logPsInfo() ->
 	PPList = lists:foldl(Fun,[],ProcessesProplist),
 	Str1 = logSortByMQueue(PPList),
 	Str2 = logSortByMem(PPList),
-	logger:info("~n~nProcess: total ~p(RQ:~p) using:~s(~s allocated)~n nodes:~p~n"
+	logger:info(vmlog,"~n~nProcess: total ~p(RQ:~p) using:~s(~s allocated)~n nodes:~p~n"
 	"Memory: Sys ~s, Atom ~s/~s, Bin ~s, Code ~s, Ets ~s~n"
 		"Row      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
 		"Row      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",

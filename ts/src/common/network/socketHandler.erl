@@ -73,10 +73,12 @@ term()),
 	term().
 
 start_link(Module,[Socket,#listenTcpOptions{} = Option]) ->
+	logger:debug("####~p:start_link(~p,~p)", [?MODULE, Module, Option]),
 	myGenServer:start_link(?MODULE, [Module,Socket,Option], [{timeout,?Start_Link_TimeOut_ms}]).
 
 init([Module,Socket,#listenTcpOptions{isSendSessionKey = IsSendSessionKey} = Option]) ->
 	logger:info("socketHandler[~p ~p] init",[self(), Socket]),
+	logger:debug("####~p:init(~p,~p,~p)",[?MODULE, Module, Socket, Option, self()]),
 	setUserSocket(Socket),
 	setListenOption(Option),
 	setHalfMsg(<<>>),

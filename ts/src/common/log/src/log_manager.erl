@@ -17,9 +17,11 @@
 
 start_link(Logger) when is_atom(Logger) ->
     ?LOG2("log_manager adding Logger ~p~n",[Logger]),
+    ?LLOG("log_manager adding Logger ~p~n",[Logger]),
     gen_event:start_link({local, Logger});
 start_link(Logger) when is_list(Logger) ->
-    ?LOG2("log_manager adding Logger ~p~n",[Logger]),    
+    ?LOG2("log_manager adding Logger ~p~n",[Logger]),
+    ?LLOG("log_manager adding Logger ~p~n",[Logger]),
     gen_event:start_link({local, list_to_atom(Logger)}).
 
 add_logger(Logger) ->
@@ -27,6 +29,7 @@ add_logger(Logger) ->
 
 add_appender(Logger, {Appender, Name} , Conf) ->
     ?LOG2("add_appender ~p with name ~p to ~p with Conf ~p ~n",[Appender, Name, Logger, Conf]),
+    ?LLOG("add_appender ~p with name ~p to ~p with Conf ~p ~n",[Appender, Name, Logger, Conf]),
     log4erl_sup:add_guard(Logger, Appender, Name, Conf).
     
 change_log_level(Logger, Level) ->

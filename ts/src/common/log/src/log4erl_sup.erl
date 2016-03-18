@@ -29,6 +29,7 @@ add_guard(Logger, Appender, Name, Conf) ->
 	 10000,
 	 worker,
 	 [logger_guard]},
+    ?LLOG("Adding ~p to ~p~n",[C, ?MODULE]),
     ?LOG2("Adding ~p to ~p~n",[C, ?MODULE]),
     supervisor:start_child(?MODULE, C).
     
@@ -42,7 +43,7 @@ add_logger(Name) when is_list(Name) ->
 	  10000,
 	  worker,
 	  [log_manager]},
-    
+    ?LLOG("Adding ~p to ~p~n",[C1, ?MODULE]),
     ?LOG2("Adding ~p to ~p~n",[C1, ?MODULE]),
     supervisor:start_child(?MODULE, C1).
     %add_guard(N2).

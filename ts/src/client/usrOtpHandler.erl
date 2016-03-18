@@ -43,10 +43,12 @@
 		 handle_net_msg/3]).
 
 start_link(Arg) ->
+	logger:debug("####~p:start_link(~p)", [?MODULE, Arg]),
 	socketHandler:start_link(?MODULE, Arg).
 
 init([Socket]) ->
-	logger:info("usrOtpHandler[~p ~p] init",[self(), Socket]),
+	logger:debug("####~p:init(~p),~p",[?MODULE, self(), Socket]),
+	logger:info("~p:init(~p),~p",[?MODULE, self(), Socket]),
 	userState:setUserSocket(Socket),
 
 	%% 初始化

@@ -234,10 +234,12 @@ fetch_now_time_hour() ->
 
 make_time_file_name() ->
   D = calendar:local_time(),
-  {{Y, M, Dd}, {H, Mm, S}} = D,
+  {{Y, M, Dd}, {H, _Mm, _S}} = D,
   FormatDate =
-    io_lib:format("~.4w-~.2.0w-~.2.0w-~.2.0w-~.2.0w-~.2.0w",
-      [Y, M, Dd, H, Mm, S]),
+%%    io_lib:format("~.4w-~.2.0w-~.2.0w-~.2.0w-~.2.0w-~.2.0w",
+%%      [Y, M, Dd, H, Mm, S]),
+  io_lib:format("~.4w-~.2.0w-~.2.0w-~.2.0w",
+                [Y, M, Dd, H]),
   Res = lists:flatten(FormatDate),
   {Res, H}.
 
