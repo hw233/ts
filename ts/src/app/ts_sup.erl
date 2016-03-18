@@ -35,7 +35,7 @@ init([]) ->
         [serverSup]                           					% Modules  = [Module] | dynamic
     },
 
-    Port = 26789,%%config:rpc_get_int("ListenToUserPort", 6789),
+    Port = config:rpc_get_int("ListenToUserPort", 6789),
     ClientOtpOption = #listenTcpOptions{port = Port,packetLen = 4, listenDelay = 0,isSendSessionKey = false},
     NetServerSup = {
         socketSup,
