@@ -165,6 +165,7 @@ mem2str(Mem) ->
 	end.
 
 logPsInfo() ->
+	MemUsed = erlang:memory(total) ,
 	PS_Count = erlang:system_info(process_count),
 	RQ = erlang:statistics(run_queue),
 	ProcessUsed = erlang:memory(processes_used),
@@ -200,11 +201,17 @@ logPsInfo() ->
 	PPList = lists:foldl(Fun,[],ProcessesProplist),
 	Str1 = logSortByMQueue(PPList),
 	Str2 = logSortByMem(PPList),
-	logger:info(vmlog,"~n~nProcess: total ~p(RQ:~p) using:~s(~s allocated)~n nodes:~p~n"
-	"~nMemory: Sys ~s, Atom ~s/~s, Bin ~s, Code ~s, Ets ~s~n"
-		"~nRow      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
-		"~nRow      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",
-		[PS_Count,RQ,mem2str(ProcessUsed),mem2str(ProcessTotal),nodes(),SystemMem,AtomUsedMem,AtomMem,BinMem,CodeMem,EtsMem,Str1,Str2]),
+	logger:info(vmlog,
+				"~n~nMemUsed:~p Process: total ~p(RQ:~p) using:~s(~s allocated)~n"
+				"nodes:~p~n"
+				"~nMemory: Sys ~s, Atom ~s/~s, Bin ~s, Code ~s, Ets ~s~n"
+				"~nRow      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
+				"~nRow      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",
+		[MemUsed, PS_Count,RQ,mem2str(ProcessUsed),mem2str(ProcessTotal),
+		 nodes(),
+		 SystemMem,AtomUsedMem,AtomMem,BinMem,CodeMem,EtsMem,
+		 Str1,
+		 Str2]),
 	
 	%% 	[{PsPid,RegisterName,_,_,_,PD,_}|_] = List,
 %% 	PDKeyList = [Key || {Key,_} <- PD],
