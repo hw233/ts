@@ -60,6 +60,7 @@ start_link(Title, CfgFile) ->
   ignore |
   {error, Reason :: term()}).
 init([Title, CfgFile]) ->
+
   logger:start(),
 
   %% 时间进程

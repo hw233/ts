@@ -13,7 +13,26 @@
 -export([start/0, stop/0]).
 
 start() ->
-  application:start(ts).
+  case application:start(ts) of
+    ok ->
+      ok;
+    Msg ->
+      io:format("ts:start failed，y=~p~n",[Msg]),
+      {failed , Msg}
+  end.
 
 stop() ->
-  application:stop(ts).
+  try
+    logger:info("ts:stop.....") ,
+    timer:sleep(20000) ,     %%等待2000毫秒
+    case application:stop(ts) of
+      ok ->
+        logger:info("ts stopped");
+      Msg ->
+        logger:error("ts stop not ok,msg=~p" , [Msg])
+    end
+  catch
+    _:_Why ->
+      logger:error("ts:stop exception, reason=~p,bt=~p" , [_Why , erlang:get_stacktrace()])
+  end ,
+  erlang:halt().

@@ -14,8 +14,12 @@
 
 start( ) ->
   case catch application:start(log4erl) of
-    Msg -> io:format("log4erl started! ~p" , [Msg])
-  end ,
+    ok ->
+      io:format("log4erl started!");
+    Msg ->
+      io:format("log4erl start failed, y=~p~n" , [Msg]),
+      throw({failed_log, Msg})
+  end,
   log4erl:conf("log4erl.conf") ,
 
 %%  initWindow(WinName),
