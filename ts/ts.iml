@@ -14,9 +14,9 @@
       <sourceFolder url="file://$MODULE_DIR$/include" type="erlang-include" />
       <sourceFolder url="file://$MODULE_DIR$/src/common/log/include" type="erlang-include" />
       <sourceFolder url="file://$MODULE_DIR$/src/common/log/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/common/db/emysql/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/common/db/emysql/include" type="erlang-include" />
       <sourceFolder url="file://$MODULE_DIR$/src/netmsg" type="erlang-include" />
+      <sourceFolder url="file://$MODULE_DIR$/src/common/emysql/include" type="erlang-include" />
+      <sourceFolder url="file://$MODULE_DIR$/src/common/emysql/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
