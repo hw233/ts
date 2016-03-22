@@ -31,7 +31,8 @@
         open_connections/1, open_connection/1,
         reset_connection/3, close_connection/1,
         open_n_connections/2, hstate/1,
-        test_connection/2, need_test_connection/1
+        test_connection/2, need_test_connection/1,
+		 encode/2
 ]).
 
 -include("emysql.hrl").

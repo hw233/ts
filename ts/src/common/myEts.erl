@@ -19,8 +19,6 @@ changeField( Table, Key, Field, Value ) ->
 	ets:update_element(Table, Key, {Field,Value}).
 
 %%list [{Pos,Value}]，用于修改ets记录修改多个字段
--spec changeField(Table,Key,ValueFieldIndex,Value) -> boolean() when
-	Table :: tab(), Key :: list(), ValueFieldIndex ::  non_neg_integer(), Value :: term().
 changeFiled(Table, Key, FieldList) when is_list(FieldList) ->
 	case FieldList of
 		[] -> ok;

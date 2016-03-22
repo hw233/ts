@@ -793,5 +793,5 @@ monitor_work(Connection0, Timeout, Args) when is_record(Connection0, emysql_conn
         erlang:demonitor(Mref, [flush]),
         exit(Pid, kill),
         emysql_conn:reset_connection(emysql_conn_mgr:pools(), Connection, pass),
-        exit(mysql_timeout)
+        exit({mysql_timeout,Timeout})
     end.
