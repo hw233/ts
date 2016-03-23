@@ -202,12 +202,12 @@ logPsInfo() ->
 	Str1 = logSortByMQueue(PPList),
 	Str2 = logSortByMem(PPList),
 	logger:info(vmlog,
-				"~n~nMemUsed:~p Process: total ~p(RQ:~p) using:~s(~s allocated)~n"
+				"~n~nMemUsed:~s Process: total ~p(RQ:~p) using:~s(~s allocated)~n"
 				"nodes:~p~n"
 				"~nMemory: Sys ~s, Atom ~s/~s, Bin ~s, Code ~s, Ets ~s~n"
 				"~nRow      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
 				"~nRow      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",
-		[MemUsed, PS_Count,RQ,mem2str(ProcessUsed),mem2str(ProcessTotal),
+		[mem2str(MemUsed), PS_Count,RQ,mem2str(ProcessUsed),mem2str(ProcessTotal),
 		 nodes(),
 		 SystemMem,AtomUsedMem,AtomMem,BinMem,CodeMem,EtsMem,
 		 Str1,
