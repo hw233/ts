@@ -31,19 +31,19 @@
 
 %%以下为获取绝对日期时间的函数
 -export([
-	getChinaNowDateTime1970/0,
+	chinaGregorianSecondsDateTime/0,
 
-	getLocalNowDateTime1970/0,
-	getLocalNowSec1970/0,
+	localDateTime/0,
+	localGregorianSeconds/0,
 
-	getUTCNowDateTime1970/0,
-	getUTCNowSec1970/0
+	datetime/0,
+	gregorianSeconds/0
 ]).
 
 %%以下为获取相对日期时间的函数
 -export([
-	getUTCNowSec/0,
-	getUTCNowMS/0
+	timestamp/0,
+	timestampMS/0
 ]).
 
 %%以下为转换函数
@@ -62,18 +62,18 @@
 ]).
 
 -export([
-	getUTCNowMSDiff2010/0,
+	timestampMSDiff2010/0,
 	getDayBeginSeconds/1,
 	getWeekBeginSecondsByDay/1,
 	diffSecFrom1970/1
 ]).
 
 -export([
-	getSyncTime1970FromDBS/0,
-	getSyncUTCTime1970FromDBS/0,
-	getLocalTimeAdjustHour/0,
-	getSyncTimeFromDBS/0,
-	getSyncUTCTimeFromDBS/0
+	localtimeSeconds/0,
+	gregorianSecondsDB/0,
+	adjustHour/0,
+	localtimeSecondsDB/0,
+	timestampDB/0
 ]).
 
 -export([
@@ -85,74 +85,74 @@
 %% ====================================================================
 %获取当前中国时间，精确到秒，主要用于日志记录使用
 %返回{{Year,Month,Day}, {Hour,Minute,Second}}
--spec getChinaNowDateTime1970() -> datetime1970().
-getChinaNowDateTime1970() ->
-	Sec = timeOtp:getChinaNowSec1970(),
+-spec chinaGregorianSecondsDateTime() -> datetime1970().
+chinaGregorianSecondsDateTime() ->
+	Sec = timeOtp:chinaGregorianSeconds(),
 	calendar:gregorian_seconds_to_datetime(Sec).
 
 %获取本地时间，精确到秒，主要用于除日志外的其它使用
 %返回{{Year,Month,Day}, {Hour,Minute,Second}}
--spec getLocalNowDateTime1970() -> datetime1970().
-getLocalNowDateTime1970() ->
-	DT = timeOtp:getUTCNowDateTime1970(),
+-spec localDateTime() -> datetime1970().
+localDateTime() ->
+	DT = timeOtp:datetime(),
 	calendar:universal_time_to_local_time(DT).
 
 %获取本地时间秒数
--spec getLocalNowSec1970() -> dateTimeSec1970().
-getLocalNowSec1970() ->
+-spec localGregorianSeconds() -> dateTimeSec1970().
+localGregorianSeconds() ->
 	DT = calendar:now_to_local_time(timeOtp:timestamp()),
 	calendar:datetime_to_gregorian_seconds(DT).
 
 %%获取UTC时间，精确到秒
--spec getUTCNowDateTime1970() -> datetime1970().
-getUTCNowDateTime1970() ->
-	timeOtp:getUTCNowDateTime1970().
+-spec datetime() -> datetime1970().
+datetime() ->
+	timeOtp:datetime().
 
 %%获取当前UTC的绝对日期时间的秒数
--spec getUTCNowSec1970() -> dateTimeSec1970().
-getUTCNowSec1970() ->
-	timeOtp:getUTCNowSec1970().
+-spec gregorianSeconds() -> dateTimeSec1970().
+gregorianSeconds() ->
+	timeOtp:gregorianSeconds().
 
 %获取当前相对于1970-1-1 0:0:0的UTC时间差，精确到秒，相当于Unix时间
--spec getUTCNowSec() -> dateTimeSec().
-getUTCNowSec() ->
-	timeOtp:getUTCNowSec1970() - ?SECS_FROM_0_TO_1970.
+-spec timestamp() -> dateTimeSec().
+timestamp() ->
+	timeOtp:gregorianSeconds() - ?SECS_FROM_0_TO_1970.
 
 %获取当前相对于1970-1-1 0:0:0的UTC时间差，精确到毫秒，相当于Unix时间
--spec getUTCNowMS() -> dateTimeMS().
-getUTCNowMS() ->
+-spec timestampMS() -> dateTimeMS().
+timestampMS() ->
 	convertTimeStamp2MS(timeOtp:timestamp()).
 
 %%获取从2010年到现在的时间差，单位：毫秒
--spec getUTCNowMSDiff2010() -> uint().
-getUTCNowMSDiff2010() ->
-	NowMS = getUTCNowMS(),
+-spec timestampMSDiff2010() -> uint().
+timestampMSDiff2010() ->
+	NowMS = timestampMS(),
 	Sec = diffSecFrom1970({{2010,1,1},{0,0,0}}),
 	NowMS - Sec * 1000.
 
 %%获取本地时间的调整时区，由DBS同步过来的
--spec getLocalTimeAdjustHour() -> int().
-getLocalTimeAdjustHour() ->
-	timeOtp:getLocalTimeAdjustHour().
+-spec adjustHour() -> int().
+adjustHour() ->
+	timeOtp:adjustHour().
 
 %%获取从DBS同步过来的本地绝对时间秒
--spec getSyncTime1970FromDBS() -> uint().
-getSyncTime1970FromDBS() ->
-	timeOtp:getSyncTimeFromDBS().
+-spec localtimeSeconds() -> uint().
+localtimeSeconds() ->
+	timeOtp:localtimeSeconds().
 
 %%获取从DBS同步过来的绝对UTC时间秒
--spec getSyncUTCTime1970FromDBS() -> uint().
-getSyncUTCTime1970FromDBS() ->
-	timeOtp:getSyncTimeFromDBS() - timeOtp:getLocalTimeAdjustHour() * 3600.
+-spec gregorianSecondsDB() -> uint().
+gregorianSecondsDB() ->
+	timeOtp:localtimeSeconds() - timeOtp:adjustHour() * 3600.
 
 %%获取从DBS同步过来的本地相对时间，单位秒
-getSyncTimeFromDBS() ->
-	timeOtp:getSyncTimeFromDBS() - ?SECS_FROM_0_TO_1970.
+localtimeSecondsDB() ->
+	timeOtp:localtimeSeconds() - ?SECS_FROM_0_TO_1970.
 
 %%获取从DBS同步过来的相对UTC时间秒
--spec getSyncUTCTimeFromDBS() -> uint().
-getSyncUTCTimeFromDBS() ->
-	timeOtp:getSyncTimeFromDBS() - ?SECS_FROM_0_TO_1970 - timeOtp:getLocalTimeAdjustHour() * 3600.
+-spec timestampDB() -> uint().
+timestampDB() ->
+	timeOtp:localtimeSeconds() - ?SECS_FROM_0_TO_1970 - timeOtp:adjustHour() * 3600.
 
 %%==========================================================================
 %%以下为转换函数
@@ -236,7 +236,7 @@ int64ToTimeString(Time) when erlang:is_integer(Time) ->
 getLogTimeSec() ->
 	%%这里获取的是一个绝对时间秒，所以需要减去1970年的秒，
 	%%注意日志的时间需要的是一个UTC时间，不然查出来会多一个时区的小时，因为数据库已经有时区信息了，所以只能传一个UTC时间
-	Sec = getSyncUTCTime1970FromDBS(),
+	Sec = gregorianSecondsDB(),
 	Sec - ?SECS_FROM_0_TO_1970.
 %% ====================================================================
 %% Internal functions

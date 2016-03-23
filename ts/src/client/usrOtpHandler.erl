@@ -52,7 +52,7 @@ init([Socket]) ->
 	userState:setUserSocket(Socket),
 
 	%% 初始化
-	NowTime = time:getSyncTimeFromDBS(),
+	NowTime = time:localtimeSecondsDB(),
 	Rec = #rec_HeartBeat{lastRecvHeartBeatTime = NowTime},
 	userState:setHeartBeatRec(Rec),
 
@@ -201,7 +201,7 @@ handle_net_msg(?CMD_U2GS_HeartBeat,#pk_U2GS_HeartBeat{time = ClientTime, version
 	State;
 handle_net_msg(?CMD_U2GS_HeartBeatReal,#pk_U2GS_HeartBeatReal{time = Time},State) ->
 	Rec = #rec_HeartBeat{} = userState:getHeartBeatRec(),
-	NowTime = time:getSyncTimeFromDBS(),
+	NowTime = time:localtimeSecondsDB(),
 
 	%% 这里仅仅是打印个日志，不要紧张
 	if
@@ -233,7 +233,7 @@ handle_net_msg(Cmd,Pk,State) ->
 %%2.客户端时间比服务器早，超过设定秒则视为作弊，记录其作弊次数，当作弊次数达到一定数量则封号
 checkHeartBeat(ClientTime) ->
 	Rec = #rec_HeartBeat{rand = RandCD, cheatCount = CCount, sendTime = SendTime} = userState:getHeartBeatRec(),
-	NowTime = time:getSyncTimeFromDBS(),
+	NowTime = time:localtimeSecondsDB(),
 
 	NewRec =
 		case NowTime - SendTime >= (RandCD - 1) of
@@ -262,7 +262,7 @@ checkHeartBeat(ClientTime) ->
 	ok.
 
 notRecvClientHeartBeat(#rec_HeartBeat{noRecvNumber = Times, noRecvTime = Time} = Rec) ->
-	NowTime = time:getSyncTimeFromDBS(),
+	NowTime = time:localtimeSecondsDB(),
 	NewRec =
 		case NowTime - Time >= ?NotRecvClientHeartBeat_Time of
 			true ->
@@ -281,7 +281,7 @@ notRecvClientHeartBeat(Rec) ->
 	Rec.
 
 sendHearBeatCDToClient() ->
-	NowTime = time:getSyncTimeFromDBS(),
+	NowTime = time:localtimeSecondsDB(),
 
 	%% 取个随机值
 	RandCD = misc:rand(?ClientRandMin, ?ClientRandMax),
@@ -320,7 +320,7 @@ checkAndDealPlayer(State) ->
 			ok
 	end,
 
-	NowTime = time:getSyncTimeFromDBS(),
+	NowTime = time:localtimeSecondsDB(),
 	case NowTime - LastTime >= ?NoRecvClientHeartBeatRealTime of
 		true ->
 			checkAndDealPlayer_DealPlayerOffline("NoHeartBeatLongTime_HBReal"),
@@ -422,6 +422,6 @@ sendMsgToPlayerPid(Pid,Cmd,Pk) ->
 %% 同步服务器时间给客户端
 -spec syncServerTimeToClient() -> ok.
 syncServerTimeToClient() ->
-	Time = time:getSyncTimeFromDBS(),
+	Time = time:localtimeSecondsDB(),
 	socketHandler:sendNetMsg(core:packNetMsg(#pk_GS2U_SyncServerTime{time = Time})),
 	ok.

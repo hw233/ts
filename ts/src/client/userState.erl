@@ -37,13 +37,13 @@ getAccountID() ->
 procSignInInit( EtsTableName, Frequency ) ->
 	ProcSignRow = #recProcSignIn{
 								 pid = self(),
-								 signInTime = time:getUTCNowSec()
+								 signInTime = time:timestamp()
 								},
 	ets:insert(EtsTableName, ProcSignRow),
 	erlang:send_after(Frequency, self(), {procSignIn,0,0}).
 %%进程签到更新
 procSignIn( EtsTableName, Frequency ) ->
-	myEts:updateEts(EtsTableName, self(), {#recProcSignIn.signInTime,time:getUTCNowSec()}),
+	myEts:updateEts(EtsTableName, self(), {#recProcSignIn.signInTime,time:timestamp()}),
 	erlang:send_after(Frequency, self(), {procSignIn,0,0}).
 
 

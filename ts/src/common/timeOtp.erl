@@ -14,10 +14,10 @@
 
 -record(recTime,
 {
-	iUTCNowSec = 0,             %%当前UTC时间，精确秒，类型：整数
-	iChinaNowSec = 0,			%%中国本地日期时间，精确到秒，类型：整数
+	gregorianSeconds = 0,             %%当前UTC时间，精确秒，类型：整数
+	chinaGregorianSeconds = 0,			%%中国本地日期时间，精确到秒，类型：整数
 
-	sUTCNow = 0,                %%当前UTC时间，精确到秒，类型：{{Year,Month,Day}, {Hour,Minute,Second}}
+	nowDataTime = 0,                %%当前UTC时间，精确到秒，类型：{{Year,Month,Day}, {Hour,Minute,Second}}
 	timeStamp = 0      	        %%当前UTC时间，精确到微秒，类型：{MegaSecs, Secs, MicroSecs}
 }).
 
@@ -32,14 +32,14 @@
 %% ====================================================================
 -export([
 		timestamp/0,
-		getUTCNowDateTime1970/0,
-		getUTCNowSec1970/0,
-		getChinaNowSec1970/0
+		datetime/0,
+		gregorianSeconds/0,
+		chinaGregorianSeconds/0
 		]).
 
 -export([
-	getSyncTimeFromDBS/0,
-	getLocalTimeAdjustHour/0
+	localtimeSeconds/0,
+	adjustHour/0
 ]).
 
 -export([
@@ -63,26 +63,26 @@ timestamp() ->
 	ets:lookup_element(?TABLE, recTime, #recTime.timeStamp).
 
 %%获取UTC当前日期时间的秒数
--spec getUTCNowSec1970() -> uint().
-getUTCNowSec1970() ->
-	ets:lookup_element(?TABLE, recTime, #recTime.iUTCNowSec).
+-spec gregorianSeconds() -> uint().
+gregorianSeconds() ->
+	ets:lookup_element(?TABLE, recTime, #recTime.gregorianSeconds).
 
 %%获取UTC当前日期时间
--spec getUTCNowDateTime1970() -> calendar:datetime1970().
-getUTCNowDateTime1970() ->
-	ets:lookup_element(?TABLE, recTime, #recTime.sUTCNow).
+-spec datetime() -> calendar:datetime1970().
+datetime() ->
+	ets:lookup_element(?TABLE, recTime, #recTime.nowDataTime).
 
--spec getChinaNowSec1970() -> calendar:datetime1970().
-getChinaNowSec1970() ->
-	ets:lookup_element(?TABLE, recTime, #recTime.iChinaNowSec).
+-spec chinaGregorianSeconds() -> calendar:datetime1970().
+chinaGregorianSeconds() ->
+	ets:lookup_element(?TABLE, recTime, #recTime.chinaGregorianSeconds).
 
 %%获取本地时间的调整时区，由DBS同步过来的
--spec getLocalTimeAdjustHour() -> int().
-getLocalTimeAdjustHour() ->
+-spec adjustHour() -> int().
+adjustHour() ->
 	ets:lookup_element(?TABLE, recSyncTime, #recSyncTime.localTimeAdjustHour).
 
--spec getSyncTimeFromDBS() -> uint().
-getSyncTimeFromDBS() ->
+-spec localtimeSeconds() -> uint().
+localtimeSeconds() ->
 	ets:lookup_element(?TABLE, recSyncTime, #recSyncTime.syncFromDBSLocalTime).
 
 %% ====================================================================
@@ -149,17 +149,17 @@ update_time() ->
 	%%转换为UTC日期时间
 	UTCDateTime = calendar:now_to_datetime(OSTimeStamp),
 	%%转换为UTC日期时间的绝对秒数
-	UTCSec = calendar:datetime_to_gregorian_seconds(UTCDateTime),
+	GregorianSeconds = calendar:datetime_to_gregorian_seconds(UTCDateTime),
 	
-	ChinaSec = UTCSec + get(msOf8Hour),
+	ChinaGregorianSeconds = GregorianSeconds + get(msOf8Hour),
 
 	%%更新各种时间
 	true = myEts:updateEts(?TABLE,recTime,
 		[
-			{#recTime.iUTCNowSec,UTCSec},
-			{#recTime.iChinaNowSec,ChinaSec},
+			{#recTime.gregorianSeconds,GregorianSeconds},
+			{#recTime.chinaGregorianSeconds,ChinaGregorianSeconds},
 			{#recTime.timeStamp,OSTimeStamp},
-			{#recTime.sUTCNow,UTCDateTime}
+			{#recTime.nowDataTime,UTCDateTime}
 		]),
 	ok.
 
