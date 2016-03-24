@@ -1,0 +1,38 @@
+#!/bin/bash
+mysql_port=3306
+mysql_username="111"
+mysql_password="111"
+function_start_mysql()
+{
+printf "Starting MySQL...\n"
+/usr/local/mysql/bin/mysqld_safe --defaults-file=/data/database/data${mysql_port}/my.cnf >> /data/database/data${mysql_port}/server.log 2>&1 &
+}
+function_stop_mysql()
+{
+printf "Stoping MySQL...\n"
+/usr/local/mysql/bin/mysqladmin -S /data/database/data${mysql_port}/mysql${mysql_port}.sock shutdown
+}
+function_restart_mysql()
+{
+printf "Restarting MySQL...\n"
+function_stop_mysql
+function_start_mysql
+}
+function_kill_mysql()
+{
+kill -9 $(ps -ef | grep 'bin/mysqld_safe' | grep ${mysql_port} | awk '{printf $2}')
+kill -9 $(ps -ef | grep 'libexec/mysqld' | grep ${mysql_port} | awk '{printf $2}')
+}
+case $1 in
+start)
+function_start_mysql;;
+stop)
+function_stop_mysql;;
+kill)
+function_kill_mysql;;
+restart)
+function_stop_mysql
+function_start_mysql;;
+*)
+echo "Usage: /home/mysql/data${mysql_port}/mysqld {start|stop|restart|kill}";;
+esac
