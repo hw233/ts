@@ -1,0 +1,12 @@
+mysql -h -u -p
+tail -f
+grep
+top
+entop
+
+#压缩解压
+tar -jcvf| tar jxvf
+
+#secureCRT
+ rz #上传到linux
+ sz #从linux上下载
