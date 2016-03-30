@@ -10,3 +10,5 @@ tar -jcvf| tar jxvf
 #secureCRT
  rz #上传到linux
  sz #从linux上下载
+ 
+ erl -setcookie abc -name node_3@192.168.1.123 -remsh node_1@192.168.1.123 %%这样就直接进入了node_1节点

@@ -20,13 +20,17 @@
 	2.将$target_dir目录下的新生成的*.bz2以及*.bz2.md5上传FTP
 
 	3.进入相应的linux服务器(/data/script)进行更新
+	
 		* 可能需要修改/data/script/scripts/get-newversions.py 中的FTP地址
+		
 		+ 热更新 
 			./hotupdate.py hx_mainland_$dbID gameserver $svnVersion
+			
 		+ 全更新 
 				./BatchManager.py hx_mainland_$dbID stop ##（关闭服务器）
 				./update.py hx_mainland_$dbID gameserver $svnVersion
 				./BatchManager.py hx_mainland_$dbID start  ##（开启服务器）	
+				
 		+ 全新安装
 				* 可能需要修改数据的账号权限等等
 					create user $user
@@ -35,13 +39,18 @@
 					flush privileges;
 					
 				+ 将相关版本的数据库,3daccount ,3dgamedata,3daccount,
-				3dactivecode的除数据外的结构，sp，trigger等等导入一个*.sql文件
-				文件名规则为：SQL93707.sql ##93707位svn版本号
+					3dactivecode的除数据外的结构，sp，trigger等等导入一个*.sql文件
+					文件名规则为：SQL93707.sql ##93707位svn版本号
 				
 				+ ./3dgame_install.py $svnVersion $dbID 1111 127.0.0.1 
 					##(dbID由运维分配，1111,默认的没啥用，127.0.0.1节点后缀默认)
 								
 				+ 修改数据库中gsconfig 加入当前gameserver的配置
+					insert  into `gsconfig`(`serverID`,`serverName`,`ip`,`port`,`beginTime`,`maxPlayer`) values (1,'欧美审核服','49.51.8.130',6789,'1970-01-01 00:00:00',3000)
+					
+				+ 修改dbserver.txt相关配置
+				
 				+ 开服 	./BatchManager.py hx_mainland_$dbID start  ##（开启服务器）	
+				
 				+ grep beam & tail -f日志，收工
 		
