@@ -45,7 +45,7 @@
 				+ ./3dgame_install.py $svnVersion $dbID 1111 127.0.0.1 
 					##(dbID由运维分配，1111,默认的没啥用，127.0.0.1节点后缀默认)
 								
-				+ 修改数据库中gsconfig 加入当前gameserver的配置
+				* 修改数据库中gsconfig 加入当前gameserver的配置
 					insert  into `gsconfig`(`serverID`,`serverName`,`ip`,`port`,`beginTime`,`maxPlayer`) values (1,'欧美审核服','49.51.8.130',6789,'1970-01-01 00:00:00',3000)
 					
 				+ 修改dbserver.txt相关配置
