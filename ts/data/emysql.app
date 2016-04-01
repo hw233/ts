@@ -63,7 +63,7 @@
                         propertyCalculate,publicdbProc,quality,reloadMod,
                         rewards,rfc4627,server,sevenReward,sevenRewardBuy,
                         shop,shopCfg,signin,skill,skillPassive,smelter,spirit,
-                        team,test,test_web,top,userHandle,variant,vip,vipFun,
+                        team, test,test_web,top,userHandle,variant,vip,vipFun,
                         voiceChat,window,worldBoss,xcts]},
               {mod,{emysql_app,["%MAKETIME%"]}},
               {registered,[emysql_conn_mgr,emysql_sup]},

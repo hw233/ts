@@ -11,7 +11,7 @@
 -ifndef(COMMON_HRL).
 -define(COMMON_HRL,1).
 
--compile([{parse_transform, lager_transform}]).  
+%%-compile([{parse_transform, lager_transform}]).
 
 -include("type.hrl").
 -include("setup.hrl").
