@@ -13,7 +13,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0]).
+-export([start_link/0,logPsInfo/0]).
 
 %% gen_server callbacks
 -export([init/1,
@@ -28,9 +28,10 @@
 -define(KIB, (1024)).
 -define(MIB, (?KIB * 1024)).
 -define(GIB, (?MIB * 1024)).
-
+-define(FMT,   "~p\t~12s~20s\t\t~p\t\t~p\t\t~s\t\t~p:~p/~p~n").
+-define(FMT_H, "~s\t~12s~20s\t\t~s\t\t~s\t\t~s\t\t~s~n").
 %%20分钟执行一次
--define(TickInterval, 10 * 1000).
+-define(TickInterval, 5 * 60 * 1000).
 
 -record(state, {}).
 
@@ -201,23 +202,24 @@ logPsInfo() ->
     PPList = lists:foldl(Fun, [], ProcessesProplist),
     Str1 = logSortByMQueue(PPList),
     Str2 = logSortByMem(PPList),
-    logger:info(vmlog,
+    logger:info(
         "~n~nnodes:~p~n"
         "~nProcess:~p(run_queue:~p)~n"
         "total:~s\tprocess memory:~s(~s used)~n"
         "Sys:~s,\tAtom:~s/~s,\tBin:~s,\tCode:~s,\tEts:~s~n~n"
-        "Row      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
-        "~nRow      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",
+        ?FMT_H
+        "---------------------------------------------------------------------------------------------------------------~n"
+        "MsqQ(**)~n"
+        "~ts~n"
+        "Memory(**)~n"
+        "~ts~n",
         [nodes(),
             PS_Count, RQ,
             mem2str(MemTotal), mem2str(ProcessUsed), mem2str(ProcessTotal),
             SystemMem, AtomUsedMem, AtomMem, BinMem, CodeMem, EtsMem,
+            "Row", "Pid","RegName","Reds","MsgQ",  "Memory",  "Current Function",
             Str1,
             Str2]),
-
-    %% 	[{PsPid,RegisterName,_,_,_,PD,_}|_] = List,
-%% 	PDKeyList = [Key || {Key,_} <- PD],
-%% 	logger:info("Pid:~p RegName:~p KeyList:~p",[PsPid,RegisterName,PDKeyList]),
     ok.
 
 logSortByMQueue(PPList) ->
@@ -227,11 +229,11 @@ logSortByMQueue(PPList) ->
             true ->
                 {break, {N, AccIn}};
             _ ->
-                {N - 1,io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
+                {N - 1,io_lib:format(?FMT,
                     [N, Pid, RegName, Red, MQL, mem2str(Mem), M, F, A]) ++ AccIn}
         end
           end,
-    {_, Str} = misc:mapAccList(List, {15, []}, Fun),
+    {_, Str} = misc:mapAccList(List, {20, []}, Fun),
     Str.
 
 logSortByMem(PPList) ->
@@ -241,11 +243,11 @@ logSortByMem(PPList) ->
             true ->
                 {break, {N, AccIn}};
             _ ->
-                {N - 1,io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
+                {N - 1,io_lib:format(?FMT,
                     [N, Pid, RegName, Red, MQL, mem2str(Mem), M, F, A]) ++ AccIn}
         end
           end,
-    {_, Str} = misc:mapAccList(List, {15, []}, Fun),
+    {_, Str} = misc:mapAccList(List, {20, []}, Fun),
     Str.
 
 process_info_items(P) ->
