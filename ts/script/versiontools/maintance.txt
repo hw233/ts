@@ -70,7 +70,7 @@ erl -setcookie abc -name node_3@192.168.1.123 -remsh node_1@192.168.1.123 %%这�
 					##(dbID由运维分配，1111,默认的没啥用，127.0.0.1节点后缀默认)
 								
 				* 修改数据库中gsconfig 加入当前gameserver的配置
-					insert  into 3dgamedata.`gsconfig`(`serverID`,`serverName`,`ip`,`port`,`beginTime`,`maxPlayer`) values (1,'欧美审核服','49.51.8.130',6789,'1970-01-01 00:00:00',3000)
+					insert  into 3dgamedata.`gsconfig`(`serverID`,`serverName`,`ip`,`port`,`beginTime`,`maxPlayer`) values (1,'**','***',6789,'1970-01-01 00:00:00',3000)
 					insert into 3dgamedata.db_info(majorVer,minorVer,dbID,gmLevel) VALUES(2,1,$dbID,0);
 					insert into `3dgameaccount`.`version`(`id`,`majorVer`,`minorVer`) VALUES(14,2,1);
 					
