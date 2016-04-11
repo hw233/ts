@@ -1,0 +1,156 @@
+********************************************************************************************************************************************
+
+CREATE USER 'username'@'host' IDENTIFIED BY 'password'; 
+grant all on *.* to  $user@'$host'
+flush privileges;
+
+mysql -h -u -p
+tail -f
+grep
+top
+entop
+
+#压缩解压
+tar -jcvf| tar jxvf
+
+#secureCRT
+rz #上传到linux
+sz #从linux上下载
+
+erl -setcookie abc -name node_3@192.168.1.123 -remsh node_1@192.168.1.123 %%这样就直接进入了node_1节点
+ 
+ 
+
+********************************************************************************************************************************************
+********************************************************************************************************************************************
++前期准备 ##尽量在linux下编译
+	1.安装Git-1.8.3-preview20130601 、TortoiseSVN-1.8.7.25475-x64-svn-1.8.9
+	2.安装tdm64-gcc-4.7.1-3
+	3.安装python
+	4.安装ftp
+	
++准备开干
+	1.修改menu.config中的{target_dir，保持制定目录和项目在同一分区
+	
+	
++开干
+	1.运行misc_menu.ers，选择相关选项
+		+ 全更新: 
+			5.smallpack source full copy -> 9.server update pack
+		+ 热更新：
+			6.hot_update source copy -> 8.server hotUpdate pack
+		+ 安装包: 
+			3.server full install pack
+			
+	2.将$target_dir目录下的新生成的*.bz2以及*.bz2.md5上传FTP
+
+	3.进入相应的linux服务器(/data/script)进行更新
+	
+		* 可能需要修改/data/script/scripts/get-newversions.py 中的FTP地址
+		
+		+ 热更新 
+			./hotupdate.py hx_mainland_$dbID gameserver $svnVersion
+			
+		+ 全更新 
+				./BatchManager.py hx_mainland_$dbID stop ##（关闭服务器）
+				./update.py hx_mainland_$dbID gameserver $svnVersion
+				./BatchManager.py hx_mainland_$dbID start  ##（开启服务器）	
+				
+		+ 全新安装
+				* 可能需要修改数据的账号权限等等
+					CREATE USER 'username'@'host' IDENTIFIED BY 'password'; 
+					grant all on *.* to  $user@'$host'
+					flush privileges;
+					
+				+ 将相关版本的数据库,3daccount ,3dgamedata,3daccount,
+					3dactivecode的除数据外的结构，sp，trigger等等导入一个*.sql文件
+					文件名规则为：SQL93707.sql ##93707位svn版本号
+				
+				+ ./3dgame_install.py $svnVersion $dbID 1111 127.0.0.1 
+					##(dbID由运维分配，1111,默认的没啥用，127.0.0.1节点后缀默认)
+								
+				* 修改数据库中gsconfig 加入当前gameserver的配置
+					insert  into 3dgamedata.`gsconfig`(`serverID`,`serverName`,`ip`,`port`,`beginTime`,`maxPlayer`) values (1,'欧美审核服','49.51.8.130',6789,'1970-01-01 00:00:00',3000)
+					insert into 3dgamedata.db_info(majorVer,minorVer,dbID,gmLevel) VALUES(2,1,$dbID,0);
+					insert into `3dgameaccount`.`version`(`id`,`majorVer`,`minorVer`) VALUES(14,2,1);
+					
+					
+				+ 修改dbserver.txt相关配置
+				
+				+ 开服 	./BatchManager.py hx_mainland_$dbID start  ##（开启服务器）	
+				
+				+ grep beam & tail -f日志，收工
+
+********************************************************************************************************************************************
+********************************************************************************************************************************************
+
+++++++++++++++++++
+erl -name debug_local@127.0.0.1 -setcookie erlide -remsh loginserver@127.0.0.1
+
+erl -name observer@127.0.0.1 -hidden -setcookie erlide -run observer
+
+#ets
+	ets:all() %列出所有的ETS Table 
+	ets:i() %给出一个ETS Table的清单 包含表的类型,数据量,使用内存,所有者信息
+	ets:i(zen_ets) % 输出zen_ets表的数据,
+					个人感觉这个非常方便比tv还要简单快捷,如果表数据量很大,
+					它还提供了一个分页显示的功能
+    ets:info(zen_ets) %单独查看一个ETS Table的详细信息
+						也可以使用这个方法,如果怀疑这个表被锁了
+						可以使用ets:info(zen_ets,fixed)查看,ets:info(zen_ets,safe_fixed) 
+						可以获得更多的信息,这样比较容易定位是哪个模块出了问题.
+    ets:member(Tab, Key) -> true | false %看表里面是否存在键值为Key的数据项.
+
+#查看系统所有进程
+erlang:processes()
+#查看进程当前调用
+erlang:whereis(RegName)
+erlang:process_info(pid, current_function)
+#查看进程相关信息
+[erlang:process_info(P,[
+		backtrace,
+		registered_name,
+		reductions,
+		message_queue_len,
+		message,
+		memory,
+		heap_size,
+		stack_size,
+		total_heap_size,
+		current_function]) || P <- erlang:processes()].
+
+将进程信息写入文件		
+process_infos() ->
+	filelib:ensure_dir("./log/"),
+	File = "./log/processes_infos.log",
+	{ok, Fd} = file:open(File, [write, raw, binary, append]),
+	Fun = fun(Pi) ->
+		Info = io_lib:format("=>~p \n\n", [Pi]),
+		case filelib:is_file(File) of
+			true -> file:write(Fd, Info);
+			false ->
+				file:close(Fd),
+				{ok, NewFd} = file:open(File, [write, raw, binary, append]),
+				file:write(NewFd, Info)
+		end,
+		timer:sleep(20)
+	end,
+	[Fun(erlang:process_info(P)) || P <- erlang:processes()].    
+
+++++++++++++++++++
+内存
+
+1. 查看节点的内存瓶颈所在地方 erlang:memory(). / io:format("~s~n", [binary_to_list(erlang:system_info(info))]).
+2. 查看占用内存最高的进程 spawn(fun()-> etop:start([{output, text}, {interval, 1}, {lines, 20}, {sort, memory}]) end).
+3. 查看占用内存最高的进程状态 erlang:process_info(pid(0,12571,0)). 
+
+或者 etop
+etop:stop().
+
+CPU
+** nmon / dstat -tam, vtune 都能很好分析beam 瓶颈
+1.erlang:statistics(scheduler_wall_time) 或者VTune分析/etop
+2.%进程CPU占用排名
+etop() -> spawn(fun() -> etop:start([{output, text}, {interval, 10}, {lines, 20}, {sort, reductions}]) end).
+
+********************************************************************************************************************************************
