@@ -1,0 +1,114 @@
+gameMapOtp 游戏地图进程，每张地图一个进程
+gameMapMgrOtp 地图管理进程
+	- normalMapMgrPID -> gameMapMgrWorkerOtp
+	- copyMapMgrPID -> gameMapMgrWorkerOtp
+
+gameMapMgrWorkerOtp 
+%%%负责游戏地图的读取，创建、删除等等功能
+%%%
+%%%地图管理器在服务器启动时即创建所有地图，并生成所有NPC及怪物，
+
+
+
+1. 请求
+playerMsg:onMsg(?CMD_C2S_ChangeMap / CMD_U2GS_TransferMap)
+	->playerScene:onRequestEnterMap
+		-> playerScene:requestEnterMap(#recPlayerEEMap
+			->playerScene:canEnterMap
+			 ->playerScene:sendEnterMap
+				-> （2） core:sendMsgToMapMgr(MapID, requestEnterMap, RequestRec)
+			  	    |    （4）?MapTypeCopyMap // core:sendMsgToMapMgr(TargetMapID, requestEnterMap_ByDirect, 		
+
+
+2.	--- 异步 ---> 
+	gameMapMgrWorkerOtp:onRequestEnterMap(#recRequsetEnterMap)
+		-> ?MapTypeNormal
+			->checkAndLeaveMap(Request);
+		-> ?MapTypeActivity
+			->checkAndLeaveMap(Request)
+		-> ?MapTypeCopyMap
+			进行一系列检查，然后checkAndLeaveMap(Request)
+		-> Other
+			error
+
+3.
+	gameMapMgrWorkerOtp:checkAndLeaveMap(#recRequsetEnterMap{} = Request)
+		是否走离开地图流程
+		->需要
+			（31异步）psMgr:sendMsg2PS(OldMapPID, leaveMap, Request);
+		->不需要
+			（32）leaveMapAck({true, Request})
+
+
+32	gameMapMgrWorkerOtp:leaveMapAck（{true, Request}）when EnterGuildID > 0
+		检查军团驻地是否存在
+		（321）否 createMapLine(MapID, EnterGuildID)
+		（322）checkAndSendLeaveMapAck(NewMapPID, Request);
+32	gameMapMgrWorkerOtp:leaveMapAck（{true, Request}）	
+		?MapTypeNormal/ ?MapTypeActivity ->	
+			线路存在否
+			（323）否 NewMapPID = allocMapLine(MapID, RoleID, true), 
+			checkAndSendLeaveMapAck(NewMapPID, Request);
+		?MapTypeCopyMap
+			（324）leaveCopyMap(Request)
+
+
+321 gameMapMgrWorkerOtp:createMapLine(MapID, RoleID)
+	gameMapSup:start_child(#recCreateMapArg),
+	Name = erlang:list_to_atom(lists:concat(["mapOtp",integer_to_list(MapID),"_",integer_to_list(Line			
+
+
+323 gameMapMgrWorkerOtp:allocMapLine(MapID, RoleID, IsCheckRecycle) %分配线路
+	 找到人数最多而且为达到上限进程
+	 	找到 返回该地图pid
+	 	未找到 createMapLine(MapID, RoleID)
+
+
+322 gameMapMgrWorkerOtp:checkAndSendLeaveMapAck(MPID,#recRequsetEnterMap{})
+	 MPID是否是PID（都给玩家进程发消息），
+	 （3221）否 psMgr:sendMsg2PS(PID, requestEnterMapAck,?EnterMapErrorCode_CRITIAL
+	 （3221）是 psMgr:sendMsg2PS(PID, requestEnterMapAck, {true, Request#recRequsetEnterMap{targetMapPID = MPID}})
+
+
+324 gameMapMgrWorkerOtp:leaveCopyMap(#recRequsetEnterMap{})
+		检查副本各种状态，如果能进入
+			checkAndSendLeaveMapAck
+		否则
+			%%原来的副本地图进程已经无效了，但队员不能创建副本，所以需要他返回原来的普通地图进程，各家呆到起。
+			（3221）psMgr:sendMsg2PS(PID, requestEnterMapAck, {?EnterMapErrorCode_TeamMemberEnterWaitDestoryCopyMap, Request})	
+
+
+
+31异步
+	gameMapOtp:onLeaveMap() 执行离开地图操作
+	（311）psMgr:sendMsg2PS(PidFrom, leaveMapAck, {Ret, Request}),
+
+311异步
+	gameMapMgrWorkerOtp:leaveMapAck
+	
+
+
+3221 异步（玩家进程） playerScene:requestEnterMapAck
+	根据返回结果不共同做处理
+	（32211）成功 psMgr:sendMsg2PS(TMapPID, enterMap, #recEnterMap{})
+	其他 出错提示等
+
+
+32211
+	gameMapOtp:handle_info({enterMap})
+	检查地图是否已经开始回收
+	是 psMgr:sendMsg2PS(Pid, enterMapAck, {waitDestory,MapID,X,Y})
+	否 mapBase:onEnterMap 处理玩家进入的情况然后
+		%先通知该玩家进入地图
+		（322111）psMgr:sendMsg2PS(Pid, enterMapAck, MapInfo),		
+		%% 再告诉工作者进程
+		sendMsg2MapMgr(playerEnterMapSuccess, {ID, Pid, MapID, Num}),
+
+
+322111
+	playerMap:dealEnterMapAck
+	处理玩家进入地图流程，并通知客户端进入地图
+	启动一个进入超时timer
+
+
+
