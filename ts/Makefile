@@ -1,8 +1,8 @@
 #配置选项，可以是DEBUG和RELEASE
 #后面会添加HIPE相关的编译配置
-#																					by:钟元伟
+#																					
 
-CONFIG ?= DEBUG
+CONFIG ?= RELEASE
 
 Region ?= chs
 
