@@ -10,7 +10,7 @@
 -author("Administrator").
 
 %% API
--export([start/0, stop/0,tEts/0]).
+-export([start/0, stop/0]).
 
 start() ->
   case application:start(ts) of
