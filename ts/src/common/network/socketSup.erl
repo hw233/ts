@@ -9,7 +9,7 @@
 -module(socketSup).
 -author("snail").
 
-
+-include("logger.hrl").
 -include("commonDef.hrl").
 
 -define(SERVER, ?MODULE).
@@ -33,7 +33,6 @@ concatToAtom(Module, Port) when erlang:is_integer( Port )->
 %% 启动netListener进程，并设置socket连接处理模块
 start_link(HandleMoudle,#listenTcpOptions{port = Port} = Option) when erlang:is_integer(Port), erlang:is_atom(HandleMoudle) ->
 	Name = concatToAtom(?MODULE,Port),
-	logger:debug("####~p:start_link(~p,~p)", [?MODULE, HandleMoudle, Option]),
 	supervisor:start_link({local,Name}, ?MODULE, [HandleMoudle,Option]).
 
 %% 启动socket连接处理进程
@@ -43,8 +42,7 @@ start_child(Module,Socket,#listenTcpOptions{} = Option) ->
 
 %% one_for_one包括了一个监听进程ClientAccepter，还包含了一个NetClientSupervisor进程树(simple_one_for_one策略)
 init([Module,#listenTcpOptions{port = Port} = Option]) ->
-	logger:debug("####~p:init(~p)", [?MODULE, Option]),
-	logger:info("~p init,Listen Port[~p]", [?MODULE,Port]),
+	?LOG_OUT("~p init,Listen Port[~p]", [?MODULE,Port]),
 	ClientAccepter = {
 		socketAccepter,                         		        % Id       = internal id
 		{socketAccepter, start_link, [Module,Option]},			% StartFun = {M, F, A}
@@ -74,8 +72,7 @@ init([Module,#listenTcpOptions{port = Port} = Option]) ->
 
 %%注意，这个函数必须要有，是监督进程启动工作者进程时调用的回调函数
 init([Module]) ->
-	logger:info("Module[~p] init",[?MODULE]),
-	logger:debug("####~p:ini(~p)", [?MODULE, Module]),
+	?LOG_OUT("Module[~p] init",[?MODULE]),
 	{ok,
 		{_SupFlags = {simple_one_for_one, ?MAX_RESTART, ?MAX_TIME},
 			[

@@ -9,46 +9,12 @@
 -module(logger).
 -author("Administrator").
 -include("common.hrl").
+-include("log/hdlt_logger.erl").
 %% API
 -compile(export_all).
 
-start( ) ->
-  case catch application:start(log4erl) of
-    ok ->
-      io:format("log4erl started!");
-    Msg ->
-      io:format("log4erl start failed, y=~p~n" , [Msg]),
-      throw({failed_log, Msg})
-  end,
-  log4erl:conf("log4erl.conf") ,
-
-%%  initWindow(WinName),
-  logger:info("load log4erl.conf ok.").
-
-%%initWindow(WinName)->
-%%  erlang:process_flag(trap_exit, true),
-%%  erlang:process_flag(priority, high),
-%%  {encoding,Encoding} = lists:keyfind(encoding, 1, io:getopts()),
-%%  case Encoding of
-%%    unicode ->
-%%      skip;
-%%    _ ->
-%%      ok = io:setopts([{encoding,unicode}]),
-%%      log4erl:info("设置控制台编码为Unicode")
-%%  end,
-%%
-%%  log4erl:info("当前控制台选项: ~p",[io:getopts()]),
-%%  log4erl:info("当前Erlang版本：~p",[erlang:system_info(version)]),
-%%  log4erl:info("~p begin init", [?MODULE]),
-%%
-%%  erlang:monitor(process, self()),
-%%  window:createWindow(WinName),
-%%
-%%  ok.
-
-
 log(Level , Log) ->
-  log4erl:log(Level , Log).
+  ?LOG_OUT(Level , Log).
 log(Level , Log , Data) ->
   log4erl:log(Level , Log , Data).
 log(Logger , Level , Log , Data) ->

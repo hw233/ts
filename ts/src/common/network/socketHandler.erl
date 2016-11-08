@@ -11,7 +11,7 @@
 
 -include("type.hrl").
 -include("commonDef.hrl").
-
+-include("logger.hrl").
 -include("netmsgRecords.hrl").
 
 -record(state,{
@@ -73,12 +73,10 @@ term()),
 	term().
 
 start_link(Module,[Socket,#listenTcpOptions{} = Option]) ->
-	logger:debug("####~p:start_link(~p,~p)", [?MODULE, Module, Option]),
 	myGenServer:start_link(?MODULE, [Module,Socket,Option], [{timeout,?Start_Link_TimeOut_ms}]).
 
 init([Module,Socket,#listenTcpOptions{isSendSessionKey = IsSendSessionKey} = Option]) ->
-	logger:info("socketHandler[~p ~p] init",[self(), Socket]),
-	logger:debug("####~p:init(~p,~p,~p)",[?MODULE, Module, Socket, Option, self()]),
+	?LOG_OUT("socketHandler[~p ~p] init",[self(), Socket]),
 	setUserSocket(Socket),
 	setListenOption(Option),
 	setHalfMsg(<<>>),
@@ -120,7 +118,7 @@ handle_cast(Request, #state{module = Module,subState = S} = State) ->
 	end.
 
 terminate(Reason, #state{module = Module,subState = S}) ->
-	logger:info("netOtp terminate Socket:~p NetPid:~p SendBytes:~p RecvBytes:~p",[getUserSocket(),self(),netPacker:getWriteNetMsgSize(),netPacker:getReadNetMsgSize()]),
+	?LOG_OUT("netOtp terminate Socket:~p NetPid:~p SendBytes:~p RecvBytes:~p",[getUserSocket(),self(),netPacker:getWriteNetMsgSize(),netPacker:getReadNetMsgSize()]),
 	Module:terminate(Reason,S),
 	ok.
 
@@ -133,7 +131,7 @@ code_change(OldVsn, #state{module = Module,subState = S} = State, Extra) ->
 	end.
 
 handle_exception(Type,Why,#state{module = Module,subState = S} = State) ->
-	logger:error("NetPS Socket:~p Pid:~p exception exit by:~p ~p",[getUserSocket(),self(),Type,Why]),
+	?ERROR_OUT("NetPS Socket:~p Pid:~p exception exit by:~p ~p",[getUserSocket(),self(),Type,Why]),
 	Module:handle_exception(Type,Why,S),
 	
 	%%调用基类处理
@@ -147,14 +145,14 @@ handle_info({tcp,UserSocket,Data},#state{module = Module,subState = S,option = O
 		ok ->
 			ok;
 		{error, Reason} ->
-			logger:error("~p ~p inet:setopts UserSocket ~p fail,reason:~p ~n", [?MODULE, self(), UserSocket, Reason])
+			?ERROR_OUT("~p ~p inet:setopts UserSocket ~p fail,reason:~p ~n", [?MODULE, self(), UserSocket, Reason])
 	end,
 	case UserSocket =:= getUserSocket() of
 		true ->
 			NewState = parseMsg(Module,S,Option,Data),
 			{noreply,State#state{subState = NewState}};
 		false ->
-			logger:error("~p ~p handle_info tcp UserSocket[~p] =/= getUserSocket[~p] to stop !!!!", [?MODULE, self(), UserSocket, userState:getUserSocket()] ),
+			?ERROR_OUT("~p ~p handle_info tcp UserSocket[~p] =/= getUserSocket[~p] to stop !!!!", [?MODULE, self(), UserSocket, userState:getUserSocket()] ),
 			%%这里不应该直接退出，要通过throw，做正常清理
 			%%{stop, normal, State}
 			throw( "handle_info tcp error socket" )
@@ -197,7 +195,7 @@ handle_info({sendPackage,_Pid,List},#state{module = Module} = State) ->
 				_ ->
 					skip
 			end,
-			logger:error("socketHandler Pid[~p],Socket:~p sendNetMsg Error:~p",[self(),OldSocket,Reason]),
+			?ERROR_OUT("socketHandler Pid[~p],Socket:~p sendNetMsg Error:~p",[self(),OldSocket,Reason]),
 			{stop, normal, State}
 	end;
 
@@ -263,7 +261,7 @@ parseMsg(Module,State,#listenTcpOptions{} = Option,Bin) ->
 		{error,DataSize,Why} ->
 			Socket = getUserSocket(),
 			{IP,Port} = misc:getRemoteIP_Port(Socket),
-			logger:error("recv socket[~p] IP:~ts Port:~p, DataSize[~p] error[~s]",[Socket,IP,Port,DataSize,Why]),
+			?ERROR_OUT("recv socket[~p] IP:~ts Port:~p, DataSize[~p] error[~s]",[Socket,IP,Port,DataSize,Why]),
 			%%收到异常消息，断开连接
 			%%直接close，由throw后，exception去处理
 			throw(Ret)
@@ -310,10 +308,10 @@ dealHalfMsg(#listenTcpOptions{packetLen = PacketLen,cmdLen = CmdLen,maxPacketSiz
 									false ->
 										%%尝试着解析一下包的协议号
 										{Cmd,Bin} = parseOneMsg(IsEncode,RemainBin),
-										ErrorMsg = io_lib:format("Error Msg[~p][~ts] Len:~p",[Cmd,netmsgCmdStr:getNetMsgCmdStr(Cmd),Len]),
+										ErrorMsg = io_lib:format("Error Msg CMD:~p,CmdStr:~ts, Len:~p,Bin=~p",[Cmd,netmsgCmdStr:getNetMsgCmdStr(Cmd),Len,Bin]),
 										{error,MsgSize,ErrorMsg};
 									_ ->
-										ErrorMsg = io_lib:format("Error Msg Len:~p",[Len]),
+										ErrorMsg = io_lib:format("Error Msg Len:~p,Bin=~p",[Len,RemainBin]),
 										{error,MsgSize,ErrorMsg}
 								end
 							catch
@@ -338,7 +336,7 @@ parseAndCheckMsg(IsEncode,Normal) ->
 	%%如果客户端成功回复SessionKey，则需要强制检查除心跳包外的所有消息，都应该是使用SessionKey加过密的
 	case IsEncode =:= false andalso Cmd =/= ?CMD_U2GS_HeartBeat andalso isSentSessionKey() =:= true of
 		true ->
-			logger:error("Client cheat? sent SessionKey, but not use"),
+			?ERROR_OUT("Client cheat? sent SessionKey, but not use"),
 			throw("Client cheat? sent SessionKey, but not use");
 		_ ->
 			{Cmd,Bin}

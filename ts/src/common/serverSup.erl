@@ -61,7 +61,10 @@ start_link(Title, CfgFile) ->
   {error, Reason :: term()}).
 init([Title, CfgFile]) ->
 
-  logger:start(),
+%%  logger:start(),
+
+  hdlt_logger:initEnv(Title),
+  application:start(localLog),
 
   %% 时间进程
   Time = {

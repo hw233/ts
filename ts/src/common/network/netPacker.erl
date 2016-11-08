@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
-%%% @author snail
-%%% @copyright
+%%% @author ZhongYuanWei
+%%% @copyright (C) 2014, 好玩一二三
 %%% @doc
 %%%
 %%% @end
@@ -10,7 +10,7 @@
 -author("snail").
 
 -include("type.hrl").
-
+-include("logger.hrl").
 -include("netmsgRecords.hrl").
 -include("commonDef.hrl").
 
@@ -116,7 +116,7 @@ changeDataListForSum(4, Sum, [<<Len:?U32>> | RightList] = List) ->
 	case Len =:= 0 orelse Sum2 =:= 0 orelse Len3 =:= 0 of
 		true ->
 			[<<CMD:16/little>>|_RL] = RightList,
-%%			logger:warn("NetPid:~p, CMD:~p,OldLen=~w,Sum=~w,Sum2=~w,NewLen=~w,OldData:~w",
+%%			?WARN_OUT("NetPid:~p, CMD:~p,OldLen=~w,Sum=~w,Sum2=~w,NewLen=~w,OldData:~w",
 %%				[self(), CMD, Len, Sum, Sum2, Len3, List]),
 			ok;
 		_ ->
@@ -153,7 +153,7 @@ onSessionKeyAck(#pk_U2GS_SessionKeyAck{oldKey = OldKey,newKey = Key}) ->
 				LastKey ->
 					setReadSessionKey(Key);
 				_ ->
-					logger:error("Error Client Ack SessionKey[~p] OldKey[~p] require Key[~p]",[Key,OldKey,LastKey]),
+					?ERROR_OUT("Error Client Ack SessionKey[~p] OldKey[~p] require Key[~p]",[Key,OldKey,LastKey]),
 					throw("Error Client Ack SessionKey")
 			end
 	end,
@@ -283,7 +283,7 @@ checkNetMsgLen(Len,List) ->
 	case Len >= 204800 of
 		true ->
 			Cmd = socketHandler:parseMsgID(List),
-			logger:error("NetPid:~p Send NetMsg[~ts] Size:~p Out of BufferSize:204800",[self(),Cmd,Len]);
+			?ERROR_OUT("NetPid:~p Send NetMsg[~ts] Size:~p Out of BufferSize:204800",[self(),Cmd,Len]);
 		_ ->
 			skip
 	end,

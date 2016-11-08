@@ -12,7 +12,7 @@
 -behaviour(myGenServer).
 
 -include("commonDef.hrl").
-
+-include("logger.hrl").
 
 -define(TCP_OPTIONS,[binary,
 					 {packet, 0},
@@ -57,7 +57,7 @@ start_link(Module,#listenTcpOptions{port = Port} = Option) when is_integer(Port)
 	myGenServer:start_link({local,Name},?MODULE, [Module, Option], [{timeout,?Start_Link_TimeOut_ms}]).
 
 init([Module,#listenTcpOptions{port = Port,listenDelay = ListenDelay} = Option]) ->
-	logger:info("~p init",[?MODULE]),
+	?LOG_OUT("~p init",[?MODULE]),
 	process_flag(trap_exit, true),
 	
 	%%查看是否有延迟监听的选项，如果有则延迟监听，否则立即监听
@@ -104,7 +104,7 @@ handle_info({inet_async, ListSock, Ref, {ok, CliSocket}}, #acceptState{socket = 
 	end;
 
 handle_info({inet_async, ListSock, Ref, Error}, #acceptState{socket = ListSock, acceptor = Ref} = State) ->
-	logger:error("Error in socket acceptor: ~p",[Error]),
+	?ERROR_OUT("Error in socket acceptor: ~p",[Error]),
 	{stop, Error, State};
 
 %%延时监听消息
@@ -117,15 +117,15 @@ handle_info(startListen,#acceptState{option = #listenTcpOptions{port = Port} } =
 	end;
 
 handle_info({error,timeout},State) ->
-	logger:error("socketAccepter timeout"),
+	?ERROR_OUT("socketAccepter timeout"),
 	{noreply,State};
 
 handle_info(Info,State) ->
-	logger:error("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
+	?ERROR_OUT("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
 	{noreply,State}.
 
 terminate(Reason, _State) ->
-	logger:error( "~p ~p terminate Reason[~p]", [?MODULE, self(), Reason] ),
+	?ERROR_OUT( "~p ~p terminate Reason[~p]", [?MODULE, self(), Reason] ),
 	ok.
 
 code_change(_OldVsn, State, _Extra) ->
@@ -139,7 +139,7 @@ accept(ListSock,CliSocket,#acceptState{socket = ListSock,module = Module,option 
 			  setAcceptedOption(ListSock,CliSocket,Module,Option)
 		  catch
 			  _:Why ->
-				  logger:error("accept exception:~p",[Why]),
+				  ?ERROR_OUT("accept exception:~p",[Why]),
 				  failed
 		  end,
 	
@@ -152,20 +152,20 @@ accept(ListSock,CliSocket,#acceptState{socket = ListSock,module = Module,option 
 					{IP,Port} ->
 						case Ret of
 							{ok,Pid1} ->
-								logger:info("Pid[~p] Client[~p][~p]:[~p] connnected,NewRef:~p!",[Pid1,IP,Port,CliSocket,NewRef]);
+								?LOG_OUT("Pid[~p] Client[~p][~p]:[~p] connnected,NewRef:~p!",[Pid1,IP,Port,CliSocket,NewRef]);
 							_ ->
-								logger:info("Client[~p][~p]:[~p] connnected,NewRef:~p,But start childOtp failed!",[CliSocket,IP,Port,NewRef])
+								?LOG_OUT("Client[~p][~p]:[~p] connnected,NewRef:~p,But start childOtp failed!",[CliSocket,IP,Port,NewRef])
 						end;
 					_ ->
-						logger:error("Error CliSocket[~p] Ref:~p cannot get RemoteIP",[CliSocket,NewRef])
+						?ERROR_OUT("Error CliSocket[~p] Ref:~p cannot get RemoteIP",[CliSocket,NewRef])
 				end
 			catch
 				_:Why1 ->
-					logger:error("getRemoteIP_Port exception:~p",[Why1])
+					?ERROR_OUT("getRemoteIP_Port exception:~p",[Why1])
 			end,
 			{noreply, State#acceptState{acceptor = NewRef}};
 		{error, NewRef} ->
-			logger:error( "~p prim_inet:async_accept ListSock[~p] error NewRef[~p]", [self(), ListSock, NewRef] ),
+			?ERROR_OUT( "~p prim_inet:async_accept ListSock[~p] error NewRef[~p]", [self(), ListSock, NewRef] ),
 			{noreply, State#acceptState{acceptor = NewRef}}
 	end.
 
@@ -174,7 +174,7 @@ setAcceptedOption(ListSock,CliSocket,Module,Option) ->
 			   ok ->
 				   ok;
 			   {error, Reason1} ->
-				   logger:error( "~p set_sockopt ListSock[~p], CliSocket[~p] error Reason1[~p]", [self(), ListSock, CliSocket, Reason1] ),
+				   ?ERROR_OUT( "~p set_sockopt ListSock[~p], CliSocket[~p] error Reason1[~p]", [self(), ListSock, CliSocket, Reason1] ),
 				   failed
 		   end,
 	
@@ -184,7 +184,7 @@ setAcceptedOption(ListSock,CliSocket,Module,Option) ->
 					   ok ->
 						   ok;
 					   {error, Reason2} ->
-						   logger:error("netListener, inet:setopts fail,reason:~p ~n",[Reason2]),
+						   ?ERROR_OUT("netListener, inet:setopts fail,reason:~p ~n",[Reason2]),
 						   failed
 				   end;
 			   _ ->
@@ -200,7 +200,7 @@ setAcceptedOption(ListSock,CliSocket,Module,Option) ->
 						ok ->
 							{ok,Pid};
 						{error, Reason3} ->
-							logger:error("gen_tcp:controlling_process error, Reason:~p",[Reason3]),
+							?ERROR_OUT("gen_tcp:controlling_process error, Reason:~p",[Reason3]),
 							failed
 					end;
 				_ ->
@@ -215,9 +215,9 @@ startListen(Port) ->
 		{ok, Listen_socket} ->
 			%%first accepting
 			{ok, Ref} = prim_inet:async_accept(Listen_socket, -1),
-			logger:info( "~p ~p Listen_socket ~p Ref:~p", [?MODULE, self(), Listen_socket,Ref] ),
+			?LOG_OUT( "~p ~p Listen_socket ~p Ref:~p", [?MODULE, self(), Listen_socket,Ref] ),
 			{Listen_socket, Ref};
 		Exception ->
-			logger:error("Error listen Port[~p],Exception[~p]",[Port,Exception]),
+			?ERROR_OUT("Error listen Port[~p],Exception[~p]",[Port,Exception]),
 			failed
 	end.

@@ -1,5 +1,5 @@
 %%%此文件定义一些只有GameServer使用的宏
--author(snail).
+-author(zhongyuanwei).
 
 -ifndef(GSDef_hrl).
 -define(GSDef_hrl,1).
@@ -66,20 +66,16 @@
 -define(PsChar,charPID).
 %%AI管理器进程名
 -define(PsNameAIMgr,aiMgr).
-%%队伍进程
--define(PsNameTeam,teamPID).
 %%玩家管理进程
 -define(PsNamePlayerMgr,playerMgrPID).
 %% 分组管理进程
 -define(PsNameGroup,groupPID).
 %% 天梯1v1竞技场进程
 -define(PsNameLadder1v1,ladder1v1PID).
-%%商城进程名
--define(PsNameMall, mallPID).
-%%邮件进程进程名
--define(PsNameMail,mailPID).
 %% 交易行进程
 -define(PsNameTrade, tradePID).
+%% 红包进程
+-define(PsNameRedEnvelope, redEnvelopePID).
 %%关键字过滤管理进程进程名
 -define(PsNameKeywordFilterMgr,keywordFilterMgr).
 %%活动管理模块进程名
@@ -88,11 +84,71 @@
 -define(PsNameOperateActivity, operateActivityPID).
 %%运营兑换管理模块进程名
 -define(PsNameOperateExchange, operateExchangePID).
-
+%%金宝塔管理模块进程名
+-define(PsNameLotteryForTower, lotteryForTowerPID).
 -define(TeamUIDMakeEts, teamUIDMakeEts).
+%%玩家数据管理进程
+-define(PlayerDataMgr, playerDataMgrOtp).
+%%公共数据管理进程
+-define(PublicDataMgr, publicDataMgrOtp).
+
+%%%===================================================================>>>
 
 %% commonServer模块中，用于监听gs节点连接的进程ID
 -define(CS_PIDName_GSOtpAccepter, gsAccepterNamePID).
+
+-define(PSNameAwardTaken,awardTakenOtp).%玩家已经领过的活动ID
+%%%===================================================================
+%%% 本模块(commonserver)的进程名ID
+%%% 格式: CS_PIDName_XXX
+%%%===================================================================
+%% cs 中 连接db 的进程名
+-define(CS_PIDName_ConnectDBPid, csDBNamePID).
+
+%% 交易行操作进程PID
+-define(TradeOpPIDName, tradeDataOpOtpPID).
+
+%% 交易行查询进程PID
+-define(TradeQueryPIDName, tradeDataQueryOtpPID).
+
+-define(PsNamePreRecharge,preRechargeOtp).
+-define(PsNameRecharge,rechargeOtp).
+-define(PsNameMail,mailOtp).
+
+-define(PsNameGuild, guildOtp).
+-define(PsNameWorldBOss, worldBossOtp).
+
+%% 排行榜进程
+-define(PsNameRank, rankOtp).
+%% 灵魂伙伴进程
+-define(PsNameCompanion, companionOtp).
+%% 活动模块进程
+-define(PsNameActivity, activityOtp).
+
+%% 商城进程PID
+-define(PsNameMall, mallOtp).
+%% 队伍进程
+-define(PsNameTeam, teamOtp).
+
+%% 姻缘系统进程
+-define(PsNameMarriage, marriageOtp).
+
+%% 好友系统进程
+-define(PsNameFriend, friendOtp).
+
+%% 好友系统进程
+-define(PsRubbishCleaner, rubbishCleanerOtp).
+
+
+%%%===================================================================
+%%% dbServer 的进程名ID
+%%% 格式: DB_PIDName_XXX
+%%%===================================================================
+%% DBServer 中 连接CS节点 的进程名
+-define(DB_PIDName_ConnectCSPid, csNamePID).
+%%%<<<===================================================================
+
+
 
 -define(PsNameGlobalSetupTable, globalSetup ).
 -define(GlobalSetupKey, 1 ).
@@ -160,12 +216,6 @@
 	count = 0
 }).
 
--record(recWorldLevel,
-{
-	id = 0,
-	level = 0
-}).
-
 -record(recChatCD,
 {
 	roleID,
@@ -229,7 +279,7 @@
 	record = 0
 }).
 
-%%竞技场排行榜
+%%竞技场排行榜(角斗场)
 -record(arenaBattleRank,{
 	roleID = 0,
 	name = "",
@@ -256,4 +306,5 @@
 	time = 0
 }).
 
--endif.
+
+-endif. %% GSDef_hrl
