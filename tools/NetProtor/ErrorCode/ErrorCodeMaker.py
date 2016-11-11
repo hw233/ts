@@ -21,7 +21,7 @@ try:
 		reload(sys)
 		sys.setdefaultencoding(default_encoding)
 	svn_home = os.path.join('..', '..', '..')
-	_ErrorCodeDefinePath = os.path.join(svn_home, 'Tool', 'NetProtor', 'ErrorCode', 'ErrorCode.h')
+	_ErrorCodeDefinePath = os.path.join(svn_home, 'tools', 'NetProtor', 'ErrorCode', 'ErrorCode.h')
 	#_ClientErrorCodeOutPath = os.path.join(svn_home, 'Client', 'Assets', 'Code', 'Game', 'ErrorCode.cs')
 	_ClientErrorCodeOutPath = os.path.join(svn_home, 'Client', 'Assets', 'Plugins', 'Client', 'Game', 'ErrorCode.cs')
 	_ClientErrorCodeOutPath_Sub = os.path.join(svn_home, 'Client', 'Assets', 'Plugins', 'Client', 'Game', 'ErrorCode.cs')
