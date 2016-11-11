@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root id="RootNodeID">
+	<!-- 顺序节点 -->
+	<seq id="SeqID">
+		<!-- 叶子节点 -->
+		<action type="Move">
+		</action>
+		<!-- 非装饰节点 -->
+		<ndec id="DecNotNodeID">
+			<!-- 顺序节点1 -->
+			<seq id="SeqID1">
+				<sel id="SelectID">
+					<condi type="IsTarget">
+					</condi>
+					<condi type="IsBeAttacked">
+					</condi>
+				</sel>
+				<action type="SelTarget">
+				</action>
+				<ldec id="LoopID">
+					<seq id="SeqID2">
+						<condi type="IsAlive">
+						</condi>
+						<condi type="IsExist">
+						</condi>
+						<condi type="IsTargetAlive">
+						</condi>
+						<sel id="SeqID3">
+							<ndec id="DecNotNodeID1">
+								<ldec id="LoopID1">
+									<condi type="IsAttackCD">
+									</condi>
+								</ldec>
+							</ndec>
+							<action type="Pursue">
+							</action>
+							<sel id="SelID2">
+								<seq id="SeqID4">
+									<condi type="IsUseSkill" time=1 " cycle="15">
+									</condi>
+									<action type="SelSkill" value="1506">
+									</action>
+									"
+								</seq>
+								<seq id="SeqID5">
+									<condi type="IsUseSkill" time="6" cycle="15">
+									</condi>
+									<action type="SelSkill" value="1505">
+									</action>
+								</seq>
+								<seq id="SeqID6">
+									<condi type="IsUseSkill" time="12" cycle="15">
+									</condi>
+									<action type="SelSkill" value="1505">
+									</action>
+								</seq>
+								<action type="SelSkill" value="1500">
+								</action>
+							</sel>
+							<action type="Attack">
+							</action>
+						</sel>
+					</seq>
+				</ldec>
+			</seq>
+		</ndec>
+	</seq>
+</root>
