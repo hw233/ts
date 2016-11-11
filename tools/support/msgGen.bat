@@ -1,0 +1,2 @@
+escript msgGen.erl
+pause
