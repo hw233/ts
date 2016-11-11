@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author snail
-%%% @copyright (C) 2014, snail
+%%% @author ZhongYuanWei
+%%% @copyright (C) 2014, 好玩一二三
 %%% @doc
 %%%
 %%% @end
 %%% Created : 12. 十一月 2014 14:18
 %%%-------------------------------------------------------------------
 -module(socketAccepter).
--author("snail").
+-author("ZhongYuanWei").
 
 -behaviour(myGenServer).
 

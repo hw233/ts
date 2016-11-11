@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author snail
-%%% @copyright (C) 2014, snail
+%%% @author ZhongYuanWei
+%%% @copyright (C) 2014, 好玩一二三
 %%% @doc
 %%%
 %%% @end
 %%% Created : 12. 十一月 2014 14:18
 %%%-------------------------------------------------------------------
 -module(socketHandler).
--author("snail").
+-author("ZhongYuanWei").
 
 -include("type.hrl").
 -include("commonDef.hrl").
@@ -308,10 +308,10 @@ dealHalfMsg(#listenTcpOptions{packetLen = PacketLen,cmdLen = CmdLen,maxPacketSiz
 									false ->
 										%%尝试着解析一下包的协议号
 										{Cmd,Bin} = parseOneMsg(IsEncode,RemainBin),
-										ErrorMsg = io_lib:format("Error Msg CMD:~p,CmdStr:~ts, Len:~p,Bin=~p",[Cmd,netmsgCmdStr:getNetMsgCmdStr(Cmd),Len,Bin]),
+										ErrorMsg = io_lib:format("Error Msg[~p][~ts] Len:~p",[Cmd,netmsgCmdStr:getNetMsgCmdStr(Cmd),Len]),
 										{error,MsgSize,ErrorMsg};
 									_ ->
-										ErrorMsg = io_lib:format("Error Msg Len:~p,Bin=~p",[Len,RemainBin]),
+										ErrorMsg = io_lib:format("Error Msg Len:~p",[Len]),
 										{error,MsgSize,ErrorMsg}
 								end
 							catch

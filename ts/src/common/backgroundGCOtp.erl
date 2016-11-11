@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author snail
+%%% @author ZhongYuanWei
 %%% @copyright (C) 2015, <公司>
 %%% @doc
 %%%
@@ -8,9 +8,11 @@
 %%%-------------------------------------------------------------------
 
 -module(backgroundGCOtp).
--author("snail").
+-author("ZhongYuanWei").
 
 -behaviour(gen_server).
+
+-include("logger.hrl").
 
 %% API
 -export([start_link/0]).
@@ -168,7 +170,7 @@ interval_gc(State = #state{last_interval = LastInterval}) ->
 	{ok, Micros,Interval} = interval_operation(
 		{?MODULE, gc, []},
 		?MAX_RATIO, ?IDEAL_INTERVAL, LastInterval),
-	logger:info("backgroundGC,UseTime:~p ms",[Micros]),
+	?LOG_OUT("backgroundGC,UseTime:~p ms",[Micros]),
 	erlang:send_after(Interval, self(), interval_run),
 	State#state{last_interval = Interval}.
 

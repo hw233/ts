@@ -4,6 +4,7 @@
 %%
 %% Include files
 %%
+-include("logger.hrl").
 -include_lib("stdlib/include/ms_transform.hrl").
 
 -type tab() :: atom() | port().
@@ -17,14 +18,6 @@
   Table :: tab(), Key :: term(), ValueFieldIndex ::  non_neg_integer(), Value :: term().
 changeField( Table, Key, Field, Value ) ->
 	ets:update_element(Table, Key, {Field,Value}).
-
-%%list [{Pos,Value}]，用于修改ets记录修改多个字段
-changeFiled(Table, Key, FieldList) when is_list(FieldList) ->
-	case FieldList of
-		[] -> ok;
-		_ ->
-			ets:update_element(Table, Key, FieldList)
-	end.
 
 %在Ets表Table中插入一条值，值可以是记录，也可以是普通元组
 -spec insertRecord(Table, Record) -> true when
@@ -52,7 +45,7 @@ readRecord( Table, Key ) ->
     IsAtom = is_atom(Table),
     case IsAtom orelse (IsAtom =:= false andalso Table =/= 0) of
         false ->
-            logger:error("---error,Table:~p, Key:~p",[Table,Key]);
+            ?ERROR_OUT("---error,Table:~p, Key:~p",[Table,Key]);
         true->ok
     end,
 

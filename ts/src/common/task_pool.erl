@@ -34,7 +34,18 @@
 }).
 
 -record(pools,{
-	tasks = []
+	pk,
+	all = 0,
+	done = 0,
+	tasks = [],
+	workpids = []
+}).
+
+-record(work_ret,{
+	res,
+	ref,
+	task,
+	taskPid
 }).
 
 
@@ -42,22 +53,23 @@
 
 
 -export([
-	new/0,
+	new/1,
 	sync_wait/2,
 	async_wait/1,
 	add_task/2,
-	add_task/3
+	add_task/3,
+	add_task/4
 ]).
 
 -export([
 	v/0,
-	vf2/1
+	vf/1
 ]).
 
 %%%-------------------------------------------------------------------
 %%%-------------------------------------------------------------------
-new()->
-	#pools{}.
+new(Pk)->
+	#pools{pk = Pk}.
 
 %%%-------------------------------------------------------------------
 sync_wait(Pool, TimeOut) ->
@@ -77,7 +89,7 @@ add_task(Pool, Fun) when erlang:is_function(Fun) ->
 add_task(Pool, Fun, Args) ->
 	Ref = make_ref(),
 	Task =#task{refs = Ref, mod = undefined, func = Fun, args = Args},
-	Pool#pools{ tasks = [ Task | Pool#pools.tasks ]}.
+	Pool#pools{ tasks = [ Task | Pool#pools.tasks ], all = Pool#pools.all + 1}.
 
 
 %%%-------------------------------------------------------------------
@@ -85,21 +97,21 @@ add_task(Pool, Fun, Args) ->
 add_task(Pool, Mod, Fun, Args) ->
 	Ref = make_ref(),
 	Task =#task{refs = Ref, mod = Mod, func = Fun, args = Args},
-	Pool#pools{ tasks = [ Task | Pool#pools.tasks ]}.
+	Pool#pools{ tasks = [ Task | Pool#pools.tasks ], all = Pool#pools.all + 1}.
 
 %%%-------------------------------------------------------------------
 %%%-------------------------------------------------------------------
-do_sync_wait(Pool, _TimeOut) ->
+do_sync_wait(Pool, TimeOut) ->
 	case Pool#pools.tasks of
 		[] ->
-			?WARN_OUT("sync_do, work pool emtpy");
+			?LOG_OUT("sync_do, work pool(~p) emtpy",[Pool#pools.pk]);
 		_ ->
-			Pid = erlang:spawn(
+			Pid = proc_lib:spawn(
 				fun()->
 					sync_work(Pool, self())
 				end),
 
-			{ok, V} = gen:call(Pid, wait_all_task_done, do),
+			{ok, V} = gen:call(Pid, wait_all_task_done, do, TimeOut),
 			V
 	end.
 
@@ -107,70 +119,76 @@ do_sync_wait(Pool, _TimeOut) ->
 do_async_wait(Pool)->
 	case Pool#pools.tasks of
 		[] ->
-			?WARN_OUT("async_do, work pool emtpy");
+			?LOG_OUT("async_do, work pool(~p) emtpy",[Pool#pools.pk]);
 		_ ->
-			erlang:spawn(
+			proc_lib:spawn(
 				fun()->
 					async_work(Pool, self())
 				end)
 	end.
 
-
-
 %%
 sync_work(Pool, From)->
 	Tasks = Pool#pools.tasks,
-	?WARN_OUT("pool_do[~p][~p]==>",[From, length(Tasks)]),
-	pool_do(Tasks,From),
-	?WARN_OUT("pool_do[~p] done",[From]),
 
-	?WARN_OUT("pool_wait[~p]...",[From]),
-	pool_wait(Pool, From),
-	?WARN_OUT("pool_wait[~p] done",[From]),
+	?LOG_OUT("pool_do[~p][~p]==>",[Pool#pools.pk, length(Tasks)]),
+	Pool1 = pool_do(Pool,Tasks,From),
+	?LOG_OUT("pool_do[~p] done",[Pool#pools.pk]),
 
-	?WARN_OUT("pool_wait_rrv[~p]...",[From]),
+	?LOG_OUT("pool_wait[~p]...",[Pool1#pools.pk]),
+	pool_wait(Pool1, From),
+	?LOG_OUT("pool_wait[~p] done",[Pool1#pools.pk]),
+
+	?LOG_OUT("pool_wait_rrv[~p]...",[Pool1#pools.pk]),
 	pool_wait_rrv(),
-	?WARN_OUT("pool_wait_rrv[~p]done",[From]).
+	?LOG_OUT("pool_wait_rrv[~p]done",[Pool1#pools.pk]).
 
 %%
 async_work(Pool, From)->
 	Tasks = Pool#pools.tasks,
-	?WARN_OUT("pool_do[~p][~p]",[From, length(Tasks)]),
-	pool_do(Tasks,From),
-	?WARN_OUT("pool_do[~p] done",[From]),
 
-	?WARN_OUT("pool_wait[~p]...",[From]),
-	pool_wait(Pool, From),
-	?WARN_OUT("pool_wait[~p] done",[From]).
+	?LOG_OUT("pool_do[~p][~p]",[Pool#pools.pk, length(Tasks)]),
+	Pool1 = pool_do(Pool,Tasks,From),
+	?LOG_OUT("pool_do[~p] done",[Pool1#pools.pk]),
 
-%%
-pool_do(TaskList, From)->
-	lists:foreach(
-		fun(Task) ->
-			?WARN_OUT("\t~w",[Task#task.refs]),
-			do_work(From, Task)
-		end, TaskList).
+	?LOG_OUT("pool_wait[~p]...",[Pool1#pools.pk]),
+	pool_wait(Pool1, From),
+	?LOG_OUT("pool_wait[~p] done",[Pool1#pools.pk]).
 
 %%
-do_work(From, #task{refs = Ref, mod = undefined, func = Fun, args = Args} = Task)->
+pool_do(Pool,TaskList, From)->
+	WL =
+		lists:foldl(
+		fun(Task, Acc) ->
+			[do_work(Pool,From, Task) | Acc]
+		end, [], TaskList),
+	Pool#pools{workpids = WL}.
+
+%%
+do_work(Pool, From, #task{refs = Ref, mod = Mod, func = Fun, args = Args} = Task)->
 	erlang:spawn(
 		fun() ->
-			?WARN_OUT("pool[~p],work[~p]...",[From, Ref]),
-			V = erlang:apply(Fun, Args),
-			From ! {done, Ref,V,Task}
-		end);
-do_work(From, #task{refs = Ref, mod = Mod, func = Fun, args = Args} = Task)->
-	erlang:spawn(
-		fun() ->
-			?WARN_OUT("pool[~p],work[~p]...",[From, Ref]),
-			V = erlang:apply(Mod, Fun, Args),
-			From ! {done,Ref,V,Task}
+			?LOG_OUT("\t~p~p,~w->",[Pool#pools.pk, Ref, self()]),
+			try
+				V = case Mod of
+					    undefined ->
+						    erlang:apply(Fun, Args);
+						_ ->
+							erlang:apply(Mod, Fun, Args)
+				    end,
+				From ! {work_done, #work_ret{res = {ok,V}, ref = Ref, task = Task, taskPid = self()}}
+			catch
+			   _ : Error ->
+				   ?ERROR_OUT("\t~p~p ->error",[Pool#pools.pk, Ref]),
+				   From ! {work_done, #work_ret{res = {error,Error}, ref = Ref, task = Task, taskPid = self()}}
+			end
+
 		end).
 
 %%
 pool_wait(Pool, From)->
-	{Ref, V, _Task} = wait_one_work_done(?TimoutMs),
-	case work_done(Ref, V, Pool, From) of
+	Rec = wait_one_work_done(?TimoutMs),
+	case work_done(Rec, Pool) of
 		true ->
 			ok;
 		{false, Pool1} ->
@@ -178,25 +196,26 @@ pool_wait(Pool, From)->
 	end.
 
 %%
-work_done(Ref, V, Pool, From)->
+work_done(#work_ret{res = V, ref = Ref, task = Task, taskPid = WorkerPid},
+	#pools{all = All, done = Done, workpids = WL} = Pool)->
 
-	add_rv(V),
-	?WARN_OUT("pool[~p],work[~p] done~n",[From, Ref]),
+	DoneNew = Done + 1,
+	?LOG_OUT("\t~p~p,~p <- ~p%",
+		[Pool#pools.pk, Ref,WorkerPid, misc:toPercent(DoneNew, All)]),
 
+	add_rv(V,Task),
 	case lists:keydelete(Ref, #task.refs, Pool#pools.tasks) of
 		[] ->
-			?WARN_OUT("pool[~p] all done",[From]),
 			true;
 		L ->
-			?WARN_OUT("pool[~p] continue wait tasks[~w]~n", [From, length(L)]),
-			{false, Pool#pools{ tasks = L}}
+			{false, Pool#pools{ tasks = L, done = DoneNew, workpids = lists:delete(WorkerPid, WL)}}
 	end.
 
 %%
 wait_one_work_done(Timeout) ->
 	receive
-		{done, Ref, V, Task} ->
-			{Ref, V, Task}
+		{work_done, V} ->
+			V
 	after Timeout ->
 		wait_one_work_done(Timeout)
 	end.
@@ -212,14 +231,22 @@ pool_wait_rrv()->
 get_rv()->
 	case  get('RetVal') of
 		undefined ->
-			[];
+			{[],[]};
 		V ->
 			V
 	end.
-add_rv(V) ->
-	L = get_rv(),
-	set_rv([V | L]).
 
+%%
+add_rv(V,Task) ->
+	{L1, L2} = get_rv(),
+	case V of
+		{ok, V1}->
+			set_rv({[V1 | L1], L2});
+		{error, V2}->
+			set_rv({L1, [{V2,Task}|L2]})
+	end.
+
+%%
 set_rv(L)->
 	put('RetVal', L).
 
@@ -232,17 +259,19 @@ vf2(V) -> V.
 
 v()->
 	ok = application:start(localLog),
-	Pool0 = new(),
+	Pool0 = new(pool1),
 	Pool1 = add_task(Pool0, fun vf/1, [77777]),
 	Pool2 = add_task(Pool1, fun vf/1, [88888]),
 	Pool3 = add_task(Pool2, fun vf/1, [99999]),
 	V = async_wait(Pool3),
-	?WARN_OUT("all done retrun ~p~n",[V]),
-
-	Pool10 = new(),
-	Pool11 = add_task(Pool10, fun vf/1, [11177777]),
-	Pool12 = add_task(Pool11, ?MODULE, vf2, [11188888]),
-	Pool13 = add_task(Pool12, fun task_pool:vf2/1, [888888]),
+	?LOG_OUT("===============>pool1 all done retrun ~p~n",[V]),
+%%
+	L = lists:seq(1, 100),
+	Pool12 = new(pool2),
+	Pool13 = lists:foldl(
+		fun(VI, Pool111)->
+			add_task(Pool111, fun(X)-> X end, [VI])
+		end, Pool12, L),
 	V1 = sync_wait(Pool13,?TimoutMs),
-	?WARN_OUT("all done retrun ~p~n",[V1]),
+	?LOG_OUT("===============>pool2 all done retrun ~p~n",[V1]),
 	ok.

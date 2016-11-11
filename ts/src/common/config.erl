@@ -2,9 +2,11 @@
 %%%读取配置文件模块
 
 -module(config).
--author(snail).
+-author(zhongyuanwei).
 
 -behaviour(myGenServer).
+
+-include("logger.hrl").
 
 %% ====================================================================
 %% API functions
@@ -84,7 +86,7 @@ init([]) ->
 	{ok,{1,dict:new()}};
 init(FileName) ->
 	erlang:process_flag(trap_exit, true),
-	logger:info("config init,Read Cfg File:~p",[FileName]),
+	?LOG_OUT("config init,Read Cfg File:~p",[FileName]),
 	put('ConfigFileName',FileName),
 	DictHandle = dict:new(),
 	NewDictHandle = read_config(FileName,DictHandle),
@@ -95,7 +97,7 @@ init(FileName) ->
 			_->
 				throw("Error Config Data,No ServerId")
 		end,
-	logger:info("config init ok"),
+	?LOG_OUT("config init ok"),
 	{ok,{ServerId,NewDictHandle}}.
 
 handle_call({get,Key}, _From, {ServerId,DictHandle}) ->
@@ -106,7 +108,7 @@ handle_call({get,Key}, _From, {ServerId,DictHandle}) ->
 				case dict:find(Key, DictHandle) of
 					{ok,Value}->Value;
 						_->
-							logger:error("serverCfg can not find the Key:[~p]",[Key]),
+							?ERROR_OUT("serverCfg can not find the Key:[~p]",[Key]),
 							""
 				end
 		end,
@@ -143,7 +145,7 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 handle_info(Info,State) ->
-	logger:error("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
+	?ERROR_OUT("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
 	{noreply,State}.
 
 handle_exception(Type,Why,State) ->
@@ -214,7 +216,7 @@ parse_one_line(Line,DictHandle) ->
 					%删除两边的制表符
 					K = string:strip(K1,both,9),
 					V = string:strip(V1,both,9),
-					logger:debug("~s = ~s",[K,V]),
+					?DEBUG_OUT("~s = ~s",[K,V]),
 					dict:store(K, V, DictHandle);
 				Num =:= 0 ->
 					DictHandle;

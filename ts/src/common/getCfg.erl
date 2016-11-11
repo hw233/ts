@@ -4,7 +4,7 @@
 
 -module(getCfg).
 
--include("common.hrl").
+-include("common/common.hrl").
 
 -include("setupLang.hrl").
 
@@ -30,7 +30,11 @@
 	getKeyList/1,
 	getKey/2,
 
-	getTranslateModule/1
+	getTranslateModule/1,
+
+	getCfgPStackWithDefaultValue/3,
+	getCfgPStackWithDefaultValue/4,
+	getCfgPStackWithDefaultValue/5
 ]).
 
 %% ====================================================================
@@ -47,7 +51,7 @@ getTranslateModule(Module) ->
 			erlang:is_atom(?Cur_Lang) ->
 				erlang:atom_to_list(Module) ++ "_" ++ erlang:atom_to_list(?Cur_Lang);
 			true ->
-				logger:error("Error Type of CurLang:~p",[?Cur_Lang])
+				?ERROR_OUT("Error Type of CurLang:~p",[?Cur_Lang])
 		end,
 	erlang:list_to_atom(NewMod).
 
@@ -96,6 +100,7 @@ getCfgByArgs(Module,Key1)->
 	Mod = getTranslateModule(Module),
 	case Mod:getRow(Key1) of
 		[] ->
+			?ERROR_OUT("cfg_error  infor =~p~n,",[{Mod,Key1}]),
 			[];
 		Value ->
 			Value
@@ -123,7 +128,7 @@ getCfgPStack(Module,Key1)->
 	Mod = getTranslateModule(Module),
 	case Mod:getRow(Key1) of
 		[]->
-			logger:error("getCfgByKey err Module:~p Key1:~p, ~p",[Mod, Key1, misc:getStackTrace()]),
+			?ERROR_OUT("getCfgPStack err Module:~p Key1:~p, ~p",[Mod, Key1, misc:getStackTrace()]),
 			[];
 		Value->
 			Value
@@ -133,7 +138,7 @@ getCfgPStack(Module,Key1,Key2)->
 	Mod = getTranslateModule(Module),
 	case Mod:getRow(Key1,Key2) of
 		[] ->
-			logger:error("getCfgByKey err Module:~p Key1:~p Key2:~p, ~p",[Mod, Key1, Key2, misc:getStackTrace()]),
+			?ERROR_OUT("getCfgPStack err Module:~p Key1:~p Key2:~p, ~p",[Mod, Key1, Key2, misc:getStackTrace()]),
 			[];
 		Value ->
 			Value
@@ -143,7 +148,7 @@ getCfgPStack(Module,Key1,Key2,Key3)->
 	Mod = getTranslateModule(Module),
 	case Mod:getRow(Key1,Key2,Key3) of
 		[] ->
-			logger:error("getCfgByKey err Module:~p Key1:~p Key2:~p Key3 ~p, ~p",[Mod, Key1, Key2, Key3, misc:getStackTrace()]),
+			?ERROR_OUT("getCfgPStack err Module:~p Key1:~p Key2:~p Key3 ~p, ~p",[Mod, Key1, Key2, Key3, misc:getStackTrace()]),
 			[];
 		Value ->
 			Value
@@ -165,3 +170,32 @@ getKey(Module,Key) ->
 	Mod = getTranslateModule(Module),
 	Mod:getKey(Key).
 
+getCfgPStackWithDefaultValue(Module,DefaultValue,Key1)->
+	Mod = getTranslateModule(Module),
+	case Mod:getRow(Key1) of
+		[]->
+			?ERROR_OUT("getCfgPStackWithDefaultValue err Module:~p Key1:~p~n~p",[Mod, Key1, misc:getStackTrace()]),
+			DefaultValue;
+		Value->
+			Value
+	end.
+
+getCfgPStackWithDefaultValue(Module,DefaultValue,Key1,Key2)->
+	Mod = getTranslateModule(Module),
+	case Mod:getRow(Key1,Key2) of
+		[] ->
+			?ERROR_OUT("getCfgPStackWithDefaultValue err Module:~p Key1:~p Key2:~p~n~p",[Mod, Key1, Key2, misc:getStackTrace()]),
+			DefaultValue;
+		Value ->
+			Value
+	end.
+
+getCfgPStackWithDefaultValue(Module,DefaultValue,Key1,Key2,Key3)->
+	Mod = getTranslateModule(Module),
+	case Mod:getRow(Key1,Key2,Key3) of
+		[] ->
+			?ERROR_OUT("getCfgPStackWithDefaultValue err Module:~p Key1:~p Key2:~p Key3:~p~n~p",[Mod, Key1, Key2, Key3, misc:getStackTrace()]),
+			DefaultValue;
+		Value ->
+			Value
+	end.

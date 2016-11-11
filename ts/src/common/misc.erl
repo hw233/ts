@@ -4,27 +4,25 @@
 %%
 %% Include files
 %%
+-include("logger.hrl").
 -include("setup.hrl").
 -include("type.hrl").
 
 -define(DEFAULT_BASENUM, 10000).
 -define(DEFAULT_MIN_PROPNUM, 0).
 
+-define(HTTPC_AUTH_TIMEOUT,1000*10).%%http请求超时设置S
+
 %%Exported Functions
 -export([
 	closeMyTcp/2,
-	ip/1,
 	ceil/1,
-	floor/1,
-	mid/3,
-	md5/1,
+	clamp/3,
 	calcDistSquare/4,
-	list_random/1,
-	shuffle_list/1,
-	shuffle_list/2,
 	rand/2,
 	randUniqueFromList/2,
 	rand/3,
+	min/2,
 	isPossible/1,
 	calcOddsByWeightList/1,
 	calcOddsByAfterWeightList/1,
@@ -35,6 +33,8 @@
 	for/5,
 	while/6,
 	mapList/2,
+	ssplit/2,
+	ssplit_all/2,
 	mapAccList/3,
 	catStringID/2,
 	formatString/1,
@@ -57,15 +57,21 @@
 	binToString/1,
 	toInteger/1,
 	toFloat/1,
+	toPercent/2,
 	clear_msg_queue/0,
 	is_process_alive/1,
 	get_pos_state/2,
-	set_pos_state/3
+	set_pos_state/3,
+	takeRepeatMember/2,
+	removeSameMember/2,
+	foldlEx/3,
+	httpPost/2,
+	httpPost/3
 ]).
 
 -compile({inline,
 	[
-		mid/3,
+		clamp/3,
 		calcDistSquare/4,
 		rand/2,
 		isPossible/1,
@@ -78,74 +84,35 @@
 %% 统一关闭socket的入口
 -spec closeMyTcp( Socket:: port(), Sender::term() ) ->ok.
 closeMyTcp( Socket, Sender ) ->
-	logger:info("server close socket pid:~p,sender:~p",[self(),Sender]),
+	?LOG_OUT("server close socket pid:~p,sender:~p",[self(),Sender]),
 	gen_tcp:close(Socket).
-
-%% @doc get IP address string from Socket
--spec ip( Socket:: port() ) -> binary().
-ip(Socket) ->
-	{ok , {IP , _Port}} = inet:peername(Socket) ,
-	{Ip0 , Ip1 , Ip2 , Ip3} = IP ,
-	list_to_binary(integer_to_list(Ip0) ++ "." ++ integer_to_list(Ip1) ++ "." ++ integer_to_list(Ip2) ++ "." ++ integer_to_list(Ip3)).
-
 
 %%返回大于或者等于指定表达式的最小整数，即向上取整函数
 -spec ceil(Number) -> int() when
 	Number::number().
-ceil(X) ->
-	T = trunc(X) ,
-	if
-		X - T == 0 ->
-			T;
-		true ->
-			if
-				X > 0 ->
-					T + 1;
-				true ->
-					T
-			end
-	end.
-
-
-%% @doc get the maximum number that is smaller than X
--spec floor(Number) -> int() when
-	Number::number().
-floor(X) when X >= 0 ->
-	trunc(X);
-floor(X) ->
-	T = trunc(X) ,
-	case X of
-		T ->
-			T;
+ceil(Number) ->
+	Int = erlang:trunc(Number),
+	case Number - Int of
+		Remain when Remain > 0 ->
+			Int + 1;
 		_ ->
-			T - 1
+			Int
 	end.
 
 %%限定X的范围
--spec mid(X,Min,Max) -> Min | X | Max when
+-spec clamp(X,Min,Max) -> Min | X | Max when
 		  X::number(),Min::number(),Max::number().
-mid(X,Min,Max) when Min =< Max andalso X < Min ->
+clamp(X,Min,Max) when Min =< Max andalso X < Min ->
 	Min;
-mid(X,Min,Max) when Min =< Max andalso X > Max ->
+clamp(X,Min,Max) when Min =< Max andalso X > Max ->
 	Max;
-mid(X,Min,Max) when Min =< Max ->
+clamp(X,Min,Max) when Min =< Max ->
 	X.
 
-md5(S) ->
-	Md5_bin = erlang:md5(S) ,
-	Md5_list = binary_to_list(Md5_bin) ,
-	lists:flatten(list_to_hex(Md5_list)).
-
-list_to_hex(L) ->
-	lists:map(fun(X) -> int_to_hex(X) end , L).
-
-int_to_hex(N) when N < 256 ->
-	[hex(N div 16) , hex(N rem 16)].
-hex(N) when N < 10 ->
-	$0 + N;
-hex(N) when N >= 10 , N < 16 ->
-	$a + (N - 10).
-
+min(X, Y) when X >= Y ->
+	Y;
+min(X, _Y) ->
+	X.
 
 %%计算两点之间的距离平方
 -spec calcDistSquare(X1,Y1,X2,Y2) -> number() when
@@ -155,42 +122,19 @@ calcDistSquare(X1,Y1,X2,Y2) ->
 	DY = Y2 - Y1,
 	DX * DX + DY * DY.
 
-%% 随机重排列表
-shuffle_list(L) ->
-	random:seed(erlang:now()) ,
-	List1 = [{random:uniform() , X} || X <- L] ,
-	List2 = lists:keysort(1 , List1) ,
-	[E || {_ , E} <- List2].
-
-shuffle_list(L , N) ->
-	random:seed(erlang:now()) ,
-	List1 = [{random:uniform() , X} || X <- L] ,
-	List2 = lists:keysort(1 , List1) ,
-	lists:sublist([E || {_ , E} <- List2] , N).
-
-%% @doc get random list
-list_random(List) ->
-	case List of
-		[] ->
-			{};
-		_ ->
-			RS = lists:nth(random:uniform(length(List)) , List) ,
-			ListTail = lists:delete(RS , List) ,
-			{RS , ListTail}
-	end.
-
 %%随机生成Min到Max之间的数，范围[Min,Max]
 -spec rand(Min,Max) -> number()|error when
 		  Min::number(),Max::number().
-rand(Min,Max) when (erlang:is_integer(Min) andalso erlang:is_integer(Max)) andalso Min =< Max ->
+rand(Min,Max) when Min =:= Max ->
+	Min;
+rand(Min,Max) when (erlang:is_integer(Min) andalso erlang:is_integer(Max)) andalso Min < Max ->
 	Diff = Max - Min + 1,
 	Min + random:uniform(Diff) - 1;
-
-rand(Min,Max) when (erlang:is_float(Min) orelse erlang:is_float(Max)) andalso Min =< Max ->
+rand(Min,Max) when (erlang:is_float(Min) orelse erlang:is_float(Max)) andalso Min < Max ->
 	Diff = Max - Min,
 	Min + random:uniform() * Diff;
 rand(Min,Max) ->
-	logger:error("rand err,min[~w] max[~w] ~p",[Min,Max,getStackTrace()]),
+	?ERROR_OUT("rand err,min[~w] max[~w] ~p",[Min,Max,getStackTrace()]),
 	error.
 
 %%从列表中不重复随机N次
@@ -213,6 +157,7 @@ appendList([],AccIn) ->
 appendList([H|T],AccIn) ->
 	appendList(T,[H | AccIn]).
 
+
 %%随机生成Min到Max之间浮点数据的数据,并带精度
 rand(Min, Max, Precision) when erlang:is_integer(Min) andalso erlang:is_integer(Max) andalso Min =< Max andalso Precision >= 0 ->
 	rand(Min, Max);
@@ -223,7 +168,7 @@ rand(Min, Max, Precision) when (erlang:is_float(Min) orelse erlang:is_float(Max)
 	R = rand(trunc(Min * E), trunc(Max * E)),
 	R / E ;
 rand(Min,Max, _) ->
-	logger:error("rand err,min[~w]max[~w]",[Min,Max]),
+	?ERROR_OUT("rand err,min[~w]max[~w]",[Min,Max]),
 	error.
 
 %% 概率满足
@@ -450,7 +395,7 @@ beginTryCatchFunc( Func_Module, Func, Param, ExceptionFunc_Module, ExceptionFunc
 		end
 	catch
 		_:Why->
-			logger:error( "Func_Module[~p] Func[~p] Param[~p] Why[~p] ExceptionFunc_Module[~p] ExceptionFunc[~p] stack[~p]",
+			?ERROR_OUT( "Func_Module[~p] Func[~p] Param[~p] Why[~p] ExceptionFunc_Module[~p] ExceptionFunc[~p] stack[~p]",
 						[Func_Module, Func, Param, Why, ExceptionFunc_Module, ExceptionFunc, erlang:get_stacktrace()] ),
 			
 			case (ExceptionFunc_Module =:= 0) or ( ExceptionFunc =:= 0) of
@@ -642,6 +587,16 @@ toFloat(V) when erlang:is_list(V) ->
 toFloat(V) ->
 	V.
 
+toPercent(V, N)->
+	doToPercent(trunc(V), trunc(N)).
+
+doToPercent(0, N)->
+	0;
+doToPercent(V, 0)->
+	0;
+doToPercent(V, N)->
+	trunc(V / N * 100).
+
 %%清除进程的消息队列（慎用）
 clear_msg_queue() ->
 	receive
@@ -701,3 +656,104 @@ set_pos_state(Pos, State, Num)
 
 get_num(Pos) when Pos > 0 ->
 	1 bsl (Pos - 1).
+
+%% 去掉所有重复元素
+takeRepeatMember([], Ret) -> Ret;
+takeRepeatMember([Member | Right], Ret) ->
+	L = removeSameMember(Member, Right),
+	takeRepeatMember(L, [Member | Ret]).
+
+%% 删除某个列表中的，某个元素
+removeSameMember(_Member, []) -> [];
+removeSameMember(Member, List) ->
+	lists:filter(fun(Mem) -> Mem =/= Member end, List).
+
+
+%%
+ssplit(N, L)->
+	do_ssplit1(N, L, length(L)).
+
+ssplit_all(N, L)->
+	Len = length(L),
+	do_ssplit(N, L, Len, []).
+
+%%---
+do_ssplit(_, [], _, Acc) ->
+	Acc;
+do_ssplit(N, L1, Len, Acc)->
+	{L2, L3} = do_ssplit1(N, L1, Len),
+	do_ssplit(N, L3, Len - N, [L2 | Acc]).
+
+%%---
+do_ssplit1(N, L, Len) when N =< Len ->
+	lists:split(N, L);
+do_ssplit1(_N, L, _Len)->
+	{L,[]}.
+
+%% 遍历时满足条件则返回以提高性能，适用于比较大的列表
+%% 与lists:foldl不同的是，Acc中含有一个布尔值
+%% 该值受外部传入函数控制，当期为true时中止遍历并立即返回当前结果
+-spec foldlEx(Fun, Acc0, List) -> Acc1 when
+	Fun :: fun((Elem :: T, AccIn) -> AccOut),
+	Acc0 :: {boolean(), term()},
+	Acc1 :: {boolean(), term()},
+	AccIn :: {false, term()},
+	AccOut :: {boolean(), term()},
+	List :: [T],
+	T :: term().
+foldlEx(_, {true, _} = Accu, _) -> Accu;
+foldlEx(F, Accu, [Hd|Tail]) ->
+	foldlEx(F, F(Hd, Accu), Tail);
+foldlEx(F, Accu, []) when is_function(F, 2) -> Accu.
+
+
+
+%% http post
+-spec httpPost(Url,SendData) -> {ok,Body} | {err,httpc|funcell|erlangcatch} when
+	Url::string(),SendData::string(),Body::string().
+httpPost(Url,SendData) ->
+	inets:start(),
+	case lists:sublist(Url, 5) of
+		"https" ->
+			ssl:start();
+		_ ->
+			skip
+	end,
+	RequestHeader = [],
+	RequestType = "application/x-www-form-urlencoded",
+%%	RequestType = "application/json",
+	Result =
+		try
+			case httpc:request(post,{Url,RequestHeader, RequestType, SendData},[{connect_timeout,?HTTPC_AUTH_TIMEOUT},{timeout,?HTTPC_AUTH_TIMEOUT}],[{sync,true}]) of
+				{ok,{
+				  {_,200,_},
+				  _Head,
+				  Body
+				  }} ->
+					{ok,Body};
+				{error, Reason} ->
+					?ERROR_OUT("httpPost error:~p",[Reason]),
+					{err,httpc};
+				Other ->
+					?ERROR_OUT("httpc return not ok:~p;url:~s",[Other,Url]),
+					{err,funcell}
+			end
+		catch
+			Err:ErrText ->
+				?ERROR_OUT("http catch err:~p,~p;url:~s",[Err,ErrText,Url]),
+				{err,erlangcatch}
+		end,
+	Result.
+
+%%可重试的httpPost
+-spec httpPost(Url,SendData,Times) -> {ok,Body} | {err,httpc|funcell|erlangcatch} when
+	Url::string(),SendData::string(),Body::string(),Times::uint16().
+httpPost(Url,SendData,Times) ->
+	case httpPost(Url,SendData) of
+		{ok,Body} ->
+			{ok,Body};
+		_ when Times>=1 ->
+			httpPost(Url,SendData,Times-1);
+		LastReturn ->
+			LastReturn
+	end.

@@ -2,9 +2,11 @@
 
 -module(myGenServer).
 
--author(snail).
+-author(zhongyuanwei).
 
 -behaviour(gen_server).
+
+-include("logger.hrl").
 
 %% ====================================================================
 %% API functions
@@ -148,17 +150,17 @@ logOutTerminate(Module,Reason) ->
 	RegName = erlang:process_info(self(),registered_name),
 	case Reason of
 		normal ->
-			logger:info( "~p ~p ~p terminate Reason[~p] PD Key:~p", [Module, self(), RegName, Reason, KeyList] );
+			?LOG_OUT( "~p ~p ~p terminate Reason[~p] PD Key:~p", [Module, self(), RegName, Reason, KeyList] );
 		_ ->
-			logger:error( "~p ~p ~p terminate Reason[~p] PD Key:~p", [Module, self(), RegName, Reason, KeyList] )
+			?ERROR_OUT( "~p ~p ~p terminate Reason[~p] PD Key:~p", [Module, self(), RegName, Reason, KeyList] )
 	end.
 
 logTerminate(Module,Reason) ->
 	case Reason of
 		normal ->
-			logger:info( "~p ~p terminate Reason[~p]", [Module, self(), Reason] );
+			?LOG_OUT( "~p ~p terminate Reason[~p]", [Module, self(), Reason] );
 		_ ->
-			logger:error( "~p ~p terminate Reason[~p]", [Module, self(), Reason] )
+			?ERROR_OUT( "~p ~p terminate Reason[~p]", [Module, self(), Reason] )
 	end.
 
 -spec terminate(Reason :: (normal | shutdown | {shutdown, term()} |
@@ -183,7 +185,7 @@ terminate(Reason, State) ->
 code_change(OldVsn, State, Extra) ->
 	Module = get(myModule),
 	try
-		logger:info( "~p ~p code_change OldVsn[~p] Extra[~p]", [Module, self(), OldVsn, Extra] ),
+		?LOG_OUT( "~p ~p code_change OldVsn[~p] Extra[~p]", [Module, self(), OldVsn, Extra] ),
 		Module:code_change(OldVsn, State, Extra)
 	catch
 		_:Why->
@@ -279,16 +281,16 @@ showException(Modlue,Why,Stack) ->
 		true ->
 			try
 				%尝试字符串输出
-				logger:error( "Modlue[~p] Pid[~p],Exception Why[~s]~n stack[~p]",
+				?ERROR_OUT( "Modlue[~p] Pid[~p],Exception Why[~s]~n stack[~p]",
 								 [Modlue, self(), Why, Stack] )
 			catch
 				_:_ ->
 					%失败，普通输出
-					logger:error( "Modlue[~p] Pid[~p],Exception Why[~p]~n stack[~p]",
+					?ERROR_OUT( "Modlue[~p] Pid[~p],Exception Why[~p]~n stack[~p]",
 									 [Modlue, self(), Why, Stack] )
 			end;
 		_ ->
 			%不是列表，直接普通输出
-			logger:error( "Modlue[~p] Pid[~p],Exception Why[~p]~n stack[~p]",
+			?ERROR_OUT( "Modlue[~p] Pid[~p],Exception Why[~p]~n stack[~p]",
 							 [Modlue, self(), Why, Stack] )
 	end.

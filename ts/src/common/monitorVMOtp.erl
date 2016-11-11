@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author snail
+%%% @author ZhongYuanWei
 %%% @copyright (C) 2015, <公司>
 %%% @doc
 %%%
@@ -8,30 +8,31 @@
 %%%-------------------------------------------------------------------
 
 -module(monitorVMOtp).
--author("snail").
+-author("ZhongYuanWei").
 
 -behaviour(gen_server).
 
+-include("logger.hrl").
+
 %% API
--export([start_link/0,logPsInfo/0]).
+-export([start_link/0]).
 
 %% gen_server callbacks
 -export([init/1,
-    handle_call/3,
-    handle_cast/2,
-    handle_info/2,
-    terminate/2,
-    code_change/3]).
+	handle_call/3,
+	handle_cast/2,
+	handle_info/2,
+	terminate/2,
+	code_change/3]).
 
 -define(SERVER, ?MODULE).
 
--define(KIB, (1024)).
--define(MIB, (?KIB * 1024)).
--define(GIB, (?MIB * 1024)).
--define(FMT,   "~p\t~12s~20s\t\t~p\t\t~p\t\t~s\t\t~p:~p/~p~n").
--define(FMT_H, "~s\t~12s~20s\t\t~s\t\t~s\t\t~s\t\t~s~n").
+-define(KIB,(1024)).
+-define(MIB,(?KIB*1024)).
+-define(GIB,(?MIB*1024)).
+
 %%20分钟执行一次
--define(TickInterval, 5 * 60 * 1000).
+-define(TickInterval,20 * 60 * 1000).
 
 -record(state, {}).
 
@@ -46,9 +47,9 @@
 %% @end
 %%--------------------------------------------------------------------
 -spec(start_link() ->
-    {ok, Pid :: pid()} | ignore | {error, Reason :: term()}).
+	{ok, Pid :: pid()} | ignore | {error, Reason :: term()}).
 start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+	gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -66,11 +67,11 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 -spec(init(Args :: term()) ->
-    {ok, State :: #state{}} | {ok, State :: #state{}, timeout() | hibernate} |
-    {stop, Reason :: term()} | ignore).
+	{ok, State :: #state{}} | {ok, State :: #state{}, timeout() | hibernate} |
+	{stop, Reason :: term()} | ignore).
 init([]) ->
-    timer:send_interval(?TickInterval, tick),
-    {ok, #state{}}.
+	timer:send_interval(?TickInterval, tick),
+	{ok, #state{}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -80,15 +81,15 @@ init([]) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec(handle_call(Request :: term(), From :: {pid(), Tag :: term()},
-    State :: #state{}) ->
-    {reply, Reply :: term(), NewState :: #state{}} |
-    {reply, Reply :: term(), NewState :: #state{}, timeout() | hibernate} |
-    {noreply, NewState :: #state{}} |
-    {noreply, NewState :: #state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
-    {stop, Reason :: term(), NewState :: #state{}}).
+	State :: #state{}) ->
+	{reply, Reply :: term(), NewState :: #state{}} |
+	{reply, Reply :: term(), NewState :: #state{}, timeout() | hibernate} |
+	{noreply, NewState :: #state{}} |
+	{noreply, NewState :: #state{}, timeout() | hibernate} |
+	{stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
+	{stop, Reason :: term(), NewState :: #state{}}).
 handle_call(_Request, _From, State) ->
-    {reply, ok, State}.
+	{reply, ok, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -98,11 +99,11 @@ handle_call(_Request, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec(handle_cast(Request :: term(), State :: #state{}) ->
-    {noreply, NewState :: #state{}} |
-    {noreply, NewState :: #state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), NewState :: #state{}}).
+	{noreply, NewState :: #state{}} |
+	{noreply, NewState :: #state{}, timeout() | hibernate} |
+	{stop, Reason :: term(), NewState :: #state{}}).
 handle_cast(_Request, State) ->
-    {noreply, State}.
+	{noreply, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -115,14 +116,14 @@ handle_cast(_Request, State) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec(handle_info(Info :: timeout() | term(), State :: #state{}) ->
-    {noreply, NewState :: #state{}} |
-    {noreply, NewState :: #state{}, timeout() | hibernate} |
-    {stop, Reason :: term(), NewState :: #state{}}).
+	{noreply, NewState :: #state{}} |
+	{noreply, NewState :: #state{}, timeout() | hibernate} |
+	{stop, Reason :: term(), NewState :: #state{}}).
 handle_info(tick, State) ->
-    logPsInfo(),
-    {noreply, State};
+	logPsInfo(),
+	{noreply, State};
 handle_info(_Info, State) ->
-    {noreply, State}.
+	{noreply, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -136,9 +137,9 @@ handle_info(_Info, State) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec(terminate(Reason :: (normal | shutdown | {shutdown, term()} | term()),
-    State :: #state{}) -> term()).
+	State :: #state{}) -> term()).
 terminate(_Reason, _State) ->
-    ok.
+	ok.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -149,117 +150,107 @@ terminate(_Reason, _State) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec(code_change(OldVsn :: term() | {down, term()}, State :: #state{},
-    Extra :: term()) ->
-    {ok, NewState :: #state{}} | {error, Reason :: term()}).
+	Extra :: term()) ->
+	{ok, NewState :: #state{}} | {error, Reason :: term()}).
 code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
+	{ok, State}.
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
 
 mem2str(Mem) ->
-    if Mem > ?GIB -> io_lib:format("~.3fG", [Mem / ?GIB]);
-        Mem > ?MIB -> io_lib:format("~.3fM", [Mem / ?MIB]);
-        Mem > ?KIB -> io_lib:format("~.3fK", [Mem / ?KIB]);
-        Mem >= 0 -> io_lib:format("~.1fB", [Mem / 1.0])
-    end.
+	if Mem > ?GIB -> io_lib:format("~.3fG",[Mem/?GIB]);
+		Mem > ?MIB -> io_lib:format("~.3fM",[Mem/?MIB]);
+		Mem > ?KIB -> io_lib:format("~.3fK",[Mem/?KIB]);
+		Mem >= 0 -> io_lib:format("~.1fB",[Mem/1.0])
+	end.
 
 logPsInfo() ->
-    MemTotal = erlang:memory(total),
-    PS_Count = erlang:system_info(process_count),
-    RQ = erlang:statistics(run_queue),
-    ProcessUsed = erlang:memory(processes_used),
-    ProcessTotal = erlang:memory(processes),
-    MemInfo = erlang:memory([system, atom, atom_used, binary, code, ets]),
+	PS_Count = erlang:system_info(process_count),
+	RQ = erlang:statistics(run_queue),
+	ProcessUsed = erlang:memory(processes_used),
+	ProcessTotal = erlang:memory(processes),
+	MemInfo = erlang:memory([system, atom, atom_used, binary, code, ets]),
 
-    SystemMem = mem2str(proplists:get_value(system, MemInfo)),
-    AtomMem = mem2str(proplists:get_value(atom, MemInfo)),
-    AtomUsedMem = mem2str(proplists:get_value(atom_used, MemInfo)),
-    BinMem = mem2str(proplists:get_value(binary, MemInfo)),
-    CodeMem = mem2str(proplists:get_value(code, MemInfo)),
-    EtsMem = mem2str(proplists:get_value(ets, MemInfo)),
+	SystemMem = mem2str(proplists:get_value(system, MemInfo)),
+	AtomMem = mem2str(proplists:get_value(atom, MemInfo)),
+	AtomUsedMem = mem2str(proplists:get_value(atom_used, MemInfo)),
+	BinMem = mem2str(proplists:get_value(binary, MemInfo)),
+	CodeMem = mem2str(proplists:get_value(code, MemInfo)),
+	EtsMem = mem2str(proplists:get_value(ets, MemInfo)),
 
-    PSList = erlang:processes(),
+	PSList = erlang:processes(),
 
-    ProcessesProplist = [[{pid, erlang:pid_to_list(P)} | process_info_items(P)] || P <- PSList],
+	ProcessesProplist =  [ [ {pid,erlang:pid_to_list(P)} | process_info_items(P) ] || P <- PSList ],
 
-    Fun = fun(L, AccIn) ->
-        Pid = proplists:get_value(pid, L),
-        RegName = case proplists:get_value(registered_name, L) of
-                      [] ->
-                          "null";
-                      V ->
-                          V
-                  end,
-        Red = proplists:get_value(reductions, L),
-        MQL = proplists:get_value(message_queue_len, L),
-        Mem = proplists:get_value(memory, L),
-        CF = proplists:get_value(current_function, L),
+	Fun = fun(L,AccIn) ->
+		Pid = proplists:get_value(pid,L),
+		RegName = case proplists:get_value(registered_name,L) of
+			          [] ->
+				          "null";
+			          V ->
+				          V
+		          end,
+		Red = proplists:get_value(reductions,L),
+		MQL = proplists:get_value(message_queue_len,L),
+		Mem = proplists:get_value(memory,L),
+		CF = proplists:get_value(current_function,L),
 
-        [{Pid, RegName, Red, MQL, Mem, CF} | AccIn]
-          end,
-    PPList = lists:foldl(Fun, [], ProcessesProplist),
-    Str1 = logSortByMQueue(PPList),
-    Str2 = logSortByMem(PPList),
-    logger:info(
-        "~n~nnodes:~p~n"
-        "~nProcess:~p(run_queue:~p)~n"
-        "total:~s\tprocess memory:~s(~s used)~n"
-        "Sys:~s,\tAtom:~s/~s,\tBin:~s,\tCode:~s,\tEts:~s~n~n"
-        ?FMT_H
-        "---------------------------------------------------------------------------------------------------------------~n"
-        "MsqQ(**)~n"
-        "~ts~n"
-        "Memory(**)~n"
-        "~ts~n",
-        [nodes(),
-            PS_Count, RQ,
-            mem2str(MemTotal), mem2str(ProcessUsed), mem2str(ProcessTotal),
-            SystemMem, AtomUsedMem, AtomMem, BinMem, CodeMem, EtsMem,
-            "Row", "Pid","RegName","Reds","MsgQ",  "Memory",  "Current Function",
-            Str1,
-            Str2]),
-    ok.
+		[{Pid,RegName,Red,MQL,Mem,CF} | AccIn]
+	end,
+	PPList = lists:foldl(Fun,[],ProcessesProplist),
+	Str1 = logSortByMQueue(PPList),
+	Str2 = logSortByMem(PPList),
+	?LOG_OUT("~n~nProcess: total ~p(RQ:~p) using:~s(~s allocated)~n nodes:~p~n"
+	"Memory: Sys ~s, Atom ~s/~s, Bin ~s, Code ~s, Ets ~s~n"
+		"Row      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
+		"Row      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",
+		[PS_Count,RQ,mem2str(ProcessUsed),mem2str(ProcessTotal),nodes(),SystemMem,AtomUsedMem,AtomMem,BinMem,CodeMem,EtsMem,Str1,Str2]),
+	
+	%% 	[{PsPid,RegisterName,_,_,_,PD,_}|_] = List,
+%% 	PDKeyList = [Key || {Key,_} <- PD],
+%% 	?LOG_OUT("Pid:~p RegName:~p KeyList:~p",[PsPid,RegisterName,PDKeyList]),
+	ok.
 
 logSortByMQueue(PPList) ->
-    List = lists:keysort(4, PPList),
-    Fun = fun({Pid, RegName, Red, MQL, Mem, {M, F, A}}, {N, AccIn}) ->
-        case N =< 0 of
-            true ->
-                {break, {N, AccIn}};
-            _ ->
-                {N - 1,io_lib:format(?FMT,
-                    [N, Pid, RegName, Red, MQL, mem2str(Mem), M, F, A]) ++ AccIn}
-        end
-          end,
-    {_, Str} = misc:mapAccList(List, {20, []}, Fun),
-    Str.
-
+	List = lists:keysort(4,PPList),
+	Fun = fun({Pid,RegName,Red,MQL,Mem,{M,F,A}},{N,AccIn}) ->
+		case N =< 0 of
+			true ->
+				{break,{N,AccIn}};
+			_ ->
+				{N - 1,io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
+					[N,Pid,RegName,Red,MQL,mem2str(Mem),M,F,A]) ++ AccIn}
+		end
+	end,
+	{_,Str} = misc:mapAccList(List, {15,[]}, Fun),
+	Str.
+	
 logSortByMem(PPList) ->
-    List = lists:keysort(5, PPList),
-    Fun = fun({Pid, RegName, Red, MQL, Mem, {M, F, A}}, {N, AccIn}) ->
-        case N =< 0 of
-            true ->
-                {break, {N, AccIn}};
-            _ ->
-                {N - 1,io_lib:format(?FMT,
-                    [N, Pid, RegName, Red, MQL, mem2str(Mem), M, F, A]) ++ AccIn}
-        end
-          end,
-    {_, Str} = misc:mapAccList(List, {20, []}, Fun),
-    Str.
+	List = lists:keysort(5,PPList),
+	Fun = fun({Pid,RegName,Red,MQL,Mem,{M,F,A}},{N,AccIn}) ->
+		case N =< 0 of
+			true ->
+				{break,{N,AccIn}};
+			_ ->
+				{N - 1,io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
+					[N,Pid,RegName,Red,MQL,mem2str(Mem),M,F,A]) ++ AccIn}
+		end
+	end,
+	{_,Str} = misc:mapAccList(List, {15,[]}, Fun),
+	Str.
 
 process_info_items(P) ->
-    erlang:process_info(P,
-        [
-            registered_name,
-            reductions,
-            message_queue_len,
-            memory,
-            heap_size,
-            stack_size,
-            total_heap_size,
-            current_function
-        ]).
+	erlang:process_info(P,
+		[
+		 	registered_name,
+			reductions,
+			message_queue_len,
+		 	memory,
+			heap_size,
+			stack_size,
+			total_heap_size,
+			current_function
+		]).
 

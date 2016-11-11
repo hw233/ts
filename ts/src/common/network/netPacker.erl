@@ -7,7 +7,7 @@
 %%% Created : 08. 十一月 2014 14:52
 %%%-------------------------------------------------------------------
 -module(netPacker).
--author("snail").
+-author("ZhongYuanWei").
 
 -include("type.hrl").
 -include("logger.hrl").

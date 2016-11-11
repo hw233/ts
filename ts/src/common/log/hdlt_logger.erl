@@ -57,9 +57,9 @@
 -define(MAX_LOG_CNT_ONE_FILE,100000).
 
 getLogLevelString(?LogLevelError) ->
-	"ERROR";
+	"ERR";
 getLogLevelString(?LogLevelWarn) ->
-	"WARN";
+	"WRN";
 getLogLevelString(?LogLevelDebug) ->
 	"DBG";
 getLogLevelString(_) ->

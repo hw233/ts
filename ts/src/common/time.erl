@@ -1,9 +1,9 @@
-%% @author snail
+%% @author zhongyunawei
 %% @doc @todo 时间相关函数.
 %%
 
 -module(time).
--author(snail).
+-author(zhongyuanwei).
 
 -include("type.hrl").
 -include("common.hrl").
@@ -31,19 +31,21 @@
 
 %%以下为获取绝对日期时间的函数
 -export([
-	chinaGregorianSecondsDateTime/0,
+	getChinaNowDateTime1970/0,
 
-	localDateTime/0,
-	localGregorianSeconds/0,
+	getLocalNowDateTime1970/0,
+	getLocalNowSec1970/0,
 
-	datetime/0,
-	gregorianSeconds/0
+	getUTCNowDateTime1970/0,
+	getUTCNowSec1970/0,
+	getTimeZoonSec/0
 ]).
 
 %%以下为获取相对日期时间的函数
 -export([
-	timestamp/0,
-	timestampMS/0
+	getUTCNowSec/0,
+	getUTCNowMS/0,
+	getUTCLocalSec/0
 ]).
 
 %%以下为转换函数
@@ -58,101 +60,113 @@
 	convertTimeStamp2DateTimeStr/1,
 
 	dateTimeToInt64/1,
-	int64ToTimeString/1
+	int64ToTimeString/1,
+    convert2MysqlDateTimeStr/1
 ]).
 
 -export([
-	timestampMSDiff2010/0,
+	getUTCNowMSDiff2010/0,
 	getDayBeginSeconds/1,
 	getWeekBeginSecondsByDay/1,
 	diffSecFrom1970/1
 ]).
 
 -export([
-	localtimeSeconds/0,
-	gregorianSecondsDB/0,
-	adjustHour/0,
-	localtimeSecondsDB/0,
-	timestampDB/0
+	getSyncTime1970FromDBS/0,
+	getSyncUTCTime1970FromDBS/0,
+	getLocalTimeAdjustHour/0,
+	getSyncTimeFromDBS/0,
+	getSyncUTCTimeFromDBS/0
 ]).
 
 -export([
-	getLogTimeSec/0
+	getLogTimeSec/0,
+    now_microseconds/0
 ]).
+
+now_microseconds() ->
+    {MegaSecs, Secs, MicroSecs} = os:timestamp(),
+    1000000000000 * MegaSecs + Secs * 1000000 + MicroSecs.
 
 %% ====================================================================
 %% 以下为获取函数
 %% ====================================================================
 %获取当前中国时间，精确到秒，主要用于日志记录使用
 %返回{{Year,Month,Day}, {Hour,Minute,Second}}
--spec chinaGregorianSecondsDateTime() -> datetime1970().
-chinaGregorianSecondsDateTime() ->
-	Sec = timeOtp:chinaGregorianSeconds(),
+-spec getChinaNowDateTime1970() -> datetime1970().
+getChinaNowDateTime1970() ->
+	Sec = timeOtp:getChinaNowSec1970(),
 	calendar:gregorian_seconds_to_datetime(Sec).
 
 %获取本地时间，精确到秒，主要用于除日志外的其它使用
 %返回{{Year,Month,Day}, {Hour,Minute,Second}}
--spec localDateTime() -> datetime1970().
-localDateTime() ->
-	DT = timeOtp:datetime(),
+-spec getLocalNowDateTime1970() -> datetime1970().
+getLocalNowDateTime1970() ->
+	DT = timeOtp:getUTCNowDateTime1970(),
 	calendar:universal_time_to_local_time(DT).
 
 %获取本地时间秒数
--spec localGregorianSeconds() -> dateTimeSec1970().
-localGregorianSeconds() ->
+-spec getLocalNowSec1970() -> dateTimeSec1970().
+getLocalNowSec1970() ->
 	DT = calendar:now_to_local_time(timeOtp:timestamp()),
 	calendar:datetime_to_gregorian_seconds(DT).
 
 %%获取UTC时间，精确到秒
--spec datetime() -> datetime1970().
-datetime() ->
-	timeOtp:datetime().
+-spec getUTCNowDateTime1970() -> datetime1970().
+getUTCNowDateTime1970() ->
+	timeOtp:getUTCNowDateTime1970().
 
 %%获取当前UTC的绝对日期时间的秒数
--spec gregorianSeconds() -> dateTimeSec1970().
-gregorianSeconds() ->
-	timeOtp:gregorianSeconds().
+-spec getUTCNowSec1970() -> dateTimeSec1970().
+getUTCNowSec1970() ->
+	timeOtp:getUTCNowSec1970().
 
 %获取当前相对于1970-1-1 0:0:0的UTC时间差，精确到秒，相当于Unix时间
--spec timestamp() -> dateTimeSec().
-timestamp() ->
-	timeOtp:gregorianSeconds() - ?SECS_FROM_0_TO_1970.
+-spec getUTCNowSec() -> dateTimeSec().
+getUTCNowSec() ->
+	timeOtp:getUTCNowSec1970() - ?SECS_FROM_0_TO_1970.
+
+%%获取当前相对UTC本地时间
+-spec getUTCLocalSec() -> dateTimeSec().
+getUTCLocalSec() ->
+	Now = getUTCNowSec(),
+	Now + getLocalTimeAdjustHour() * 3600.
 
 %获取当前相对于1970-1-1 0:0:0的UTC时间差，精确到毫秒，相当于Unix时间
--spec timestampMS() -> dateTimeMS().
-timestampMS() ->
+-spec getUTCNowMS() -> dateTimeMS().
+getUTCNowMS() ->
 	convertTimeStamp2MS(timeOtp:timestamp()).
 
 %%获取从2010年到现在的时间差，单位：毫秒
--spec timestampMSDiff2010() -> uint().
-timestampMSDiff2010() ->
-	NowMS = timestampMS(),
+-spec getUTCNowMSDiff2010() -> uint().
+getUTCNowMSDiff2010() ->
+	NowMS = getUTCNowMS(),
 	Sec = diffSecFrom1970({{2010,1,1},{0,0,0}}),
 	NowMS - Sec * 1000.
 
 %%获取本地时间的调整时区，由DBS同步过来的
--spec adjustHour() -> int().
-adjustHour() ->
-	timeOtp:adjustHour().
+-spec getLocalTimeAdjustHour() -> int().
+getLocalTimeAdjustHour() ->
+	timeOtp:getLocalTimeAdjustHour().
 
 %%获取从DBS同步过来的本地绝对时间秒
--spec localtimeSeconds() -> uint().
-localtimeSeconds() ->
-	timeOtp:localtimeSeconds().
+-spec getSyncTime1970FromDBS() -> uint().
+getSyncTime1970FromDBS() ->
+	timeOtp:getSyncTimeFromDBS().
 
 %%获取从DBS同步过来的绝对UTC时间秒
--spec gregorianSecondsDB() -> uint().
-gregorianSecondsDB() ->
-	timeOtp:localtimeSeconds() - timeOtp:adjustHour() * 3600.
+-spec getSyncUTCTime1970FromDBS() -> uint().
+getSyncUTCTime1970FromDBS() ->
+	timeOtp:getSyncTimeFromDBS() - timeOtp:getLocalTimeAdjustHour() * 3600.
 
 %%获取从DBS同步过来的本地相对时间，单位秒
-localtimeSecondsDB() ->
-	timeOtp:localtimeSeconds() - ?SECS_FROM_0_TO_1970.
+getSyncTimeFromDBS() ->
+	timeOtp:getSyncTimeFromDBS() - ?SECS_FROM_0_TO_1970.
 
 %%获取从DBS同步过来的相对UTC时间秒
--spec timestampDB() -> uint().
-timestampDB() ->
-	timeOtp:localtimeSeconds() - ?SECS_FROM_0_TO_1970 - timeOtp:adjustHour() * 3600.
+-spec getSyncUTCTimeFromDBS() -> uint().
+getSyncUTCTimeFromDBS() ->
+	timeOtp:getSyncTimeFromDBS() - ?SECS_FROM_0_TO_1970 - timeOtp:getLocalTimeAdjustHour() * 3600.
 
 %%==========================================================================
 %%以下为转换函数
@@ -231,12 +245,17 @@ int64ToTimeString(Time) when erlang:is_integer(Time) ->
 			"1970-01-01 00:00:00"
 	end.
 
+convert2MysqlDateTimeStr(0) ->
+    "1970-01-01 00:00:00";
+convert2MysqlDateTimeStr({datetime,{{Y,M,D},{H,Min,S}}}) ->
+    io_lib:format("~p/~p/~p ~p:~p:~p",[Y,M,D,H,Min,S]).
+
 %%获取日志记录所需要的本地时间（相对于1970年的时间）秒
 -spec getLogTimeSec() -> uint().
 getLogTimeSec() ->
 	%%这里获取的是一个绝对时间秒，所以需要减去1970年的秒，
 	%%注意日志的时间需要的是一个UTC时间，不然查出来会多一个时区的小时，因为数据库已经有时区信息了，所以只能传一个UTC时间
-	Sec = gregorianSecondsDB(),
+	Sec = getSyncUTCTime1970FromDBS(),
 	Sec - ?SECS_FROM_0_TO_1970.
 %% ====================================================================
 %% Internal functions
@@ -249,3 +268,6 @@ time_format(Now) ->
 time_format1(Y, M, D, H, MM, S) ->
 	lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", 
 						one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
+%%获取时区偏移时间秒
+getTimeZoonSec()->
+		timeOtp:getLocalTimeAdjustHour() * 3600.

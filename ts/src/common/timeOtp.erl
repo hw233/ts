@@ -1,11 +1,12 @@
-%% @author snail
+%% @author zhongyunawei
 %% @doc @todo 时间进程.
 
 
 -module(timeOtp).
--author(snail).
+-author(zhongyuanwei).
 
 -include("type.hrl").
+-include("logger.hrl").
 
 -define(TABLE, timeOtpEts).
 
@@ -14,10 +15,10 @@
 
 -record(recTime,
 {
-	gregorianSeconds = 0,             %%当前UTC时间，精确秒，类型：整数
-	chinaGregorianSeconds = 0,			%%中国本地日期时间，精确到秒，类型：整数
+	iUTCNowSec = 0,             %%当前UTC时间，精确秒，类型：整数
+	iChinaNowSec = 0,			%%中国本地日期时间，精确到秒，类型：整数
 
-	nowDataTime = 0,                %%当前UTC时间，精确到秒，类型：{{Year,Month,Day}, {Hour,Minute,Second}}
+	sUTCNow = 0,                %%当前UTC时间，精确到秒，类型：{{Year,Month,Day}, {Hour,Minute,Second}}
 	timeStamp = 0      	        %%当前UTC时间，精确到微秒，类型：{MegaSecs, Secs, MicroSecs}
 }).
 
@@ -32,14 +33,14 @@
 %% ====================================================================
 -export([
 		timestamp/0,
-		datetime/0,
-		gregorianSeconds/0,
-		chinaGregorianSeconds/0
+		getUTCNowDateTime1970/0,
+		getUTCNowSec1970/0,
+		getChinaNowSec1970/0
 		]).
 
 -export([
-	localtimeSeconds/0,
-	adjustHour/0
+	getSyncTimeFromDBS/0,
+	getLocalTimeAdjustHour/0
 ]).
 
 -export([
@@ -63,26 +64,26 @@ timestamp() ->
 	ets:lookup_element(?TABLE, recTime, #recTime.timeStamp).
 
 %%获取UTC当前日期时间的秒数
--spec gregorianSeconds() -> uint().
-gregorianSeconds() ->
-	ets:lookup_element(?TABLE, recTime, #recTime.gregorianSeconds).
+-spec getUTCNowSec1970() -> uint().
+getUTCNowSec1970() ->
+	ets:lookup_element(?TABLE, recTime, #recTime.iUTCNowSec).
 
 %%获取UTC当前日期时间
--spec datetime() -> calendar:datetime1970().
-datetime() ->
-	ets:lookup_element(?TABLE, recTime, #recTime.nowDataTime).
+-spec getUTCNowDateTime1970() -> calendar:datetime1970().
+getUTCNowDateTime1970() ->
+	ets:lookup_element(?TABLE, recTime, #recTime.sUTCNow).
 
--spec chinaGregorianSeconds() -> calendar:datetime1970().
-chinaGregorianSeconds() ->
-	ets:lookup_element(?TABLE, recTime, #recTime.chinaGregorianSeconds).
+-spec getChinaNowSec1970() -> calendar:datetime1970().
+getChinaNowSec1970() ->
+	ets:lookup_element(?TABLE, recTime, #recTime.iChinaNowSec).
 
 %%获取本地时间的调整时区，由DBS同步过来的
--spec adjustHour() -> int().
-adjustHour() ->
+-spec getLocalTimeAdjustHour() -> int().
+getLocalTimeAdjustHour() ->
 	ets:lookup_element(?TABLE, recSyncTime, #recSyncTime.localTimeAdjustHour).
 
--spec localtimeSeconds() -> uint().
-localtimeSeconds() ->
+-spec getSyncTimeFromDBS() -> uint().
+getSyncTimeFromDBS() ->
 	ets:lookup_element(?TABLE, recSyncTime, #recSyncTime.syncFromDBSLocalTime).
 
 %% ====================================================================
@@ -101,7 +102,7 @@ init([]) ->
 	{ok, _TRef} = timer:send_interval(100, update),
 	timer:send_interval(1000,updateSyncTime),
 
-	logger:info("~p init OK",[?MODULE]),
+	?LOG_OUT("~p init OK",[?MODULE]),
 	{ok, {}}.
 
 handle_call(_Msg, _From, State) ->
@@ -133,7 +134,7 @@ handle_info(updateSyncTime, State) ->
 	{noreply, State};
 
 handle_info(Info,State) ->
-	logger:error("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
+	?ERROR_OUT("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
 	{noreply,State}.
 
 handle_exception(Type,Why,State) ->
@@ -149,17 +150,17 @@ update_time() ->
 	%%转换为UTC日期时间
 	UTCDateTime = calendar:now_to_datetime(OSTimeStamp),
 	%%转换为UTC日期时间的绝对秒数
-	GregorianSeconds = calendar:datetime_to_gregorian_seconds(UTCDateTime),
+	UTCSec = calendar:datetime_to_gregorian_seconds(UTCDateTime),
 	
-	ChinaGregorianSeconds = GregorianSeconds + get(msOf8Hour),
+	ChinaSec = UTCSec + get(msOf8Hour),
 
 	%%更新各种时间
 	true = myEts:updateEts(?TABLE,recTime,
 		[
-			{#recTime.gregorianSeconds,GregorianSeconds},
-			{#recTime.chinaGregorianSeconds,ChinaGregorianSeconds},
+			{#recTime.iUTCNowSec,UTCSec},
+			{#recTime.iChinaNowSec,ChinaSec},
 			{#recTime.timeStamp,OSTimeStamp},
-			{#recTime.nowDataTime,UTCDateTime}
+			{#recTime.sUTCNow,UTCDateTime}
 		]),
 	ok.
 

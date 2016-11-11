@@ -1,4 +1,4 @@
-%% Author: snail
+%% Author: luowei
 %% Created: 2014-3-27
 %% Description: TODO: Add description to update
 -module(update).
@@ -7,6 +7,7 @@
 %% Include files
 %%
 -include_lib("kernel/include/file.hrl").
+-include("logger.hrl").
 
 -define(UpdateLogFile, "../data/Log/").
 %%
