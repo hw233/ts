@@ -154,10 +154,10 @@ initNormalServer()->
 		{ok,
 			{SupFlags,
 				[
-					PlayerMgr,
-					GameMapSup,
-					NormalMapMgr,
-					CopyMapMgr,
+%%					PlayerMgr,
+%%					GameMapSup,
+%%					NormalMapMgr,
+%%					CopyMapMgr,
 					HttpServerOtp,
 					NetServerSup
 %%					RubbishCleaner

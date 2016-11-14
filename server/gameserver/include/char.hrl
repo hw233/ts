@@ -2,6 +2,7 @@
 -ifndef(Char_hrl).
 -define(Char_hrl,1).
 
+
 %阵营定义
 -define(CampPlayer,           1).						%玩家阵营
 -define(CampRedBattle,        2).						%玩家战场红队阵营

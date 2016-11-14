@@ -73,7 +73,7 @@ term()),
 	term().
 
 start_link(Module,[Socket,#listenTcpOptions{} = Option] = Arg) ->
-	?LOG_OUT("start_link[~p,~p]",[Module,Arg]),
+	?LOG_OUT("start_link[~p,~w]",[Module,Arg]),
 	myGenServer:start_link(?MODULE, [Module,Socket,Option], [{timeout,?Start_Link_TimeOut_ms}]).
 
 init([Module,Socket,#listenTcpOptions{isSendSessionKey = IsSendSessionKey} = Option]) ->

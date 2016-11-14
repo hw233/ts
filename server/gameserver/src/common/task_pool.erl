@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author mwh
+%%% @author ccc
 %%% @copyright (C) 2016, <COMPANY>
 %%% @doc
 %%
@@ -48,6 +48,8 @@
 	taskPid
 }).
 
+-define(NoTaskInPoolAtom, 'No__Task__in__Pool').
+
 
 -define(TimoutMs, 5000).
 
@@ -55,6 +57,7 @@
 -export([
 	new/1,
 	sync_wait/2,
+	sync_wait/3,
 	async_wait/1,
 	add_task/2,
 	add_task/3,
@@ -74,6 +77,14 @@ new(Pk)->
 %%%-------------------------------------------------------------------
 sync_wait(Pool, TimeOut) ->
 	do_sync_wait(Pool, TimeOut).
+
+sync_wait(Pool, TimeOut, DefaultV) ->
+	case do_sync_wait(Pool, TimeOut) of
+		?NoTaskInPoolAtom ->
+			DefaultV;
+		V ->
+			V
+	end.
 
 %%%-------------------------------------------------------------------
 async_wait(Pool)->
@@ -104,7 +115,8 @@ add_task(Pool, Mod, Fun, Args) ->
 do_sync_wait(Pool, TimeOut) ->
 	case Pool#pools.tasks of
 		[] ->
-			?LOG_OUT("sync_do, work pool(~p) emtpy",[Pool#pools.pk]);
+			?LOG_OUT("sync_do, work pool(~p) emtpy",[Pool#pools.pk]),
+			?NoTaskInPoolAtom;
 		_ ->
 			Pid = proc_lib:spawn(
 				fun()->
@@ -159,28 +171,28 @@ async_work(Pool, From)->
 pool_do(Pool,TaskList, From)->
 	WL =
 		lists:foldl(
-		fun(Task, Acc) ->
-			[do_work(Pool,From, Task) | Acc]
-		end, [], TaskList),
+			fun(Task, Acc) ->
+				[do_work(Pool,From, Task) | Acc]
+			end, [], TaskList),
 	Pool#pools{workpids = WL}.
 
 %%
 do_work(Pool, From, #task{refs = Ref, mod = Mod, func = Fun, args = Args} = Task)->
-	proc_lib:spawn(
+	erlang:spawn(
 		fun() ->
 			?LOG_OUT("\t~p~p,~w->",[Pool#pools.pk, Ref, self()]),
 			try
 				V = case Mod of
 					    undefined ->
 						    erlang:apply(Fun, Args);
-						_ ->
-							erlang:apply(Mod, Fun, Args)
+					    _ ->
+						    erlang:apply(Mod, Fun, Args)
 				    end,
 				From ! {work_done, #work_ret{res = {ok,V}, ref = Ref, task = Task, taskPid = self()}}
 			catch
-			   _ : Error ->
-				   ?ERROR_OUT("\t~p~p ->error",[Pool#pools.pk, Ref]),
-				   From ! {work_done, #work_ret{res = {error,Error}, ref = Ref, task = Task, taskPid = self()}}
+				_ : Error ->
+					?ERROR_OUT("\t~p~p ->error",[Pool#pools.pk, Ref]),
+					From ! {work_done, #work_ret{res = {error,Error}, ref = Ref, task = Task, taskPid = self()}}
 			end
 
 		end).

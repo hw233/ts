@@ -185,7 +185,6 @@ initBattleProp(IsMonster) ->
 		PropInfo = getCfg:getCfgPStack(cfg_battlePropInfo, N),
 		case PropInfo of
 			#battlePropInfoCfg{ownerType = OwnerType, baseValue = BaseValue} ->
-%%				mwh-2016/09/01
 %%				case IsMonster =:= true andalso OwnerType =/= 0 of
 %%					true ->
 %%						%%如果是怪物但不是怪物的属性，则忽略
