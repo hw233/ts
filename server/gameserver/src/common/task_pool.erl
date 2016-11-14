@@ -166,7 +166,7 @@ pool_do(Pool,TaskList, From)->
 
 %%
 do_work(Pool, From, #task{refs = Ref, mod = Mod, func = Fun, args = Args} = Task)->
-	erlang:spawn(
+	proc_lib:spawn(
 		fun() ->
 			?LOG_OUT("\t~p~p,~w->",[Pool#pools.pk, Ref, self()]),
 			try
