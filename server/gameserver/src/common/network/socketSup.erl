@@ -72,13 +72,13 @@ init([Module,#listenTcpOptions{port = Port} = Option]) ->
 
 %%注意，这个函数必须要有，是监督进程启动工作者进程时调用的回调函数
 init([Module]) ->
-	?LOG_OUT("Module[~p] init",[?MODULE]),
+	?LOG_OUT("init with Module[~p]",[Module]),
 	{ok,
 		{_SupFlags = {simple_one_for_one, ?MAX_RESTART, ?MAX_TIME},
 			[
 				{
 					undefined,                               % Id       = internal id
-					{Module, start_link, []},				 % StartFun = {M, F, A}
+					{socketHandler, start_link, [Module]},				 % StartFun = {M, F, A}
 					temporary,                               % Restart  = permanent | transient | temporary (不会重启)
 					2000,                                    % Shutdown = brutal_kill | int() >= 0 | infinity
 					worker,                                  % Type     = worker | supervisor

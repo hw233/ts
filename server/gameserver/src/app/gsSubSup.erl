@@ -139,7 +139,7 @@ initNormalServer()->
 		%%最后打开针对客户端网络的服务
 		NetServerSup = {
 			socketSup,
-			{socketSup, start_link, [usrOtpHandler,ClientOtpOption]},
+			{socketSup, start_link, [playerOtpHandler,ClientOtpOption]},
 			permanent,
 			infinity,
 			supervisor,
@@ -158,8 +158,8 @@ initNormalServer()->
 					GameMapSup,
 					NormalMapMgr,
 					CopyMapMgr,
-					HttpServerOtp
-%%					NetServerSup
+					HttpServerOtp,
+					NetServerSup
 %%					RubbishCleaner
 				]
 			}

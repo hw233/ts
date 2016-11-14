@@ -154,7 +154,7 @@ accept(ListSock,CliSocket,#acceptState{socket = ListSock,module = Module,option 
 							{ok,Pid1} ->
 								?LOG_OUT("Pid[~p] Client[~p][~p]:[~p] connnected,NewRef:~p!",[Pid1,IP,Port,CliSocket,NewRef]);
 							_ ->
-								?LOG_OUT("Client[~p][~p]:[~p] connnected,NewRef:~p,But start childOtp failed!",[CliSocket,IP,Port,NewRef])
+								?LOG_OUT("Pid[~p][~p]:[~p] connnected,NewRef:~p,But start childOtp failed(~w)!",[CliSocket,IP,Port,NewRef,Ret])
 						end;
 					_ ->
 						?ERROR_OUT("Error CliSocket[~p] Ref:~p cannot get RemoteIP",[CliSocket,NewRef])

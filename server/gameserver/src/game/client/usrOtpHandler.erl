@@ -42,8 +42,8 @@
 -export([handle_socket_close/1,
 		 handle_net_msg/3]).
 
-%%start_link(Arg) ->
-%%	socketHandler:start_link(?MODULE, Arg).
+start_link(Arg) ->
+	socketHandler:start_link(?MODULE, Arg).
 
 init([Socket]) ->
 	?LOG_OUT("usrOtpHandler[~p ~p] init",[self(), Socket]),
