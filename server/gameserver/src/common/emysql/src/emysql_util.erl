@@ -27,31 +27,31 @@
 -module(emysql_util).
 
 %% Query data
--export([ prop_get_value/3
-        ]).
+-export([prop_get_value/3
+]).
 
 
 -export([
-    affected_rows/1,
-    field_names/1,
-    insert_id/1,
-    result_type/1
+	affected_rows/1,
+	field_names/1,
+	insert_id/1,
+	result_type/1
 ]).
 
 %% Conversion routines
 -export([
-    as_dict/1,
-    as_json/1,
-    as_proplist/1,
-    as_record/3,
-    as_record/4
+	as_dict/1,
+	as_json/1,
+	as_proplist/1,
+	as_record/3,
+	as_record/4
 ]).
 
 prop_get_value(K, L, D) ->
-    case lists:keyfind(K, 1, L) of
-        {K, V} -> V;
-        false  -> D
-    end.
+	case lists:keyfind(K, 1, L) of
+		{K, V} -> V;
+		false -> D
+	end.
 
 affected_rows(P) -> emysql:affected_rows(P).
 field_names(R) -> emysql:field_names(R).

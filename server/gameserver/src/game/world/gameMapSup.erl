@@ -8,8 +8,8 @@
 
 -include("logger.hrl").
 
--define(MAX_RESTART,   1000).
--define(MAX_TIME,      3600).
+-define(MAX_RESTART, 1000).
+-define(MAX_TIME, 3600).
 
 %% ====================================================================
 %% API functions
@@ -22,30 +22,30 @@ start_link() ->
 
 %% 启动map进程 start_child(CreateMapArg) -> {ok,pid()} | {error, _}
 start_child(CreateMapArg) ->
-    supervisor:start_child(?MODULE, [CreateMapArg]).
+	supervisor:start_child(?MODULE, [CreateMapArg]).
 
 init([]) ->
 	try
-		?LOG_OUT("~p init",[?MODULE]),
-	    {ok,
-	        { {simple_one_for_one, ?MAX_RESTART, ?MAX_TIME},
-	            [
-	              % map process
-	              {   undefined,                               	% Id       = internal id
-	                  {gameMapOtp, start_link, []},             % StartFun = {M, F, A}
-	                  temporary,                               	% Restart  = permanent | transient | temporary (不会重启)
-	                  2000,                                    	% Shutdown = brutal_kill | int() >= 0 | infinity
-	                  worker,                                  	% Type     = worker | supervisor
-	                  []                                       	% Modules  = [Module] | dynamic
-	              }
-	            ]
-	        }
-	    }
+		?LOG_OUT("~p init", [?MODULE]),
+		{ok,
+			{{simple_one_for_one, ?MAX_RESTART, ?MAX_TIME},
+				[
+					% map process
+					{undefined,                                % Id       = internal id
+						{gameMapOtp, start_link, []},             % StartFun = {M, F, A}
+						temporary,                                % Restart  = permanent | transient | temporary (不会重启)
+						2000,                                        % Shutdown = brutal_kill | int() >= 0 | infinity
+						worker,                                    % Type     = worker | supervisor
+						[]                                        % Modules  = [Module] | dynamic
+					}
+				]
+			}
+		}
 	catch
 		_:Why ->
-			?ERROR_OUT( "Exception Module:[~p] Why[~p] stack[~p]",
-						[?MODULE,Why, erlang:get_stacktrace()] ),
-			{stop,[Why,erlang:get_stacktrace()]}
+			?ERROR_OUT("Exception Module:[~p] Why[~p] stack[~p]",
+				[?MODULE, Why, erlang:get_stacktrace()]),
+			{stop, [Why, erlang:get_stacktrace()]}
 	end.
 
 %% ====================================================================

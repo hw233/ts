@@ -100,41 +100,41 @@
 
 %% Life cycle API
 %% These are used to handle the life-cycle of the code base
--export([ start/0
-        , stop/0
-        , add_pool/2
-        , add_pool/9
-        , add_pool/8
-        , remove_pool/1
-        , increment_pool_size/2
-        , decrement_pool_size/2
-        ]).
+-export([start/0
+	, stop/0
+	, add_pool/2
+	, add_pool/9
+	, add_pool/8
+	, remove_pool/1
+	, increment_pool_size/2
+	, decrement_pool_size/2
+]).
 
 %% Interaction API
 %% Used to interact with the database.    
--export([ prepare/2
-        , execute/2
-        , execute/3
-        , execute/4
-        , execute/5
-        , default_timeout/0
-        ]).
+-export([prepare/2
+	, execute/2
+	, execute/3
+	, execute/4
+	, execute/5
+	, default_timeout/0
+]).
 
 %% Result Conversion API
--export([ as_dict/1
-        , as_json/1
-        , as_proplist/1
-        , as_record/3
-        , as_record/4
+-export([as_dict/1
+	, as_json/1
+	, as_proplist/1
+	, as_record/3
+	, as_record/4
 %%        , as_maps/1
-        ]).
+]).
 
 %% Result Data API - Handle results from Mysql
--export([ affected_rows/1
-        , result_type/1
-        , field_names/1
-        , insert_id/1
-        ]).
+-export([affected_rows/1
+	, result_type/1
+	, field_names/1
+	, insert_id/1
+]).
 
 -type state() :: any().
 
@@ -165,7 +165,7 @@
 %% @end doc: hd feb 11
 %%
 start() ->
-    application:start(emysql).
+	application:start(emysql).
 
 %% @spec stop() -> ok
 %% @doc Stop the Emysql application.
@@ -181,7 +181,7 @@ start() ->
 %% @end doc: hd feb 11
 %%
 stop() ->
-    application:stop(emysql).
+	application:stop(emysql).
 
 %% @spec default_timeout() -> Timeout
 %%      Timeout = integer()
@@ -196,7 +196,7 @@ stop() ->
 %% @end doc: hd feb 11
 %%
 default_timeout() ->
-    emysql_app:default_timeout().
+	emysql_app:default_timeout().
 
 %% @spec add_pool(PoolId, Options) -> Result
 %%      PoolId = atom()
@@ -234,103 +234,103 @@ default_timeout() ->
 % Checks whether a configuration is superficially valid. It checks types and such,
 % it does not check existance of the database or correctness of passwords (that
 % happens when we try to connect to the database.
-config_ok(#pool{ size = Size
-               , user = User
-               , password = Password
-               , host = Host
-               , port = Port
-               , database = Database
-               , encoding = Encoding
-               , start_cmds = StartCmds
-               , connect_timeout = ConnectTimeout
-               , warnings = Warnings
-               })
-    when is_integer(Size),
-         is_list(User),
-         is_list(Password),
-         is_list(Host),
-         is_integer(Port),
-         is_list(Database) orelse Database == undefined,
-         is_list(StartCmds),
-         is_integer(ConnectTimeout) orelse ConnectTimeout == infinity,
-         is_boolean(Warnings) ->
-    encoding_ok(Encoding);
+config_ok(#pool{size = Size
+	, user = User
+	, password = Password
+	, host = Host
+	, port = Port
+	, database = Database
+	, encoding = Encoding
+	, start_cmds = StartCmds
+	, connect_timeout = ConnectTimeout
+	, warnings = Warnings
+})
+	when is_integer(Size),
+	is_list(User),
+	is_list(Password),
+	is_list(Host),
+	is_integer(Port),
+	is_list(Database) orelse Database == undefined,
+	is_list(StartCmds),
+	is_integer(ConnectTimeout) orelse ConnectTimeout == infinity,
+	is_boolean(Warnings) ->
+	encoding_ok(Encoding);
 config_ok(_BadOptions) ->
-    erlang:error(badarg).
+	erlang:error(badarg).
 
 encoding_ok(Enc) when is_atom(Enc) ->
-    ok;
+	ok;
 encoding_ok({Enc, Coll}) when is_atom(Enc), is_atom(Coll) ->
-    ok;
-encoding_ok(_)  ->
-    erlang:error(badarg).
+	ok;
+encoding_ok(_) ->
+	erlang:error(badarg).
 
 %% Creates a pool record, opens n=Size connections and calls
 %% emysql_conn_mgr:add_pool() to make the pool known to the pool management.
 %% emysql_conn_mgr:add_pool() is translated into a blocking gen-server call.
 
 add_pool(PoolId, Options) when is_list(Options) ->
-    Size           = emysql_util:prop_get_value(size, Options, 5),
-    User           = emysql_util:prop_get_value(user, Options, ""),
-    Password       = emysql_util:prop_get_value(password, Options, ""),
-    Host           = emysql_util:prop_get_value(host, Options, "127.0.0.1"),
-    Port           = emysql_util:prop_get_value(port, Options, 3306),
-    Database       = emysql_util:prop_get_value(database, Options, undefined),
-    Encoding       = emysql_util:prop_get_value(encoding, Options, latin1),
-    StartCmds      = emysql_util:prop_get_value(start_cmds, Options, []),
-    ConnectTimeout = emysql_util:prop_get_value(connect_timeout, Options, infinity),
-    Warnings       = emysql_util:prop_get_value(warnings, Options, false),
-    add_pool(#pool{ pool_id = PoolId
-                  , size = Size
-                  , user = User
-                  , password = Password
-                  , host = Host
-                  , port = Port
-                  , database = Database
-                  , encoding = Encoding
-                  , start_cmds = StartCmds
-                  , connect_timeout = ConnectTimeout
-                  , warnings = Warnings
-                  }).
+	Size = emysql_util:prop_get_value(size, Options, 5),
+	User = emysql_util:prop_get_value(user, Options, ""),
+	Password = emysql_util:prop_get_value(password, Options, ""),
+	Host = emysql_util:prop_get_value(host, Options, "127.0.0.1"),
+	Port = emysql_util:prop_get_value(port, Options, 3306),
+	Database = emysql_util:prop_get_value(database, Options, undefined),
+	Encoding = emysql_util:prop_get_value(encoding, Options, latin1),
+	StartCmds = emysql_util:prop_get_value(start_cmds, Options, []),
+	ConnectTimeout = emysql_util:prop_get_value(connect_timeout, Options, infinity),
+	Warnings = emysql_util:prop_get_value(warnings, Options, false),
+	add_pool(#pool{pool_id = PoolId
+		, size = Size
+		, user = User
+		, password = Password
+		, host = Host
+		, port = Port
+		, database = Database
+		, encoding = Encoding
+		, start_cmds = StartCmds
+		, connect_timeout = ConnectTimeout
+		, warnings = Warnings
+	}).
 
-add_pool(#pool{ pool_id = PoolId
-              , size = Size
-              , user = User
-              , password = Password
-              , host = Host
-              , port = Port
-              , database = Database
-              , encoding = Encoding
-              , start_cmds = StartCmds
-              , connect_timeout = ConnectTimeout
-              , warnings = Warnings} = PoolSettings) ->
-    case emysql_pool_mgr:has_pool(PoolId) of
-        true -> 
-            {error,pool_already_exists};
-        false ->
-            ok    = config_ok(PoolSettings),
-            Pool0 = #pool{ pool_id = PoolId
-                         , size = Size
-                         , user = User
-                         , password = Password
-                         , host = Host
-                         , port = Port
-                         , database = Database
-                         , encoding = Encoding
-                         , start_cmds = StartCmds
-                         , connect_timeout = ConnectTimeout
-                         , warnings = Warnings
-                         },
-            Pool2 =
-                case emysql_conn:open_connections(Pool0) of
-                    {ok, Pool1}     -> Pool1;
-                    {error, Reason} -> throw(Reason)
-                end,
-            {ok, PoolServer} = emysql_pool_mgr:add_pool(PoolId, Pool2),
-            [gen_tcp:controlling_process(Conn#emysql_connection.socket, PoolServer)
-             || Conn <- queue:to_list(Pool2#pool.available)],
-            ok
-    end.
+add_pool(#pool{pool_id = PoolId
+	, size = Size
+	, user = User
+	, password = Password
+	, host = Host
+	, port = Port
+	, database = Database
+	, encoding = Encoding
+	, start_cmds = StartCmds
+	, connect_timeout = ConnectTimeout
+	, warnings = Warnings} = PoolSettings) ->
+	case emysql_pool_mgr:has_pool(PoolId) of
+		true ->
+			{error, pool_already_exists};
+		false ->
+			ok = config_ok(PoolSettings),
+			Pool0 = #pool{pool_id = PoolId
+				, size = Size
+				, user = User
+				, password = Password
+				, host = Host
+				, port = Port
+				, database = Database
+				, encoding = Encoding
+				, start_cmds = StartCmds
+				, connect_timeout = ConnectTimeout
+				, warnings = Warnings
+			},
+			Pool2 =
+				case emysql_conn:open_connections(Pool0) of
+					{ok, Pool1} -> Pool1;
+					{error, Reason} -> throw(Reason)
+				end,
+			{ok, PoolServer} = emysql_pool_mgr:add_pool(PoolId, Pool2),
+			[gen_tcp:controlling_process(Conn#emysql_connection.socket, PoolServer)
+				|| Conn <- queue:to_list(Pool2#pool.available)],
+			ok
+	end.
 
 %% @spec add_pool(PoolId, Size, User, Password, Host, Port, Database, Encoding) -> Result
 %%
@@ -340,7 +340,7 @@ add_pool(#pool{ pool_id = PoolId
 %% @end
 
 add_pool(PoolId, Size, User, Password, Host, Port, Database, Encoding) ->
-    add_pool(PoolId, Size, User, Password, Host, Port, Database, Encoding, []).
+	add_pool(PoolId, Size, User, Password, Host, Port, Database, Encoding, []).
 
 %% @doc Synchronous call to the connection manager to add a pool.
 %%
@@ -348,42 +348,42 @@ add_pool(PoolId, Size, User, Password, Host, Port, Database, Encoding) ->
 %%
 %% @end doc: hd feb 11
 -spec add_pool(PoolId, Size,
-               User, Password, Host, Port,
-               Database, Encoding, StartCmds) -> Result
-    when PoolId    :: atom(),
-         Size      :: integer(),
-         User      :: string(),
-         Password  :: string(),
-         Host      :: string(),
-         Port      :: integer(),
-         Database  :: string(),
-         Encoding  :: utf8 | latin1 | {utf8, utf8_unicode_ci}
-                    | {utf8, utf8_general_ci},
-         StartCmds :: list(binary()),
-         Result    :: {reply, {error, pool_already_exists}, state()}
-                    | {reply, ok, state() }.
+	User, Password, Host, Port,
+	Database, Encoding, StartCmds) -> Result
+	when PoolId :: atom(),
+	Size :: integer(),
+	User :: string(),
+	Password :: string(),
+	Host :: string(),
+	Port :: integer(),
+	Database :: string(),
+	Encoding :: utf8 | latin1 | {utf8, utf8_unicode_ci}
+	| {utf8, utf8_general_ci},
+	StartCmds :: list(binary()),
+	Result :: {reply, {error, pool_already_exists}, state()}
+	| {reply, ok, state()}.
 add_pool(PoolId, Size,
-         User, Password, Host, Port,
-         Database, Encoding, StartCmds) ->
-    add_pool(PoolId, Size,
-             User, Password, Host, Port,
-             Database, Encoding, StartCmds,
-             infinity).
+	User, Password, Host, Port,
+	Database, Encoding, StartCmds) ->
+	add_pool(PoolId, Size,
+		User, Password, Host, Port,
+		Database, Encoding, StartCmds,
+		infinity).
 
 add_pool(PoolId, Size,
-         User, Password, Host, Port,
-         Database, Encoding, StartCmds,
-         ConnectTimeout)->
-    add_pool(PoolId, [{size, Size},
-                      {user, User},
-                      {password, Password},
-                      {host, Host},
-                      {port, Port},
-                      {database, Database},
-                      {encoding, Encoding},
-                      {start_cmds, StartCmds},
-                      {connect_timeout, ConnectTimeout}
-                     ]).
+	User, Password, Host, Port,
+	Database, Encoding, StartCmds,
+	ConnectTimeout) ->
+	add_pool(PoolId, [{size, Size},
+		{user, User},
+		{password, Password},
+		{host, Host},
+		{port, Port},
+		{database, Database},
+		{encoding, Encoding},
+		{start_cmds, StartCmds},
+		{connect_timeout, ConnectTimeout}
+	]).
 
 %% @spec remove_pool(PoolId) -> ok
 %%      PoolId = atom()
@@ -397,28 +397,28 @@ add_pool(PoolId, Size,
 %% @end doc: hd feb 11
 -spec remove_pool(atom()) -> ok.
 remove_pool(PoolId) ->
-    case catch emysql_pool_mgr:get_pool_server(PoolId) of
-        Pid when erlang:is_pid(Pid) ->
-            Pool = emysql_conn_mgr:remove_pool(Pid, PoolId),
-            [emysql_conn:close_connection(Conn)
-             || Conn <- lists:append(queue:to_list(Pool#pool.available),
-                gb_trees:values(Pool#pool.locked))
-            ],
-            emysql_pool_mgr:remove_pool(PoolId),
-            ok;
-        _ ->
-            ok
-    end.
+	case catch emysql_pool_mgr:get_pool_server(PoolId) of
+		Pid when erlang:is_pid(Pid) ->
+			Pool = emysql_conn_mgr:remove_pool(Pid, PoolId),
+			[emysql_conn:close_connection(Conn)
+				|| Conn <- lists:append(queue:to_list(Pool#pool.available),
+				gb_trees:values(Pool#pool.locked))
+			],
+			emysql_pool_mgr:remove_pool(PoolId),
+			ok;
+		_ ->
+			ok
+	end.
 
 -spec increment_pool_size(atom(), non_neg_integer()) -> ok | {error, list()}.
 increment_pool_size(PoolId, Num) when is_integer(Num) ->
-    PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
-    {Conns, Reasons} = emysql_conn:open_n_connections(PoolServer, PoolId, Num),
-    emysql_conn_mgr:add_connections(PoolServer, PoolId, Conns),
-    case Reasons of
-        [] -> ok;
-        _ -> {error, Reasons}
-    end.
+	PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
+	{Conns, Reasons} = emysql_conn:open_n_connections(PoolServer, PoolId, Num),
+	emysql_conn_mgr:add_connections(PoolServer, PoolId, Conns),
+	case Reasons of
+		[] -> ok;
+		_ -> {error, Reasons}
+	end.
 
 
 %% @spec decrement_pool_size(PoolId, By) -> ok
@@ -444,10 +444,10 @@ increment_pool_size(PoolId, Num) when is_integer(Num) ->
 %%
 -spec decrement_pool_size(atom(), non_neg_integer()) -> ok.
 decrement_pool_size(PoolId, Num) when is_integer(Num) ->
-    PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
-    Conns = emysql_conn_mgr:remove_connections(PoolServer, PoolId, Num),
-    [emysql_conn:close_connection(Conn) || Conn <- Conns],
-    ok.
+	PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
+	Conns = emysql_conn_mgr:remove_connections(PoolServer, PoolId, Num),
+	[emysql_conn:close_connection(Conn) || Conn <- Conns],
+	ok.
 
 %% @spec prepare(StmtName, Statement) -> ok
 %%      StmtName = atom()
@@ -536,9 +536,9 @@ decrement_pool_size(PoolId, Num) when is_integer(Num) ->
 %% @end doc: hd feb 11
 
 prepare(StmtName, Statement)
-    when is_atom(StmtName) andalso
-         (is_list(Statement) orelse is_binary(Statement)) ->
-    emysql_statements:add(StmtName, Statement).
+	when is_atom(StmtName) andalso
+	(is_list(Statement) orelse is_binary(Statement)) ->
+	emysql_statements:add(StmtName, Statement).
 
 %% @spec execute(PoolId, Query|StmtName) -> Result | [Result]
 %%      PoolId = atom()
@@ -559,10 +559,10 @@ prepare(StmtName, Statement)
 %% @end doc: hd feb 11
 %%
 execute(PoolId, Query) when (is_list(Query) orelse is_binary(Query)) ->
-    execute(PoolId, Query, []);
+	execute(PoolId, Query, []);
 
 execute(PoolId, StmtName) when is_atom(StmtName) ->
-    execute(PoolId, StmtName, []).
+	execute(PoolId, StmtName, []).
 
 %% @spec execute(PoolId, Query|StmtName, Args|Timeout) -> Result | [Result]
 %%      PoolId = atom()
@@ -589,21 +589,21 @@ execute(PoolId, StmtName) when is_atom(StmtName) ->
 %%
 
 execute(PoolId, Query, Args)
-    when (is_list(Query) orelse is_binary(Query)) andalso
-         is_list(Args) ->
-    execute(PoolId, Query, Args, default_timeout());
+	when (is_list(Query) orelse is_binary(Query)) andalso
+	is_list(Args) ->
+	execute(PoolId, Query, Args, default_timeout());
 execute(PoolId, StmtName, Args)
-    when is_atom(StmtName),
-         is_list(Args) ->
-    execute(PoolId, StmtName, Args, default_timeout());
+	when is_atom(StmtName),
+	is_list(Args) ->
+	execute(PoolId, StmtName, Args, default_timeout());
 execute(PoolId, Query, Timeout)
-    when (is_list(Query) orelse is_binary(Query)) andalso
-         (is_integer(Timeout) orelse Timeout == infinity) ->
-    execute(PoolId, Query, [], Timeout);
+	when (is_list(Query) orelse is_binary(Query)) andalso
+	(is_integer(Timeout) orelse Timeout == infinity) ->
+	execute(PoolId, Query, [], Timeout);
 execute(PoolId, StmtName, Timeout)
-    when is_atom(StmtName),
-         (is_integer(Timeout) orelse Timeout == infinity) ->
-    execute(PoolId, StmtName, [], Timeout).
+	when is_atom(StmtName),
+	(is_integer(Timeout) orelse Timeout == infinity) ->
+	execute(PoolId, StmtName, [], Timeout).
 
 %% @spec execute(PoolId, Query|StmtName, Args, Timeout) -> Result | [Result]
 %%      PoolId = atom()
@@ -638,19 +638,19 @@ execute(PoolId, StmtName, Timeout)
 %%
 
 execute(PoolId, Query, Args, Timeout)
-    when (is_list(Query) orelse is_binary(Query)) andalso
-         is_list(Args) andalso
-         (is_integer(Timeout) orelse Timeout == infinity) ->
-    PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
-    Connection = emysql_conn_mgr:wait_for_connection(PoolServer, PoolId),
-    monitor_work(PoolServer, Connection, Timeout, [Connection, Query, Args]);
+	when (is_list(Query) orelse is_binary(Query)) andalso
+	is_list(Args) andalso
+	(is_integer(Timeout) orelse Timeout == infinity) ->
+	PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
+	Connection = emysql_conn_mgr:wait_for_connection(PoolServer, PoolId),
+	monitor_work(PoolServer, Connection, Timeout, [Connection, Query, Args]);
 execute(PoolId, StmtName, Args, Timeout)
-    when is_atom(StmtName),
-         is_list(Args),
-         is_integer(Timeout) orelse Timeout == infinity ->
-    PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
-    Connection = emysql_conn_mgr:wait_for_connection(PoolServer, PoolId),
-    monitor_work(PoolServer, Connection, Timeout, [Connection, StmtName, Args]).
+	when is_atom(StmtName),
+	is_list(Args),
+	is_integer(Timeout) orelse Timeout == infinity ->
+	PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
+	Connection = emysql_conn_mgr:wait_for_connection(PoolServer, PoolId),
+	monitor_work(PoolServer, Connection, Timeout, [Connection, StmtName, Args]).
 
 %% @spec execute(PoolId, Query|StmtName, Args, Timeout, nonblocking) -> Result | [Result]
 %%      PoolId = atom()
@@ -692,57 +692,57 @@ execute(PoolId, StmtName, Args, Timeout)
 %% @end doc: hd feb 11
 %%
 execute(PoolId, Query, Args, Timeout, nonblocking)
-    when (is_list(Query) orelse is_binary(Query)) andalso
-         is_list(Args) andalso
-         (is_integer(Timeout) orelse Timeout == infinity) ->
-    PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
-    case emysql_conn_mgr:lock_connection(PoolServer, PoolId) of
-        Connection when is_record(Connection, emysql_connection) ->
-            monitor_work(PoolServer, Connection, Timeout, [Connection, Query, Args]);
-        unavailable ->
-            unavailable
-    end;
+	when (is_list(Query) orelse is_binary(Query)) andalso
+	is_list(Args) andalso
+	(is_integer(Timeout) orelse Timeout == infinity) ->
+	PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
+	case emysql_conn_mgr:lock_connection(PoolServer, PoolId) of
+		Connection when is_record(Connection, emysql_connection) ->
+			monitor_work(PoolServer, Connection, Timeout, [Connection, Query, Args]);
+		unavailable ->
+			unavailable
+	end;
 
 execute(PoolId, StmtName, Args, Timeout, nonblocking)
-    when is_atom(StmtName),
-         is_list(Args) andalso
-         is_integer(Timeout) ->
-    PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
-    case emysql_conn_mgr:lock_connection(PoolServer, PoolId) of
-        Connection when is_record(Connection, emysql_connection) ->
-            monitor_work(PoolServer, Connection, Timeout,
-                         [Connection, StmtName, Args]);
-        unavailable ->
-            unavailable
-    end.
+	when is_atom(StmtName),
+	is_list(Args) andalso
+		is_integer(Timeout) ->
+	PoolServer = emysql_pool_mgr:get_pool_server(PoolId),
+	case emysql_conn_mgr:lock_connection(PoolServer, PoolId) of
+		Connection when is_record(Connection, emysql_connection) ->
+			monitor_work(PoolServer, Connection, Timeout,
+				[Connection, StmtName, Args]);
+		unavailable ->
+			unavailable
+	end.
 
 %% @doc Return the field names of a result packet
 %% @end
 -spec field_names(Result) -> [Name]
-  when
-    Result :: #result_packet{},
-    Name :: binary().
-field_names(#result_packet{field_list=FieldList}) ->
-    [Field#field.name || Field <- FieldList].
+	when
+	Result :: #result_packet{},
+	Name :: binary().
+field_names(#result_packet{field_list = FieldList}) ->
+	[Field#field.name || Field <- FieldList].
 
 %% @doc insert_id/1 extracts the Insert ID from an OK Packet
 %% @end
 -spec insert_id(#ok_packet{}) -> integer() | binary().
-insert_id(#ok_packet{insert_id=ID}) ->
-    ID.
+insert_id(#ok_packet{insert_id = ID}) ->
+	ID.
 
 %% @doc affected_rows/1 extracts the number of affected rows from an OK Packet
 %% @end
 -spec affected_rows(#ok_packet{}) -> integer().
-affected_rows(#ok_packet{affected_rows=Rows}) ->
-    Rows.
+affected_rows(#ok_packet{affected_rows = Rows}) ->
+	Rows.
 
 %% @doc result_type/1 decodes a packet into its type
 %% @end
-result_type(#ok_packet{})     -> ok;
+result_type(#ok_packet{}) -> ok;
 result_type(#result_packet{}) -> result;
-result_type(#error_packet{})  -> error;
-result_type(#eof_packet{})    -> eof.
+result_type(#error_packet{}) -> error;
+result_type(#eof_packet{}) -> eof.
 
 %% @doc package row data as a dict
 %%
@@ -752,15 +752,15 @@ result_type(#eof_packet{})    -> eof.
 %%  Res = emysql:execute(pool1, "select * from foo"),
 %%  emysql:as_dict(Res).
 -spec as_dict(Result) -> Dict
-    when
-    Result :: #result_packet{},
-    Dict :: dict().
+	when
+	Result :: #result_packet{},
+	Dict :: dict().
 as_dict(Res) ->
-    emysql_conv:as_dict(Res).
+	emysql_conv:as_dict(Res).
 
 %% @doc package row data as erlang json (jsx/jiffy compatible)
 as_json(Res) ->
-    emysql_conv:as_json(Res).
+	emysql_conv:as_json(Res).
 
 %% @spec as_proplist(Result) -> proplist
 %%      Result = #result_packet{}
@@ -773,15 +773,15 @@ as_json(Res) ->
 %%  Res = emysql:execute(pool1, "select * from foo"),
 %%  emysql:as_proplist(Res).
 -spec as_proplist(Result) -> [PropRow]
-    when
-    Result :: #result_packet{},
-    PropRow :: proplists:proplist().
+	when
+	Result :: #result_packet{},
+	PropRow :: proplists:proplist().
 as_proplist(Res) ->
-    emysql_conv:as_proplist(Res).
+	emysql_conv:as_proplist(Res).
 
 %% @equiv as_record(Res, Recname, Fields, fun(A) -> A end)
 as_record(Res, Recname, Fields) ->
-    emysql_conv:as_record(Res, Recname, Fields).
+	emysql_conv:as_record(Res, Recname, Fields).
 
 %% @spec as_record(Result, RecordName, Fields, Fun) -> Result
 %%      Result = #result_packet{}
@@ -802,7 +802,7 @@ as_record(Res, Recname, Fields) ->
 %%  Res = emysql:execute(pool1, "select * from foo"),
 %%  emysql:as_record(foo, record_info(fields, foo)).
 as_record(Res, Recname, Fields, Fun) ->
-    emysql_conv:as_record(Res, Recname, Fields, Fun).
+	emysql_conv:as_record(Res, Recname, Fields, Fun).
 
 %% @spec as_maps(Result) -> map().
 %%      Result = #result_packet{}
@@ -850,64 +850,64 @@ as_record(Res, Recname, Fields, Fun) ->
 %% @end doc: hd feb 11
 %%
 monitor_work(PoolServer, Connection0, Timeout, Args)
-    when is_record(Connection0, emysql_connection) ->
-    Connection =
-        case emysql_conn:need_test_connection(Connection0) of
-            true ->
-                emysql_conn:test_connection(PoolServer, Connection0, keep);
-            false ->
-                Connection0
-        end,
-    %% spawn a new process to do work, then monitor that process until
-    %% it either dies, returns data or times out.
-    Parent      = erlang:self(),
-    {Pid, Mref} =
-        spawn_monitor(fun() ->
-                          put(query_arguments, Args),
-                          Parent ! {self(), apply(fun emysql_conn:execute/3, Args)}
-                      end),
-    RetryWhenClosed = emysql_app:retry_when_closed(),
-    receive
-        {'DOWN', Mref, process, Pid, Reason}
-            when Reason == {failed_to_recv_packet_header, closed};
-                 Reason == tcp_connection_closed,
-                 RetryWhenClosed == true ->
-            case emysql_conn:reset_connection(PoolServer,
-                                              emysql_conn_mgr:pools(PoolServer),
-                                              Connection, keep) of
-                NewConnection when is_record(NewConnection, emysql_connection) ->
-                    %% re-loop, with new connection.
-                    [_ | OtherArgs] = Args,
-                    monitor_work(PoolServer, NewConnection, Timeout,
-                                 [NewConnection | OtherArgs]);
-                {error, FailedReset} ->
-                    exit({connection_down, {and_conn_reset_failed, FailedReset}})
-            end;
-        {'DOWN', Mref, process, Pid, Reason} ->
-            %% if the process dies, reset the connection
-            %% and re-throw the error on the current pid.
-            %% catch if re-open fails and also signal it.
-            case emysql_conn:reset_connection(PoolServer,
-                                              emysql_conn_mgr:pools(PoolServer),
-                                              Connection, pass) of
-                {error,FailedReset} ->
-                    exit({Reason, {and_conn_reset_failed, FailedReset}});
-                _ -> exit({Reason, {}})
-            end;
-        {Pid, Result} ->
-            %% if the process returns data, unlock the
-            %% connection and collect the normal 'DOWN'
-            %% message send from the child process
-            erlang:demonitor(Mref, [flush]),
-            emysql_conn_mgr:pass_connection(PoolServer, Connection),
-            Result
-    after Timeout ->
-        %% if we timeout waiting for the process to return,
-        %% then reset the connection and throw a timeout error
-        erlang:demonitor(Mref, [flush]),
-        exit(Pid, kill),
-        emysql_conn:reset_connection(PoolServer,
-                                     emysql_conn_mgr:pools(PoolServer),
-                                     Connection, pass),
-        exit(mysql_timeout)
-    end.
+	when is_record(Connection0, emysql_connection) ->
+	Connection =
+		case emysql_conn:need_test_connection(Connection0) of
+			true ->
+				emysql_conn:test_connection(PoolServer, Connection0, keep);
+			false ->
+				Connection0
+		end,
+	%% spawn a new process to do work, then monitor that process until
+	%% it either dies, returns data or times out.
+	Parent = erlang:self(),
+	{Pid, Mref} =
+		spawn_monitor(fun() ->
+			put(query_arguments, Args),
+			Parent ! {self(), apply(fun emysql_conn:execute/3, Args)}
+		              end),
+	RetryWhenClosed = emysql_app:retry_when_closed(),
+	receive
+		{'DOWN', Mref, process, Pid, Reason}
+			when Reason == {failed_to_recv_packet_header, closed};
+			Reason == tcp_connection_closed,
+			RetryWhenClosed == true ->
+			case emysql_conn:reset_connection(PoolServer,
+				emysql_conn_mgr:pools(PoolServer),
+				Connection, keep) of
+				NewConnection when is_record(NewConnection, emysql_connection) ->
+					%% re-loop, with new connection.
+					[_ | OtherArgs] = Args,
+					monitor_work(PoolServer, NewConnection, Timeout,
+						[NewConnection | OtherArgs]);
+				{error, FailedReset} ->
+					exit({connection_down, {and_conn_reset_failed, FailedReset}})
+			end;
+		{'DOWN', Mref, process, Pid, Reason} ->
+			%% if the process dies, reset the connection
+			%% and re-throw the error on the current pid.
+			%% catch if re-open fails and also signal it.
+			case emysql_conn:reset_connection(PoolServer,
+				emysql_conn_mgr:pools(PoolServer),
+				Connection, pass) of
+				{error, FailedReset} ->
+					exit({Reason, {and_conn_reset_failed, FailedReset}});
+				_ -> exit({Reason, {}})
+			end;
+		{Pid, Result} ->
+			%% if the process returns data, unlock the
+			%% connection and collect the normal 'DOWN'
+			%% message send from the child process
+			erlang:demonitor(Mref, [flush]),
+			emysql_conn_mgr:pass_connection(PoolServer, Connection),
+			Result
+	after Timeout ->
+		%% if we timeout waiting for the process to return,
+		%% then reset the connection and throw a timeout error
+		erlang:demonitor(Mref, [flush]),
+		exit(Pid, kill),
+		emysql_conn:reset_connection(PoolServer,
+			emysql_conn_mgr:pools(PoolServer),
+			Connection, pass),
+		exit(mysql_timeout)
+	end.

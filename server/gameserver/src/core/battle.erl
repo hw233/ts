@@ -12,31 +12,31 @@
 %% API functions
 %% ====================================================================
 -export([
-		 getAttackerTimes/3
-		%% beAttackJudge/1
-		]).
+	getAttackerTimes/3
+	%% beAttackJudge/1
+]).
 
 -export([
-		 isBoss/1,
-		 isBoss/2,
-		 beJudge/6,
-		 isMainTarget/2,
-		 getPropValue/2
-		]).
+	isBoss/1,
+	isBoss/2,
+	beJudge/6,
+	isMainTarget/2,
+	getPropValue/2
+]).
 
 %%获取攻击目标次数(如果攻击者使用乱影技能,则使用乱影技能攻击目标次数)
 -spec getAttackerTimes(IsRan, RanTimes, Times) -> uint() when
-		  IsRan :: boolean(),
-          RanTimes :: uint(),
-          Times :: uint().
+	IsRan :: boolean(),
+	RanTimes :: uint(),
+	Times :: uint().
 getAttackerTimes(true, RanTimes, _Times) ->
 	RanTimes;
 getAttackerTimes(_, _RanTimes, Times) ->
 	Times.
 
 -spec getPropValue(PropIndex, PropList) -> number() when
-		  PropIndex :: uint(),
-          PropList :: [#battleProp{}, ...].
+	PropIndex :: uint(),
+	PropList :: [#battleProp{}, ...].
 getPropValue(PropIndex, PropList) ->
 	case lists:keyfind(PropIndex, #battleProp.propIndex, PropList) of
 		#battleProp{totalValue = TotalValue} ->
@@ -44,17 +44,17 @@ getPropValue(PropIndex, PropList) ->
 		_ ->
 			0
 	end.
-	
+
 %%判断是否为主目标
 -spec isMainTarget(Code, MainCode) -> boolean() when
-       Code :: uint(),
-       MainCode :: uint().
+	Code :: uint(),
+	MainCode :: uint().
 isMainTarget(Code, MainCode) ->
 	Code =:= MainCode.
 
 -spec isBoss(CodeType, ID) -> boolean() when
-		  ID :: uint(),
-		  CodeType :: uint().
+	ID :: uint(),
+	CodeType :: uint().
 isBoss(?SpawnMonster, ID) ->
 	#monsterCfg{monsterType = MonsterType} = getCfg:getCfgPStack(cfg_monster, ID),
 	case MonsterType of
@@ -100,7 +100,7 @@ beJudge(AttackLv, AttackHitLv, AttackCriLv, AttackArmorLv, DefenderLv, DefenderD
 	R = misc:rand(1, 10000) / 10000,
 
 	?DEBUG_OUT("a.lv=~p,a.hit=~p,a.cri=~p, a.armor=~p, b.lv=~p,b.doDefenderLv=~p, r.hit=~p,r.armor=~p,r.cri=~p,<r.m1=~p,r.m2=~p,r.r=~p>",
-		[AttackLv, AttackHitLv, AttackCriLv, AttackArmorLv,DefenderLv, DefenderDodgeLv, FinalHitProb, FinalArmorProb, AttackCri, M1, M2, R]),
+		[AttackLv, AttackHitLv, AttackCriLv, AttackArmorLv, DefenderLv, DefenderDodgeLv, FinalHitProb, FinalArmorProb, AttackCri, M1, M2, R]),
 
 	if
 		R < M1 ->
@@ -112,7 +112,7 @@ beJudge(AttackLv, AttackHitLv, AttackCriLv, AttackArmorLv, DefenderLv, DefenderD
 		true ->
 			?HitResultDodge
 	end.
-	
+
 %% %%被攻击判定
 %% -spec beAttackJudge(#recbeAttackJudge{}) -> AttackResult when
 %%           AttackResult :: uint().

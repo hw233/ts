@@ -27,12 +27,12 @@
 
 -define(SERVER, ?MODULE).
 
--define(KIB,(1024)).
--define(MIB,(?KIB*1024)).
--define(GIB,(?MIB*1024)).
+-define(KIB, (1024)).
+-define(MIB, (?KIB * 1024)).
+-define(GIB, (?MIB * 1024)).
 
 %%20分钟执行一次
--define(TickInterval,20 * 60 * 1000).
+-define(TickInterval, 20 * 60 * 1000).
 
 -record(state, {}).
 
@@ -160,10 +160,10 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 mem2str(Mem) ->
-	if Mem > ?GIB -> io_lib:format("~.3fG",[Mem/?GIB]);
-		Mem > ?MIB -> io_lib:format("~.3fM",[Mem/?MIB]);
-		Mem > ?KIB -> io_lib:format("~.3fK",[Mem/?KIB]);
-		Mem >= 0 -> io_lib:format("~.1fB",[Mem/1.0])
+	if Mem > ?GIB -> io_lib:format("~.3fG", [Mem / ?GIB]);
+		Mem > ?MIB -> io_lib:format("~.3fM", [Mem / ?MIB]);
+		Mem > ?KIB -> io_lib:format("~.3fK", [Mem / ?KIB]);
+		Mem >= 0 -> io_lib:format("~.1fB", [Mem / 1.0])
 	end.
 
 logPsInfo() ->
@@ -182,72 +182,72 @@ logPsInfo() ->
 
 	PSList = erlang:processes(),
 
-	ProcessesProplist =  [ [ {pid,erlang:pid_to_list(P)} | process_info_items(P) ] || P <- PSList ],
+	ProcessesProplist = [[{pid, erlang:pid_to_list(P)} | process_info_items(P)] || P <- PSList],
 
-	Fun = fun(L,AccIn) ->
-		Pid = proplists:get_value(pid,L),
-		RegName = case proplists:get_value(registered_name,L) of
+	Fun = fun(L, AccIn) ->
+		Pid = proplists:get_value(pid, L),
+		RegName = case proplists:get_value(registered_name, L) of
 			          [] ->
 				          "null";
 			          V ->
 				          V
 		          end,
-		Red = proplists:get_value(reductions,L),
-		MQL = proplists:get_value(message_queue_len,L),
-		Mem = proplists:get_value(memory,L),
-		CF = proplists:get_value(current_function,L),
+		Red = proplists:get_value(reductions, L),
+		MQL = proplists:get_value(message_queue_len, L),
+		Mem = proplists:get_value(memory, L),
+		CF = proplists:get_value(current_function, L),
 
-		[{Pid,RegName,Red,MQL,Mem,CF} | AccIn]
-	end,
-	PPList = lists:foldl(Fun,[],ProcessesProplist),
+		[{Pid, RegName, Red, MQL, Mem, CF} | AccIn]
+	      end,
+	PPList = lists:foldl(Fun, [], ProcessesProplist),
 	Str1 = logSortByMQueue(PPList),
 	Str2 = logSortByMem(PPList),
 	?LOG_OUT("~n~nProcess: total ~p(RQ:~p) using:~s(~s allocated)~n nodes:~p~n"
 	"Memory: Sys ~s, Atom ~s/~s, Bin ~s, Code ~s, Ets ~s~n"
-		"Row      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
-		"Row      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",
-		[PS_Count,RQ,mem2str(ProcessUsed),mem2str(ProcessTotal),nodes(),SystemMem,AtomUsedMem,AtomMem,BinMem,CodeMem,EtsMem,Str1,Str2]),
-	
+	"Row      Pid                           RegName  Reductions   MQueue(*)    Memory      	  CurrentFunction~n~ts"
+	"Row      Pid                           RegName  Reductions   MQueue       Memory(*)      CurrentFunction~n~ts",
+		[PS_Count, RQ, mem2str(ProcessUsed), mem2str(ProcessTotal), nodes(), SystemMem, AtomUsedMem, AtomMem, BinMem, CodeMem, EtsMem, Str1, Str2]),
+
 	%% 	[{PsPid,RegisterName,_,_,_,PD,_}|_] = List,
 %% 	PDKeyList = [Key || {Key,_} <- PD],
 %% 	?LOG_OUT("Pid:~p RegName:~p KeyList:~p",[PsPid,RegisterName,PDKeyList]),
 	ok.
 
 logSortByMQueue(PPList) ->
-	List = lists:keysort(4,PPList),
-	Fun = fun({Pid,RegName,Red,MQL,Mem,{M,F,A}},{N,AccIn}) ->
+	List = lists:keysort(4, PPList),
+	Fun = fun({Pid, RegName, Red, MQL, Mem, {M, F, A}}, {N, AccIn}) ->
 		case N =< 0 of
 			true ->
-				{break,{N,AccIn}};
+				{break, {N, AccIn}};
 			_ ->
-				{N - 1,io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
-					[N,Pid,RegName,Red,MQL,mem2str(Mem),M,F,A]) ++ AccIn}
+				{N - 1, io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
+					[N, Pid, RegName, Red, MQL, mem2str(Mem), M, F, A]) ++ AccIn}
 		end
-	end,
-	{_,Str} = misc:mapAccList(List, {15,[]}, Fun),
+	      end,
+	{_, Str} = misc:mapAccList(List, {15, []}, Fun),
 	Str.
-	
+
 logSortByMem(PPList) ->
-	List = lists:keysort(5,PPList),
-	Fun = fun({Pid,RegName,Red,MQL,Mem,{M,F,A}},{N,AccIn}) ->
+	List = lists:keysort(5, PPList),
+	Fun = fun({Pid, RegName, Red, MQL, Mem, {M, F, A}}, {N, AccIn}) ->
 		case N =< 0 of
 			true ->
-				{break,{N,AccIn}};
+				{break, {N, AccIn}};
 			_ ->
-				{N - 1,io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
-					[N,Pid,RegName,Red,MQL,mem2str(Mem),M,F,A]) ++ AccIn}
+				{N - 1, io_lib:format("~4p  ~10s  ~30s    ~30p         ~10p  ~15s      {~30p,~20p,~2p}~n",
+					[N, Pid, RegName, Red, MQL, mem2str(Mem), M, F, A]) ++ AccIn}
 		end
-	end,
-	{_,Str} = misc:mapAccList(List, {15,[]}, Fun),
+	      end,
+	{_, Str} = misc:mapAccList(List, {15, []}, Fun),
 	Str.
 
 process_info_items(P) ->
 	erlang:process_info(P,
 		[
-		 	registered_name,
+			registered_name,
 			reductions,
 			message_queue_len,
-		 	memory,
+			memory,
 			heap_size,
 			stack_size,
 			total_heap_size,

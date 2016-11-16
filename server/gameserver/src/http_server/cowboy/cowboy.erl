@@ -33,32 +33,32 @@
 -export_type([onrequest_fun/0]).
 
 -type onresponse_fun() ::
-	fun((http_status(), http_headers(), iodata(), Req) -> Req).
+fun((http_status(), http_headers(), iodata(), Req) -> Req).
 -export_type([onresponse_fun/0]).
 
 -spec start_http(ranch:ref(), non_neg_integer(), ranch_tcp:opts(),
 	cowboy_protocol:opts()) -> {ok, pid()} | {error, any()}.
 start_http(Ref, NbAcceptors, TransOpts, ProtoOpts)
-		when is_integer(NbAcceptors), NbAcceptors > 0 ->
+	when is_integer(NbAcceptors), NbAcceptors > 0 ->
 	ranch:start_listener(Ref, NbAcceptors,
 		ranch_tcp, TransOpts, cowboy_protocol, ProtoOpts).
 
 -spec start_https(ranch:ref(), non_neg_integer(), ranch_ssl:opts(),
 	cowboy_protocol:opts()) -> {ok, pid()} | {error, any()}.
 start_https(Ref, NbAcceptors, TransOpts, ProtoOpts)
-		when is_integer(NbAcceptors), NbAcceptors > 0 ->
+	when is_integer(NbAcceptors), NbAcceptors > 0 ->
 	ranch:start_listener(Ref, NbAcceptors,
 		ranch_ssl, TransOpts, cowboy_protocol, ProtoOpts).
 
 -spec start_spdy(ranch:ref(), non_neg_integer(), ranch_ssl:opts(),
 	cowboy_spdy:opts()) -> {ok, pid()} | {error, any()}.
 start_spdy(Ref, NbAcceptors, TransOpts, ProtoOpts)
-		when is_integer(NbAcceptors), NbAcceptors > 0 ->
+	when is_integer(NbAcceptors), NbAcceptors > 0 ->
 	TransOpts2 = [
 		{connection_type, supervisor},
 		{next_protocols_advertised,
 			[<<"spdy/3">>, <<"http/1.1">>, <<"http/1.0">>]}
-	|TransOpts],
+		| TransOpts],
 	ranch:start_listener(Ref, NbAcceptors,
 		ranch_ssl, TransOpts2, cowboy_spdy, ProtoOpts).
 

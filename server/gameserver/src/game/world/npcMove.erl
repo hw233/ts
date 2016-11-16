@@ -18,7 +18,7 @@
 	gmTest_riftnpcmove/1
 ]).
 
--spec gmTest_riftnpcmove({Code::uint(), ID::uint(), TX::float(), TY::float()}) -> ok.
+-spec gmTest_riftnpcmove({Code :: uint(), ID :: uint(), TX :: float(), TY :: float()}) -> ok.
 gmTest_riftnpcmove({Code, ID, TX, TY}) ->
 	npcChangePos(Code, ID, TX, TY),
 	ok.
@@ -50,7 +50,7 @@ updateMoveNpcPos() ->
 
 					Fun = fun({X, Y}) ->
 						{erlang:float(X), erlang:float(Y)}
-					end,
+					      end,
 					NPosList = lists:map(Fun, PosList),
 
 					npcChangePos(MNList, NPosList),
@@ -72,7 +72,7 @@ npcChangePos(_, []) ->
 	[];
 npcChangePos([], List) ->
 	List;
-npcChangePos([NpcID|OtherNpc], PosList) when ?IsListValid(PosList) ->
+npcChangePos([NpcID | OtherNpc], PosList) when ?IsListValid(PosList) ->
 	SurplusPos = npcChangePos(NpcID, PosList),
 	npcChangePos(OtherNpc, SurplusPos);
 npcChangePos(NpcID, PosList) when ?IsListValid(PosList) ->
@@ -91,19 +91,19 @@ npcChangePos(NpcID, PosList) when ?IsListValid(PosList) ->
 %%				?ERROR_OUT("npcChangePos:~p,~p,{~p,~p},~p", [Code,ID,X,Y,PosList]),
 				PL
 		end
-	end,
+	      end,
 	lists:foldl(Fun, PosList, NpcList).
 
--spec getNpcListByID(NpcID::uint()) -> list().
+-spec getNpcListByID(NpcID :: uint()) -> list().
 getNpcListByID(NpcID) ->
 	NpcEts = mapState:getMapNpcEts(),
 	MatchSpec = ets:fun2ms(fun(Obj) when Obj#recMapObject.id =:= NpcID, Obj#recMapObject.type =:= ?ObjTypeNPC ->
 		Obj
-	end),
+	                       end),
 	myEts:selectEts(NpcEts, MatchSpec).
 
 %% npc改变位置
--spec npcChangePos(Code::uint(), ID::uint(), TX::uint() | float(), TY::uint() | float()) -> ok.
+-spec npcChangePos(Code :: uint(), ID :: uint(), TX :: uint() | float(), TY :: uint() | float()) -> ok.
 npcChangePos(Code, ID, TX, TY) ->
 	FTX = erlang:float(TX),
 	FTY = erlang:float(TY),
@@ -114,7 +114,7 @@ npcChangePos(Code, ID, TX, TY) ->
 	PlayerEts = mapState:getMapPlayerEts(),
 	NpcEts = mapState:getMapNpcEts(),
 
-	[#recMapObject{actionStatus = AS, rotW = RW, x = OX, y = OY, name=Name,groupID = GroupID, other = Other}] = myEts:lookUpEts(NpcEts, Code),
+	[#recMapObject{actionStatus = AS, rotW = RW, x = OX, y = OY, name = Name, groupID = GroupID, other = Other}] = myEts:lookUpEts(NpcEts, Code),
 
 	%% 更新NPC坐标
 	myEts:updateEts(NpcEts, Code, [{#recMapObject.x, FTX}, {#recMapObject.y, FTY}]),
@@ -122,10 +122,10 @@ npcChangePos(Code, ID, TX, TY) ->
 %%    area:updateObjAreaEts(Code, OX, OY, FTX, FTY, mapState:getMapNpcAreaEts()),
 
 	%% 通知这个npc现在所在的位置范围的所有玩家
-	OList = mapView:getNearAllObject(self(),PlayerEts,?ObjTypePlayer,{OX, OY}),
+	OList = mapView:getNearAllObject(self(), PlayerEts, ?ObjTypePlayer, {OX, OY}),
 	Fun = fun(#recMapObject{netPid = NetPID}) ->
 		mapView:sendNetMsgToNetPid(NetPID, #pk_GS2U_NpcMomentMove{npcCode = Code, npcID = ID, tX = FTX, tY = FTY})
-	end,
+	      end,
 	lists:foreach(Fun, OList),
 
 	%% 通知目标点的玩家，npc出现

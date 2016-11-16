@@ -13,7 +13,7 @@
 
 -include("mapPrivate.hrl").
 
--define(DeadAddScore, 10).			% 死亡一次扣的分数
+-define(DeadAddScore, 10).            % 死亡一次扣的分数
 -define(IsListValid(List), erlang:is_list(List) andalso List =/= [] andalso List =/= [{}] andalso List =/= [0]).
 
 %% 怪物
@@ -32,17 +32,17 @@
 
 %% 杀怪或者采集计数表
 -record(recKCcalc, {
-	id          = 0,    % 怪物或者采集物的ID
-	needNumber  = 0,    % 需求量
-	curNumber   = 0     % 当前完成的数量
+	id = 0,    % 怪物或者采集物的ID
+	needNumber = 0,    % 需求量
+	curNumber = 0     % 当前完成的数量
 }).
 
 %% 并行进度表
 -record(recPSConf, {
-	completeDo  = 0,        % 该进度完成做的操作
-	isComplete  = false,    % 是否已经完成
-	killMonster = []::[#recKCcalc{}|_],     % 杀怪列表[#recKCcalc{}|_]
-	collectItem = []::[#recKCcalc{}, ...]   % 采集列表[{collectitemid, num}|_]
+	completeDo = 0,        % 该进度完成做的操作
+	isComplete = false,    % 是否已经完成
+	killMonster = [] :: [#recKCcalc{}|_],     % 杀怪列表[#recKCcalc{}|_]
+	collectItem = [] :: [#recKCcalc{}, ...]   % 采集列表[{collectitemid, num}|_]
 }).
 
 -endif. %% Define_copyMapScheduleDefine_hrl_____

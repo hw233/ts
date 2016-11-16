@@ -3,17 +3,17 @@
 -define(cfg_wedding_type_firework, 1).
 
 -record(wedding_type_fireworkCfg, {
-        id,
+	id,
 
-        name,
+	name,
 
-        %%: 消耗非绑定钻石数目
-        cost,
+	%%: 消耗非绑定钻石数目
+	cost,
 
-        %%: UI冷却时间（在场所有玩家是同一个冷却时间）
-        %%: 单位时间秒
-        cooldown
+	%%: UI冷却时间（在场所有玩家是同一个冷却时间）
+	%%: 单位时间秒
+	cooldown
 
- }).
+}).
 
 -endif.

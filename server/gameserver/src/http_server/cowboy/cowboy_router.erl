@@ -34,20 +34,20 @@
 -export_type([tokens/0]).
 
 -type constraints() :: [{atom(), int}
-	| {atom(), function, fun ((binary()) -> true | {true, any()} | false)}].
+| {atom(), function, fun ((binary()) -> true | {true, any()} | false)}].
 -export_type([constraints/0]).
 
 -type route_match() :: '_' | iodata().
--type route_path() :: {Path::route_match(), Handler::module(), Opts::any()}
-	| {Path::route_match(), constraints(), Handler::module(), Opts::any()}.
--type route_rule() :: {Host::route_match(), Paths::[route_path()]}
-	| {Host::route_match(), constraints(), Paths::[route_path()]}.
+-type route_path() :: {Path :: route_match(), Handler :: module(), Opts :: any()}
+| {Path :: route_match(), constraints(), Handler :: module(), Opts :: any()}.
+-type route_rule() :: {Host :: route_match(), Paths :: [route_path()]}
+| {Host :: route_match(), constraints(), Paths :: [route_path()]}.
 -type routes() :: [route_rule()].
 -export_type([routes/0]).
 
 -type dispatch_match() :: '_' | <<_:8>> | [binary() | '_' | '...' | atom()].
 -type dispatch_path() :: {dispatch_match(), module(), any()}.
--type dispatch_rule() :: {Host::dispatch_match(), Paths::[dispatch_path()]}.
+-type dispatch_rule() :: {Host :: dispatch_match(), Paths :: [dispatch_path()]}.
 -opaque dispatch_rules() :: [dispatch_rule()].
 -export_type([dispatch_rules/0]).
 
@@ -57,19 +57,19 @@ compile(Routes) ->
 
 compile([], Acc) ->
 	lists:reverse(Acc);
-compile([{Host, Paths}|Tail], Acc) ->
-	compile([{Host, [], Paths}|Tail], Acc);
-compile([{HostMatch, Constraints, Paths}|Tail], Acc) ->
+compile([{Host, Paths} | Tail], Acc) ->
+	compile([{Host, [], Paths} | Tail], Acc);
+compile([{HostMatch, Constraints, Paths} | Tail], Acc) ->
 	HostRules = case HostMatch of
-		'_' -> '_';
-		_ -> compile_host(HostMatch)
-	end,
+		            '_' -> '_';
+		            _ -> compile_host(HostMatch)
+	            end,
 	PathRules = compile_paths(Paths, []),
-	io:format("PathRules=========~p~n",[PathRules]),
+	io:format("PathRules=========~p~n", [PathRules]),
 	Hosts = case HostRules of
-		'_' -> [{'_', Constraints, PathRules}];
-		_ -> [{R, Constraints, PathRules} || R <- HostRules]
-	end,
+		        '_' -> [{'_', Constraints, PathRules}];
+		        _ -> [{R, Constraints, PathRules} || R <- HostRules]
+	        end,
 	compile(Tail, Hosts ++ Acc).
 
 compile_host(HostMatch) when is_list(HostMatch) ->
@@ -79,54 +79,54 @@ compile_host(HostMatch) when is_binary(HostMatch) ->
 
 compile_paths([], Acc) ->
 	lists:reverse(Acc);
-compile_paths([{PathMatch, Handler, Opts}|Tail], Acc) ->
-	compile_paths([{PathMatch, [], Handler, Opts}|Tail], Acc);
-compile_paths([{PathMatch, Constraints, Handler, Opts}|Tail], Acc)
-		when is_list(PathMatch) ->
+compile_paths([{PathMatch, Handler, Opts} | Tail], Acc) ->
+	compile_paths([{PathMatch, [], Handler, Opts} | Tail], Acc);
+compile_paths([{PathMatch, Constraints, Handler, Opts} | Tail], Acc)
+	when is_list(PathMatch) ->
 	compile_paths([{iolist_to_binary(PathMatch),
-		Constraints, Handler, Opts}|Tail], Acc);
-compile_paths([{'_', Constraints, Handler, Opts}|Tail], Acc) ->
+		Constraints, Handler, Opts} | Tail], Acc);
+compile_paths([{'_', Constraints, Handler, Opts} | Tail], Acc) ->
 	compile_paths(Tail, [{'_', Constraints, Handler, Opts}] ++ Acc);
-compile_paths([{<< $/, PathMatch/binary >>, Constraints, Handler, Opts}|Tail],
-		Acc) ->
+compile_paths([{<<$/, PathMatch/binary>>, Constraints, Handler, Opts} | Tail],
+	Acc) ->
 	PathRules = compile_rules(PathMatch, $/, [], [], <<>>),
 	Paths = [{lists:reverse(R), Constraints, Handler, Opts} || R <- PathRules],
 	compile_paths(Tail, Paths ++ Acc);
-compile_paths([{PathMatch, _, _, _}|_], _) ->
+compile_paths([{PathMatch, _, _, _} | _], _) ->
 	error({badarg, "The following route MUST begin with a slash: "
 		++ binary_to_list(PathMatch)}).
 
 compile_rules(<<>>, _, Segments, Rules, <<>>) ->
-	[Segments|Rules];
+	[Segments | Rules];
 compile_rules(<<>>, _, Segments, Rules, Acc) ->
-	[[Acc|Segments]|Rules];
-compile_rules(<< S, Rest/binary >>, S, Segments, Rules, <<>>) ->
+	[[Acc | Segments] | Rules];
+compile_rules(<<S, Rest/binary>>, S, Segments, Rules, <<>>) ->
 	compile_rules(Rest, S, Segments, Rules, <<>>);
-compile_rules(<< S, Rest/binary >>, S, Segments, Rules, Acc) ->
-	compile_rules(Rest, S, [Acc|Segments], Rules, <<>>);
-compile_rules(<< $:, Rest/binary >>, S, Segments, Rules, <<>>) ->
+compile_rules(<<S, Rest/binary>>, S, Segments, Rules, Acc) ->
+	compile_rules(Rest, S, [Acc | Segments], Rules, <<>>);
+compile_rules(<<$:, Rest/binary>>, S, Segments, Rules, <<>>) ->
 	{NameBin, Rest2} = compile_binding(Rest, S, <<>>),
 	Name = binary_to_atom(NameBin, utf8),
 	compile_rules(Rest2, S, Segments, Rules, Name);
-compile_rules(<< $:, _/binary >>, _, _, _, _) ->
+compile_rules(<<$:, _/binary>>, _, _, _, _) ->
 	erlang:error(badarg);
-compile_rules(<< $[, $., $., $., $], Rest/binary >>, S, Segments, Rules, Acc)
-		when Acc =:= <<>> ->
-	compile_rules(Rest, S, ['...'|Segments], Rules, Acc);
-compile_rules(<< $[, $., $., $., $], Rest/binary >>, S, Segments, Rules, Acc) ->
-	compile_rules(Rest, S, ['...', Acc|Segments], Rules, Acc);
-compile_rules(<< $[, S, Rest/binary >>, S, Segments, Rules, Acc) ->
-	compile_brackets(Rest, S, [Acc|Segments], Rules);
-compile_rules(<< $[, Rest/binary >>, S, Segments, Rules, <<>>) ->
+compile_rules(<<$[, $., $., $., $], Rest/binary>>, S, Segments, Rules, Acc)
+	when Acc =:= <<>> ->
+	compile_rules(Rest, S, ['...' | Segments], Rules, Acc);
+compile_rules(<<$[, $., $., $., $], Rest/binary>>, S, Segments, Rules, Acc) ->
+	compile_rules(Rest, S, ['...', Acc | Segments], Rules, Acc);
+compile_rules(<<$[, S, Rest/binary>>, S, Segments, Rules, Acc) ->
+	compile_brackets(Rest, S, [Acc | Segments], Rules);
+compile_rules(<<$[, Rest/binary>>, S, Segments, Rules, <<>>) ->
 	compile_brackets(Rest, S, Segments, Rules);
 %% Open bracket in the middle of a segment.
-compile_rules(<< $[, _/binary >>, _, _, _, _) ->
+compile_rules(<<$[, _/binary>>, _, _, _, _) ->
 	erlang:error(badarg);
 %% Missing an open bracket.
-compile_rules(<< $], _/binary >>, _, _, _, _) ->
+compile_rules(<<$], _/binary>>, _, _, _, _) ->
 	erlang:error(badarg);
-compile_rules(<< C, Rest/binary >>, S, Segments, Rules, Acc) ->
-	compile_rules(Rest, S, Segments, Rules, << Acc/binary, C >>).
+compile_rules(<<C, Rest/binary>>, S, Segments, Rules, Acc) ->
+	compile_rules(Rest, S, Segments, Rules, <<Acc/binary, C>>).
 
 %% Everything past $: until the segment separator ($. for hosts,
 %% $/ for paths) or $[ or $] or end of binary is the binding name.
@@ -134,16 +134,16 @@ compile_binding(<<>>, _, <<>>) ->
 	erlang:error(badarg);
 compile_binding(Rest = <<>>, _, Acc) ->
 	{Acc, Rest};
-compile_binding(Rest = << C, _/binary >>, S, Acc)
-		when C =:= S; C =:= $[; C =:= $] ->
+compile_binding(Rest = <<C, _/binary>>, S, Acc)
+	when C =:= S; C =:= $[; C =:= $] ->
 	{Acc, Rest};
-compile_binding(<< C, Rest/binary >>, S, Acc) ->
-	compile_binding(Rest, S, << Acc/binary, C >>).
+compile_binding(<<C, Rest/binary>>, S, Acc) ->
+	compile_binding(Rest, S, <<Acc/binary, C>>).
 
 compile_brackets(Rest, S, Segments, Rules) ->
 	{Bracket, Rest2} = compile_brackets_split(Rest, <<>>, 0),
 	Rules1 = compile_rules(Rest2, S, Segments, [], <<>>),
-	Rules2 = compile_rules(<< Bracket/binary, Rest2/binary >>,
+	Rules2 = compile_rules(<<Bracket/binary, Rest2/binary>>,
 		S, Segments, [], <<>>),
 	Rules ++ Rules2 ++ Rules1.
 
@@ -151,26 +151,26 @@ compile_brackets(Rest, S, Segments, Rules) ->
 compile_brackets_split(<<>>, _, _) ->
 	erlang:error(badarg);
 %% Make sure we don't confuse the closing bracket we're looking for.
-compile_brackets_split(<< C, Rest/binary >>, Acc, N) when C =:= $[ ->
-	compile_brackets_split(Rest, << Acc/binary, C >>, N + 1);
-compile_brackets_split(<< C, Rest/binary >>, Acc, N) when C =:= $], N > 0 ->
-	compile_brackets_split(Rest, << Acc/binary, C >>, N - 1);
+compile_brackets_split(<<C, Rest/binary>>, Acc, N) when C =:= $[ ->
+	compile_brackets_split(Rest, <<Acc/binary, C>>, N + 1);
+compile_brackets_split(<<C, Rest/binary>>, Acc, N) when C =:= $], N > 0 ->
+	compile_brackets_split(Rest, <<Acc/binary, C>>, N - 1);
 %% That's the right one.
-compile_brackets_split(<< $], Rest/binary >>, Acc, 0) ->
+compile_brackets_split(<<$], Rest/binary>>, Acc, 0) ->
 	{Acc, Rest};
-compile_brackets_split(<< C, Rest/binary >>, Acc, N) ->
-	compile_brackets_split(Rest, << Acc/binary, C >>, N).
+compile_brackets_split(<<C, Rest/binary>>, Acc, N) ->
+	compile_brackets_split(Rest, <<Acc/binary, C>>, N).
 
 -spec execute(Req, Env)
-	-> {ok, Req, Env} | {error, 400 | 404, Req}
-	when Req::cowboy_req:req(), Env::cowboy_middleware:env().
+		-> {ok, Req, Env} | {error, 400 | 404, Req}
+	when Req :: cowboy_req:req(), Env :: cowboy_middleware:env().
 execute(Req, Env) ->
 	{_, Dispatch} = lists:keyfind(dispatch, 1, Env),
 	[Host, Path] = cowboy_req:get([host, path], Req),
 	case match(Dispatch, Host, Path) of
 		{ok, Handler, HandlerOpts, Bindings, HostInfo, PathInfo} ->
 			Req2 = cowboy_req:set_bindings(HostInfo, PathInfo, Bindings, Req),
-			{ok, Req2, [{handler, Handler}, {handler_opts, HandlerOpts}|Env]};
+			{ok, Req2, [{handler, Handler}, {handler_opts, HandlerOpts} | Env]};
 		{error, notfound, host} ->
 			{error, 400, Req};
 		{error, badrequest, path} ->
@@ -209,27 +209,27 @@ execute(Req, Env) ->
 %% options found in the dispatch list, a key-value list of bindings and
 %% the tokens that were matched by the <em>'...'</em> atom for both the
 %% hostname and path.
--spec match(dispatch_rules(), Host::binary() | tokens(), Path::binary())
-	-> {ok, module(), any(), bindings(),
-		HostInfo::undefined | tokens(),
-		PathInfo::undefined | tokens()}
+-spec match(dispatch_rules(), Host :: binary() | tokens(), Path :: binary())
+		-> {ok, module(), any(), bindings(),
+		HostInfo :: undefined | tokens(),
+		PathInfo :: undefined | tokens()}
 	| {error, notfound, host} | {error, notfound, path}
 	| {error, badrequest, path}.
 match([], _, _) ->
 	{error, notfound, host};
 %% If the host is '_' then there can be no constraints.
-match([{'_', [], PathMatchs}|_Tail], _, Path) ->
+match([{'_', [], PathMatchs} | _Tail], _, Path) ->
 	match_path(PathMatchs, undefined, Path, []);
-match([{HostMatch, Constraints, PathMatchs}|Tail], Tokens, Path)
-		when is_list(Tokens) ->
+match([{HostMatch, Constraints, PathMatchs} | Tail], Tokens, Path)
+	when is_list(Tokens) ->
 	case list_match(Tokens, HostMatch, []) of
 		false ->
 			match(Tail, Tokens, Path);
 		{true, Bindings, HostInfo} ->
 			HostInfo2 = case HostInfo of
-				undefined -> undefined;
-				_ -> lists:reverse(HostInfo)
-			end,
+				            undefined -> undefined;
+				            _ -> lists:reverse(HostInfo)
+			            end,
 			case check_constraints(Constraints, Bindings) of
 				{ok, Bindings2} ->
 					match_path(PathMatchs, HostInfo2, Path, Bindings2);
@@ -241,20 +241,20 @@ match(Dispatch, Host, Path) ->
 	match(Dispatch, split_host(Host), Path).
 
 -spec match_path([dispatch_path()],
-	HostInfo::undefined | tokens(), binary() | tokens(), bindings())
-	-> {ok, module(), any(), bindings(),
-		HostInfo::undefined | tokens(),
-		PathInfo::undefined | tokens()}
+	HostInfo :: undefined | tokens(), binary() | tokens(), bindings())
+		-> {ok, module(), any(), bindings(),
+		HostInfo :: undefined | tokens(),
+		PathInfo :: undefined | tokens()}
 	| {error, notfound, path} | {error, badrequest, path}.
 match_path([], _, _, _) ->
 	{error, notfound, path};
 %% If the path is '_' then there can be no constraints.
-match_path([{'_', [], Handler, Opts}|_Tail], HostInfo, _, Bindings) ->
+match_path([{'_', [], Handler, Opts} | _Tail], HostInfo, _, Bindings) ->
 	{ok, Handler, Opts, Bindings, HostInfo, undefined};
-match_path([{<<"*">>, _Constraints, Handler, Opts}|_Tail], HostInfo, <<"*">>, Bindings) ->
+match_path([{<<"*">>, _Constraints, Handler, Opts} | _Tail], HostInfo, <<"*">>, Bindings) ->
 	{ok, Handler, Opts, Bindings, HostInfo, undefined};
-match_path([{PathMatch, Constraints, Handler, Opts}|Tail], HostInfo, Tokens,
-		Bindings) when is_list(Tokens) ->
+match_path([{PathMatch, Constraints, Handler, Opts} | Tail], HostInfo, Tokens,
+	Bindings) when is_list(Tokens) ->
 	case list_match(Tokens, PathMatch, Bindings) of
 		false ->
 			match_path(Tail, HostInfo, Tokens, Bindings);
@@ -273,7 +273,7 @@ match_path(Dispatch, HostInfo, Path, Bindings) ->
 
 check_constraints([], Bindings) ->
 	{ok, Bindings};
-check_constraints([Constraint|Tail], Bindings) ->
+check_constraints([Constraint | Tail], Bindings) ->
 	Name = element(1, Constraint),
 	case lists:keyfind(Name, 1, Bindings) of
 		false ->
@@ -307,18 +307,18 @@ split_host(Host, Acc) ->
 		nomatch when Host =:= <<>> ->
 			Acc;
 		nomatch ->
-			[Host|Acc];
+			[Host | Acc];
 		{Pos, _} ->
-			<< Segment:Pos/binary, _:8, Rest/bits >> = Host,
+			<<Segment:Pos/binary, _:8, Rest/bits>> = Host,
 			false = byte_size(Segment) == 0,
-			split_host(Rest, [Segment|Acc])
+			split_host(Rest, [Segment | Acc])
 	end.
 
 %% Following RFC2396, this function may return path segments containing any
 %% character, including <em>/</em> if, and only if, a <em>/</em> was escaped
 %% and part of a path segment.
 -spec split_path(binary()) -> tokens().
-split_path(<< $/, Path/bits >>) ->
+split_path(<<$/, Path/bits>>) ->
 	split_path(Path, []);
 split_path(_) ->
 	badrequest.
@@ -329,10 +329,10 @@ split_path(Path, Acc) ->
 			nomatch when Path =:= <<>> ->
 				lists:reverse([cow_qs:urldecode(S) || S <- Acc]);
 			nomatch ->
-				lists:reverse([cow_qs:urldecode(S) || S <- [Path|Acc]]);
+				lists:reverse([cow_qs:urldecode(S) || S <- [Path | Acc]]);
 			{Pos, _} ->
-				<< Segment:Pos/binary, _:8, Rest/bits >> = Path,
-				split_path(Rest, [Segment|Acc])
+				<<Segment:Pos/binary, _:8, Rest/bits>> = Path,
+				split_path(Rest, [Segment | Acc])
 		end
 	catch
 		error:badarg ->
@@ -340,26 +340,26 @@ split_path(Path, Acc) ->
 	end.
 
 -spec list_match(tokens(), dispatch_match(), bindings())
-	-> {true, bindings(), undefined | tokens()} | false.
+		-> {true, bindings(), undefined | tokens()} | false.
 %% Atom '...' matches any trailing path, stop right now.
 list_match(List, ['...'], Binds) ->
 	{true, Binds, List};
 %% Atom '_' matches anything, continue.
-list_match([_E|Tail], ['_'|TailMatch], Binds) ->
+list_match([_E | Tail], ['_' | TailMatch], Binds) ->
 	list_match(Tail, TailMatch, Binds);
 %% Both values match, continue.
-list_match([E|Tail], [E|TailMatch], Binds) ->
+list_match([E | Tail], [E | TailMatch], Binds) ->
 	list_match(Tail, TailMatch, Binds);
 %% Bind E to the variable name V and continue,
 %% unless V was already defined and E isn't identical to the previous value.
-list_match([E|Tail], [V|TailMatch], Binds) when is_atom(V) ->
+list_match([E | Tail], [V | TailMatch], Binds) when is_atom(V) ->
 	case lists:keyfind(V, 1, Binds) of
 		{_, E} ->
 			list_match(Tail, TailMatch, Binds);
 		{_, _} ->
 			false;
 		false ->
-			list_match(Tail, TailMatch, [{V, E}|Binds])
+			list_match(Tail, TailMatch, [{V, E} | Binds])
 	end;
 %% Match complete.
 list_match([], [], Binds) ->
@@ -377,27 +377,27 @@ compile_test_() ->
 		{[{'_', [{'_', h, o}]}],
 			[{'_', [], [{'_', [], h, o}]}]},
 		{[{"cowboy.example.org",
-				[{"/", ha, oa}, {"/path/to/resource", hb, ob}]}],
+			[{"/", ha, oa}, {"/path/to/resource", hb, ob}]}],
 			[{[<<"org">>, <<"example">>, <<"cowboy">>], [], [
 				{[], [], ha, oa},
 				{[<<"path">>, <<"to">>, <<"resource">>], [], hb, ob}]}]},
 		{[{'_', [{"/path/to/resource/", h, o}]}],
 			[{'_', [], [{[<<"path">>, <<"to">>, <<"resource">>], [], h, o}]}]},
 		% Cyrillic from a latin1 encoded file.
-		{[{'_', [{[47,208,191,209,131,209,130,209,140,47,208,186,47,209,128,
-				208,181,209,129,209,131,209,128,209,129,209,131,47], h, o}]}],
-			[{'_', [], [{[<<208,191,209,131,209,130,209,140>>, <<208,186>>,
-				<<209,128,208,181,209,129,209,131,209,128,209,129,209,131>>],
+		{[{'_', [{[47, 208, 191, 209, 131, 209, 130, 209, 140, 47, 208, 186, 47, 209, 128,
+			208, 181, 209, 129, 209, 131, 209, 128, 209, 129, 209, 131, 47], h, o}]}],
+			[{'_', [], [{[<<208, 191, 209, 131, 209, 130, 209, 140>>, <<208, 186>>,
+				<<209, 128, 208, 181, 209, 129, 209, 131, 209, 128, 209, 129, 209, 131>>],
 				[], h, o}]}]},
 		{[{"cowboy.example.org.", [{'_', h, o}]}],
 			[{[<<"org">>, <<"example">>, <<"cowboy">>], [], [{'_', [], h, o}]}]},
 		{[{".cowboy.example.org", [{'_', h, o}]}],
 			[{[<<"org">>, <<"example">>, <<"cowboy">>], [], [{'_', [], h, o}]}]},
 		% Cyrillic from a latin1 encoded file.
-		{[{[208,189,208,181,208,186,208,184,208,185,46,209,129,208,176,
-				208,185,209,130,46,209,128,209,132,46], [{'_', h, o}]}],
-			[{[<<209,128,209,132>>, <<209,129,208,176,208,185,209,130>>,
-				<<208,189,208,181,208,186,208,184,208,185>>],
+		{[{[208, 189, 208, 181, 208, 186, 208, 184, 208, 185, 46, 209, 129, 208, 176,
+			208, 185, 209, 130, 46, 209, 128, 209, 132, 46], [{'_', h, o}]}],
+			[{[<<209, 128, 209, 132>>, <<209, 129, 208, 176, 208, 185, 209, 130>>,
+				<<208, 189, 208, 181, 208, 186, 208, 184, 208, 185>>],
 				[], [{'_', [], h, o}]}]},
 		{[{":subdomain.example.org", [{"/hats/:name/prices", h, o}]}],
 			[{[<<"org">>, <<"example">>, subdomain], [], [
@@ -406,14 +406,14 @@ compile_test_() ->
 			[{['_', <<"ninenines">>], [], [{[<<"hats">>, '_'], [], h, o}]}]},
 		{[{"[www.]ninenines.eu",
 			[{"/horses", h, o}, {"/hats/[page/:number]", h, o}]}], [
-				{[<<"eu">>, <<"ninenines">>], [], [
-					{[<<"horses">>], [], h, o},
-					{[<<"hats">>], [], h, o},
-					{[<<"hats">>, <<"page">>, number], [], h, o}]},
-				{[<<"eu">>, <<"ninenines">>, <<"www">>], [], [
-					{[<<"horses">>], [], h, o},
-					{[<<"hats">>], [], h, o},
-					{[<<"hats">>, <<"page">>, number], [], h, o}]}]},
+			{[<<"eu">>, <<"ninenines">>], [], [
+				{[<<"horses">>], [], h, o},
+				{[<<"hats">>], [], h, o},
+				{[<<"hats">>, <<"page">>, number], [], h, o}]},
+			{[<<"eu">>, <<"ninenines">>, <<"www">>], [], [
+				{[<<"horses">>], [], h, o},
+				{[<<"hats">>], [], h, o},
+				{[<<"hats">>, <<"page">>, number], [], h, o}]}]},
 		{[{'_', [{"/hats/[page/[:number]]", h, o}]}], [{'_', [], [
 			{[<<"hats">>], [], h, o},
 			{[<<"hats">>, <<"page">>], [], h, o},
@@ -435,9 +435,9 @@ split_host_test_() ->
 			[<<"eu">>, <<"ninenines">>]},
 		{<<"a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z">>,
 			[<<"z">>, <<"y">>, <<"x">>, <<"w">>, <<"v">>, <<"u">>, <<"t">>,
-			<<"s">>, <<"r">>, <<"q">>, <<"p">>, <<"o">>, <<"n">>, <<"m">>,
-			<<"l">>, <<"k">>, <<"j">>, <<"i">>, <<"h">>, <<"g">>, <<"f">>,
-			<<"e">>, <<"d">>, <<"c">>, <<"b">>, <<"a">>]}
+				<<"s">>, <<"r">>, <<"q">>, <<"p">>, <<"o">>, <<"n">>, <<"m">>,
+				<<"l">>, <<"k">>, <<"j">>, <<"i">>, <<"h">>, <<"g">>, <<"f">>,
+				<<"e">>, <<"d">>, <<"c">>, <<"b">>, <<"a">>]}
 	],
 	[{H, fun() -> R = split_host(H) end} || {H, R} <- Tests].
 
@@ -494,7 +494,7 @@ match_test_() ->
 	[{lists:flatten(io_lib:format("~p, ~p", [H, P])), fun() ->
 		{ok, Handler, Opts, Binds, undefined, undefined}
 			= match(Dispatch, H, P)
-	end} || {H, P, {ok, Handler, Opts, Binds}} <- Tests].
+	                                                  end} || {H, P, {ok, Handler, Opts, Binds}} <- Tests].
 
 match_info_test_() ->
 	Dispatch = [
@@ -505,8 +505,8 @@ match_info_test_() ->
 			{'_', [], match_any, []}
 		]},
 		% Cyrillic from a latin1 encoded file.
-		{[<<209,128,209,132>>, <<209,129,208,176,208,185,209,130>>], [], [
-			{[<<208,191,209,131,209,130,209,140>>, '...'], [], match_path, []}
+		{[<<209, 128, 209, 132>>, <<209, 129, 208, 176, 208, 185, 209, 130>>], [], [
+			{[<<208, 191, 209, 131, 209, 130, 209, 140>>, '...'], [], match_path, []}
 		]}
 	],
 	Tests = [
@@ -523,13 +523,13 @@ match_info_test_() ->
 		{<<"www.ninenines.eu">>, <<"/pathinfo/is/next/foo/bar">>,
 			{ok, match_path, [], [], undefined, [<<"foo">>, <<"bar">>]}},
 		% Cyrillic from a latin1 encoded file.
-		{<<209,129,208,176,208,185,209,130,46,209,128,209,132>>,
-			<<47,208,191,209,131,209,130,209,140,47,208,180,208,190,208,188,208,190,208,185>>,
-			{ok, match_path, [], [], undefined, [<<208,180,208,190,208,188,208,190,208,185>>]}}
+		{<<209, 129, 208, 176, 208, 185, 209, 130, 46, 209, 128, 209, 132>>,
+			<<47, 208, 191, 209, 131, 209, 130, 209, 140, 47, 208, 180, 208, 190, 208, 188, 208, 190, 208, 185>>,
+			{ok, match_path, [], [], undefined, [<<208, 180, 208, 190, 208, 188, 208, 190, 208, 185>>]}}
 	],
 	[{lists:flatten(io_lib:format("~p, ~p", [H, P])), fun() ->
 		R = match(Dispatch, H, P)
-	end} || {H, P, R} <- Tests].
+	                                                  end} || {H, P, R} <- Tests].
 
 match_constraints_test() ->
 	Dispatch = [{'_', [],
@@ -542,8 +542,8 @@ match_constraints_test() ->
 		<<"ninenines.eu">>, <<"/path/NaN/">>),
 	Dispatch2 = [{'_', [],
 		[{[<<"path">>, username], [{username, function,
-		fun(Value) -> Value =:= cowboy_bstr:to_lower(Value) end}],
-		match, []}]}],
+			fun(Value) -> Value =:= cowboy_bstr:to_lower(Value) end}],
+			match, []}]}],
 	{ok, _, [], [{username, <<"essen">>}], _, _} = match(Dispatch2,
 		<<"ninenines.eu">>, <<"/path/essen">>),
 	{error, notfound, path} = match(Dispatch2,

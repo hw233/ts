@@ -27,13 +27,13 @@
 -spec createMap() -> ok.
 createMap() ->
 	sendMsgToAcProcess(?ACMapMsg_CreateMap,
-					   {
-						   self(),
-						   mapState:getMapPlayerEts(),
-						   mapState:getMapMonsterEts(),
-						   mapState:getMapCollectEts(),
-						   mapState:getMapNpcEts()
-					   }).
+		{
+			self(),
+			mapState:getMapPlayerEts(),
+			mapState:getMapMonsterEts(),
+			mapState:getMapCollectEts(),
+			mapState:getMapNpcEts()
+		}).
 
 %% 销毁地图
 -spec destoryMap() -> ok.
@@ -65,7 +65,7 @@ sendMsgToAcProcess(Type, Data) ->
 	ACList = getActivityIDList(),
 	Fun = fun(Key) ->
 		core:sendMsgToActivity(Key, activityMapMsg, {Type, Data})
-	end,
+	      end,
 	lists:foreach(Fun, ACList),
 	ok.
 
@@ -82,5 +82,5 @@ getActivityIDList() ->
 			_ ->
 				AccIDList
 		end
-	end,
+	      end,
 	lists:foldl(Fun, [], AcList).

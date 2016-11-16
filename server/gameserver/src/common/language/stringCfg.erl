@@ -27,27 +27,27 @@ getString(StringAtom) ->
 -spec getString(StringAtom, Params) -> string() when
 	StringAtom :: atom(), Params :: list().
 getString(StringAtom, Params) ->
-	#serverstringsCfg{id = ID,chs = Content} = getCfg:getCfgPStack(cfg_serverstrings, StringAtom),
+	#serverstringsCfg{id = ID, chs = Content} = getCfg:getCfgPStack(cfg_serverstrings, StringAtom),
 	case Content =/= undefined of
 		true ->
-			StrID = io_lib:format("~s~p",["\d",ID]),
+			StrID = io_lib:format("~s~p", ["\d", ID]),
 			Ret = case erlang:length(Params) > 0 of
-				true ->
-					Fun = fun(Arg,AccIn) ->
-								  if
-									  erlang:is_list(Arg) ->
-										  io_lib:format("~s~s~s",[AccIn,"\b",Arg]);
-									  true ->
-										  io_lib:format("~s~s~w",[AccIn,"\b",Arg])
-								  end
-						  end,
-					lists:foldl(Fun,StrID,Params);
-				_ ->
-					StrID
-			end,
-			io_lib:format("~s~s",[Ret,"\v"]);
+				      true ->
+					      Fun = fun(Arg, AccIn) ->
+						      if
+							      erlang:is_list(Arg) ->
+								      io_lib:format("~s~s~s", [AccIn, "\b", Arg]);
+							      true ->
+								      io_lib:format("~s~s~w", [AccIn, "\b", Arg])
+						      end
+					            end,
+					      lists:foldl(Fun, StrID, Params);
+				      _ ->
+					      StrID
+			      end,
+			io_lib:format("~s~s", [Ret, "\v"]);
 		_ ->
-			?ERROR_OUT("stringCfg getString[~p] Error.",[StringAtom]),
+			?ERROR_OUT("stringCfg getString[~p] Error.", [StringAtom]),
 			[]
 	end.
 getID(StringAtom) ->

@@ -237,10 +237,10 @@ getVipOrderSellNum() ->
 -spec getRedHistoryNum() -> uint().
 getRedHistoryNum() ->
 	case getGlobalCfg(bribery_history) of
-		not_found ->1;
-		Val ->Val
+		not_found -> 1;
+		Val -> Val
 	end.
-		  
+
 %% 获取角色复活后血量
 -spec getReliveHp() -> float() | not_found.
 getReliveHp() ->
@@ -318,7 +318,7 @@ getPlayerVersionLevel() ->
 	48.
 
 %%获取宠物品质系数
--spec getPetQualArg(Qual::uint()) -> float() | not_found.
+-spec getPetQualArg(Qual :: uint()) -> float() | not_found.
 getPetQualArg(?PetQualityWhite) ->
 	getGlobalCfg(petQuality0);
 getPetQualArg(?PetQualityGreen) ->
@@ -331,7 +331,7 @@ getPetQualArg(?PetQualityOrange) ->
 	getGlobalCfg(petQuality4).
 
 %%获取宠物星级系数
--spec getPetStarArg(Star::uint()) -> float() | not_found.
+-spec getPetStarArg(Star :: uint()) -> float() | not_found.
 getPetStarArg(?PetStar1) ->
 	getGlobalCfg(petEnh1);
 getPetStarArg(?PetStar2) ->
@@ -354,7 +354,7 @@ getPetStarArg(?PetStar10) ->
 	getGlobalCfg(petEnh10).
 
 %%获取宠物转生系数
--spec getPetRawArg(Star::uint()) -> float() | not_found.
+-spec getPetRawArg(Star :: uint()) -> float() | not_found.
 getPetRawArg(?PetRaw0) ->
 	getGlobalCfg(petReBorn0);
 getPetRawArg(?PetRaw1) ->
@@ -396,11 +396,11 @@ getPetNameMaterial() ->
 
 %%获取宠物助战最大个数
 -spec getPetAssistNum() -> uint() | not_found.
-getPetAssistNum() -> 
+getPetAssistNum() ->
 	getGlobalCfg(petMaxAssist).
 
 %%获取宠物技能品质系数
--spec getPetSkillQualArg(Qual::uint()) -> float() | not_found.
+-spec getPetSkillQualArg(Qual :: uint()) -> float() | not_found.
 getPetSkillQualArg(?PetSkillQualityGreen) ->
 	getGlobalCfg(petskillpw_green);
 getPetSkillQualArg(?PetSkillQualityBlue) ->
@@ -528,7 +528,7 @@ getAcArg() ->
 %%获取禁言次数
 getBanChat() ->
 	getGlobalCfg(ban_chat).
-	
+
 %%获取禁言等级
 getBanLevel() ->
 	getGlobalCfg(ban_chatlevel).
@@ -551,7 +551,7 @@ getBroadCastKv() ->
 
 %%杀戮值惩罚最低值
 getPunishKv() ->
-  	getGlobalCfg(killing_punishment).
+	getGlobalCfg(killing_punishment).
 
 %%杀戮值惩罚buff
 getPunishBuff() ->
@@ -807,7 +807,7 @@ getArenaGatherCd() ->
 
 getArenaInviteLv() ->
 	getGlobalCfg(arena_AddLevel).
-	
+
 
 %% ====================================================================
 %% Internal functions

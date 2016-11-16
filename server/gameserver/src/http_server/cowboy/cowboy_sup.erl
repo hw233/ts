@@ -23,7 +23,7 @@ start_link() ->
 	supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 -spec init([])
-	-> {ok, {{supervisor:strategy(), 10, 10}, [supervisor:child_spec()]}}.
+		-> {ok, {{supervisor:strategy(), 10, 10}, [supervisor:child_spec()]}}.
 init([]) ->
 	Procs = [{cowboy_clock, {cowboy_clock, start_link, []},
 		permanent, 5000, worker, [cowboy_clock]}],

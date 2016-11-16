@@ -3,12 +3,12 @@
 -define(cfg_vIP_colour, 1).
 
 -record(vIP_colourCfg, {
-        vip_level,
+	vip_level,
 
-        colour_name,
+	colour_name,
 
-        colour_code
+	colour_code
 
- }).
+}).
 
 -endif.

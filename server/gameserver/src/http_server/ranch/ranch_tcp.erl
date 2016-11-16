@@ -35,14 +35,14 @@
 -export([close/1]).
 
 -type opts() :: [{backlog, non_neg_integer()}
-	| {ip, inet:ip_address()}
-	| {linger, {boolean(), non_neg_integer()}}
-	| {nodelay, boolean()}
-	| {port, inet:port_number()}
-	| {raw, non_neg_integer(), non_neg_integer(),
-		non_neg_integer() | binary()}
-	| {send_timeout, timeout()}
-	| {send_timeout_close, boolean()}].
+| {ip, inet:ip_address()}
+| {linger, {boolean(), non_neg_integer()}}
+| {nodelay, boolean()}
+| {port, inet:port_number()}
+| {raw, non_neg_integer(), non_neg_integer(),
+	non_neg_integer() | binary()}
+| {send_timeout, timeout()}
+| {send_timeout_close, boolean()}].
 -export_type([opts/0]).
 
 name() -> tcp.
@@ -64,7 +64,7 @@ listen(Opts) ->
 			{reuseaddr, true}, {nodelay, true}])).
 
 -spec accept(inet:socket(), timeout())
-	-> {ok, inet:socket()} | {error, closed | timeout | atom()}.
+		-> {ok, inet:socket()} | {error, closed | timeout | atom()}.
 accept(LSocket, Timeout) ->
 	gen_tcp:accept(LSocket, Timeout).
 
@@ -75,7 +75,7 @@ accept_ack(_, _) ->
 %% @todo Probably filter Opts?
 -spec connect(inet:ip_address() | inet:hostname(),
 	inet:port_number(), any())
-	-> {ok, inet:socket()} | {error, atom()}.
+		-> {ok, inet:socket()} | {error, atom()}.
 connect(Host, Port, Opts) when is_integer(Port) ->
 	gen_tcp:connect(Host, Port,
 		Opts ++ [binary, {active, false}, {packet, raw}]).
@@ -83,14 +83,14 @@ connect(Host, Port, Opts) when is_integer(Port) ->
 %% @todo Probably filter Opts?
 -spec connect(inet:ip_address() | inet:hostname(),
 	inet:port_number(), any(), timeout())
-	-> {ok, inet:socket()} | {error, atom()}.
+		-> {ok, inet:socket()} | {error, atom()}.
 connect(Host, Port, Opts, Timeout) when is_integer(Port) ->
 	gen_tcp:connect(Host, Port,
 		Opts ++ [binary, {active, false}, {packet, raw}],
 		Timeout).
 
 -spec recv(inet:socket(), non_neg_integer(), timeout())
-	-> {ok, any()} | {error, closed | atom()}.
+		-> {ok, any()} | {error, closed | atom()}.
 recv(Socket, Length, Timeout) ->
 	gen_tcp:recv(Socket, Length, Timeout).
 
@@ -99,22 +99,22 @@ send(Socket, Packet) ->
 	gen_tcp:send(Socket, Packet).
 
 -spec sendfile(inet:socket(), file:name_all() | file:fd())
-	-> {ok, non_neg_integer()} | {error, atom()}.
+		-> {ok, non_neg_integer()} | {error, atom()}.
 sendfile(Socket, Filename) ->
 	sendfile(Socket, Filename, 0, 0, []).
 
 -spec sendfile(inet:socket(), file:name_all() | file:fd(), non_neg_integer(),
-		non_neg_integer())
-	-> {ok, non_neg_integer()} | {error, atom()}.
+	non_neg_integer())
+		-> {ok, non_neg_integer()} | {error, atom()}.
 sendfile(Socket, File, Offset, Bytes) ->
 	sendfile(Socket, File, Offset, Bytes, []).
 
 -spec sendfile(inet:socket(), file:name_all() | file:fd(), non_neg_integer(),
-		non_neg_integer(), [{chunk_size, non_neg_integer()}])
-	-> {ok, non_neg_integer()} | {error, atom()}.
+	non_neg_integer(), [{chunk_size, non_neg_integer()}])
+		-> {ok, non_neg_integer()} | {error, atom()}.
 sendfile(Socket, Filename, Offset, Bytes, Opts)
-		when is_list(Filename) orelse is_atom(Filename)
-		orelse is_binary(Filename) ->
+	when is_list(Filename) orelse is_atom(Filename)
+	orelse is_binary(Filename) ->
 	case file:open(Filename, [read, raw, binary]) of
 		{ok, RawFile} ->
 			try sendfile(Socket, RawFile, Offset, Bytes, Opts) of
@@ -127,9 +127,9 @@ sendfile(Socket, Filename, Offset, Bytes, Opts)
 	end;
 sendfile(Socket, RawFile, Offset, Bytes, Opts) ->
 	Opts2 = case Opts of
-		[] -> [{chunk_size, 16#1FFF}];
-		_ -> Opts
-	end,
+		        [] -> [{chunk_size, 16#1FFF}];
+		        _ -> Opts
+	        end,
 	try file:sendfile(RawFile, Socket, Offset, Bytes, Opts2) of
 		Result -> Result
 	catch
@@ -147,22 +147,22 @@ setopts(Socket, Opts) ->
 	inet:setopts(Socket, Opts).
 
 -spec controlling_process(inet:socket(), pid())
-	-> ok | {error, closed | not_owner | atom()}.
+		-> ok | {error, closed | not_owner | atom()}.
 controlling_process(Socket, Pid) ->
 	gen_tcp:controlling_process(Socket, Pid).
 
 -spec peername(inet:socket())
-	-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
+		-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
 peername(Socket) ->
 	inet:peername(Socket).
 
 -spec sockname(inet:socket())
-	-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
+		-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
 sockname(Socket) ->
 	inet:sockname(Socket).
 
 -spec shutdown(inet:socket(), read | write | read_write)
-	-> ok | {error, atom()}.
+		-> ok | {error, atom()}.
 shutdown(Socket, How) ->
 	gen_tcp:shutdown(Socket, How).
 

@@ -26,7 +26,7 @@
 	code_change/3]).
 
 %%开启最大工作者进程数量
--define(MaxWorkOtpNum,1).
+-define(MaxWorkOtpNum, 1).
 -record(state, {}).
 
 %%%===================================================================
@@ -39,10 +39,10 @@
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec(start_link(Name::mapMgrType()) ->
+-spec(start_link(Name :: mapMgrType()) ->
 	{ok, Pid :: pid()} | ignore | {error, Reason :: term()}).
 start_link(Name) ->
-	myGenServer:start_link({local,Name},?MODULE, [Name], [{timeout,?Start_Link_TimeOut_ms}]).
+	myGenServer:start_link({local, Name}, ?MODULE, [Name], [{timeout, ?Start_Link_TimeOut_ms}]).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -65,7 +65,7 @@ start_link(Name) ->
 init([Name]) ->
 	erlang:process_flag(trap_exit, true),
 	erlang:process_flag(priority, high),
-	?LOG_OUT("~p init",[?MODULE]),
+	?LOG_OUT("~p init", [?MODULE]),
 	initInternal(Name),
 	case application:get_env(isCrossServer) of
 		{ok, true} ->
@@ -73,7 +73,7 @@ init([Name]) ->
 		_ ->
 			erlang:send_after(?GameMapMgrTickTime, self(), tick)
 	end,
-	?LOG_OUT("~p init OK",[?MODULE]),
+	?LOG_OUT("~p init OK", [?MODULE]),
 	{ok, #state{}}.
 
 %%--------------------------------------------------------------------
@@ -130,16 +130,16 @@ handle_info({alreadyConnectDBServer, _Pid, _Msg}, State) ->
 	{noreply, State};
 
 %% 获取自己已有的副本进度的结果
-handle_info({getCopyMapScheduleAck, _Pid, Result},State) ->
+handle_info({getCopyMapScheduleAck, _Pid, Result}, State) ->
 	gameMapMgrCopyMapSchedule:getCopyMapScheduleAck(Result),
 
 	erlang:send_after(60000, self(), chechTimeOutCopyMapData),
-	{noreply,State};
+	{noreply, State};
 
 handle_info(chechTimeOutCopyMapData, State) ->
 	gameMapMgrCopyMapSchedule:dealTimeOutCopyMapScheduleData(),
 	erlang:send_after(60000, self(), chechTimeOutCopyMapData),
-	{noreply,State};
+	{noreply, State};
 
 handle_info({gm_setmlpm, _Pid, Data}, State) ->
 	L = getWorkOtpList(),
@@ -151,14 +151,14 @@ handle_info({gm_setmlpm, _Pid, Data}, State) ->
 	{noreply, State};
 
 %地图更新
-handle_info(tick,State) ->
+handle_info(tick, State) ->
 	tick(),
-	{noreply,State};
+	{noreply, State};
 handle_info(Info, State) ->
 	sendMsgToWorkOtp(Info),
 	{noreply, State}.
 
-handle_exception(Type,Why,State) ->
+handle_exception(Type, Why, State) ->
 	myGenServer:default_handle_excetion(Type, Why, State).
 
 %%--------------------------------------------------------------------
@@ -207,36 +207,36 @@ alreadyConnectDBServer() ->
 -endif.
 
 -spec initInternal(Name) -> ok when
-  Name::mapMgrType().
+	Name :: mapMgrType().
 initInternal(Name) ->
 	case Name of
 		?PSNameNormalMapMgr ->
 			%%只有普通地图才创建ETS，并且读取地图配置信息，需要在服务器启动时，优先启动普通地图管理进程
-			ets:new(?MapWorkInfoEts,[public,named_table,{keypos,#recKeyValue.key},{read_concurrency, true},{write_concurrency, true}]),
+			ets:new(?MapWorkInfoEts, [public, named_table, {keypos, #recKeyValue.key}, {read_concurrency, true}, {write_concurrency, true}]),
 			%%初始化地图管理器，读取地图配置相关信息
 			initGameMapMgr();
 		?PSNameCopyMapMgr ->
 			%%只有副本地图才创建已有副本进度列表的ETS
-			ets:new(?Ets_CopyMapSchedule,[public, named_table, bag, {read_concurrency,true}, {write_concurrency,true}]),
+			ets:new(?Ets_CopyMapSchedule, [public, named_table, bag, {read_concurrency, true}, {write_concurrency, true}]),
 			ok;
 		_ ->
 			skip
 	end,
 	%%开启工作者进程
-	L = startMgrWorkOtp(Name,?MaxWorkOtpNum),
+	L = startMgrWorkOtp(Name, ?MaxWorkOtpNum),
 	setWorkOtpList(L),
 	ok.
 
 -spec sendMsgToWorkOtp(Msg) -> ok when
-	Msg::term().
+	Msg :: term().
 sendMsgToWorkOtp(Msg) ->
 	Pid = getOneWorkOtp(),
 	%%这里为了达到与之前的消息意义的兼容，不能使用psMgr:sendMsg2PS函数
 	Pid ! Msg,
 	ok.
 
--spec callMsgToWorkOtp(Msg::term()) -> Reply when
-	Reply::term().
+-spec callMsgToWorkOtp(Msg :: term()) -> Reply when
+	Reply :: term().
 callMsgToWorkOtp(Msg) ->
 	Pid = getOneWorkOtp(),
 	gen_server:call(Pid, Msg).
@@ -249,30 +249,30 @@ initGameMapMgr() ->
 		#mapsettingCfg{} ->
 			skip;
 		_ ->
-			?ERROR_OUT("Can not find StartMapID[~p] in mapsetting cfg",[MapID]),
+			?ERROR_OUT("Can not find StartMapID[~p] in mapsetting cfg", [MapID]),
 			throw("Can not find StartMapID in mapsetting cfg")
 	end,
 	ok.
 
--spec startMgrWorkOtp(Name,N) -> list() when Name::mapMgrType(),N::uint().
-startMgrWorkOtp(Name,N) ->
-	List = lists:seq(1,N),
-	Fun = fun(I,AccIn) ->
-		case gameMapMgrWorkerOtp:start_link(Name,I) of
+-spec startMgrWorkOtp(Name, N) -> list() when Name :: mapMgrType(), N :: uint().
+startMgrWorkOtp(Name, N) ->
+	List = lists:seq(1, N),
+	Fun = fun(I, AccIn) ->
+		case gameMapMgrWorkerOtp:start_link(Name, I) of
 			{'ok', Pid} ->
-				?DEBUG_OUT("start MapMgr work otp:~p",[Pid]),
+				?DEBUG_OUT("start MapMgr work otp:~p", [Pid]),
 				[{Pid} | AccIn];
 			Reason ->
-				?DEBUG_OUT("start MapMgr work otp failed[~p]",[Reason]),
+				?DEBUG_OUT("start MapMgr work otp failed[~p]", [Reason]),
 				AccIn
 		end
-	end,
-	lists:foldl(Fun,[],List).
+	      end,
+	lists:foldl(Fun, [], List).
 
 -spec setWorkOtpList(L) -> ok when
-	L::list().
+	L :: list().
 setWorkOtpList(L) ->
-	put(workOtpList,L),
+	put(workOtpList, L),
 	ok.
 
 -spec getWorkOtpList() -> list().
@@ -294,9 +294,9 @@ getIdleWorkOtpList() ->
 			List
 	end.
 
--spec setIdleWorkOtpList(L) -> ok when L::list().
-setIdleWorkOtpList(L) when erlang:is_list(L)->
-	put(idleWorkOtpList,L),
+-spec setIdleWorkOtpList(L) -> ok when L :: list().
+setIdleWorkOtpList(L) when erlang:is_list(L) ->
+	put(idleWorkOtpList, L),
 	ok.
 
 -spec getOneWorkOtp() -> pid().

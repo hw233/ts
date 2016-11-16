@@ -35,17 +35,17 @@
 -export_type([ref/0]).
 
 -spec start_listener(ref(), non_neg_integer(), module(), any(), module(), any())
-	-> {ok, pid()} | {error, badarg}.
+		-> {ok, pid()} | {error, badarg}.
 start_listener(Ref, NbAcceptors, Transport, TransOpts, Protocol, ProtoOpts)
-		when is_integer(NbAcceptors) andalso is_atom(Transport)
-		andalso is_atom(Protocol) ->
+	when is_integer(NbAcceptors) andalso is_atom(Transport)
+	andalso is_atom(Protocol) ->
 	_ = code:ensure_loaded(Transport),
 	case erlang:function_exported(Transport, name, 0) of
 		false ->
 			{error, badarg};
 		true ->
 			Res = supervisor:start_child(ranch_sup, child_spec(Ref, NbAcceptors,
-					Transport, TransOpts, Protocol, ProtoOpts)),
+				Transport, TransOpts, Protocol, ProtoOpts)),
 			Socket = proplists:get_value(socket, TransOpts),
 			case Res of
 				{ok, Pid} when Socket =/= undefined ->
@@ -60,7 +60,7 @@ start_listener(Ref, NbAcceptors, Transport, TransOpts, Protocol, ProtoOpts)
 					%%% Note: the catch is here because SSL crashes when you change
 					%%% the controlling process of a listen socket because of a bug.
 					%%% The bug will be fixed in R16.
-					catch Transport:controlling_process(Socket, AcceptorsSup);
+						catch Transport:controlling_process(Socket, AcceptorsSup);
 				_ ->
 					ok
 			end,
@@ -78,10 +78,10 @@ stop_listener(Ref) ->
 	end.
 
 -spec child_spec(ref(), non_neg_integer(), module(), any(), module(), any())
-	-> supervisor:child_spec().
+		-> supervisor:child_spec().
 child_spec(Ref, NbAcceptors, Transport, TransOpts, Protocol, ProtoOpts)
-		when is_integer(NbAcceptors) andalso is_atom(Transport)
-		andalso is_atom(Protocol) ->
+	when is_integer(NbAcceptors) andalso is_atom(Transport)
+	andalso is_atom(Protocol) ->
 	{{ranch_listener_sup, Ref}, {ranch_listener_sup, start_link, [
 		Ref, NbAcceptors, Transport, TransOpts, Protocol, ProtoOpts
 	]}, permanent, infinity, supervisor, [ranch_listener_sup]}.
@@ -124,14 +124,14 @@ filter_options(UserOptions, AllowedKeys, DefaultOptions) ->
 	AllowedOptions = filter_user_options(UserOptions, AllowedKeys),
 	lists:foldl(fun merge_options/2, DefaultOptions, AllowedOptions).
 
-filter_user_options([Opt = {Key, _}|Tail], AllowedKeys) ->
+filter_user_options([Opt = {Key, _} | Tail], AllowedKeys) ->
 	case lists:member(Key, AllowedKeys) of
-		true -> [Opt|filter_user_options(Tail, AllowedKeys)];
+		true -> [Opt | filter_user_options(Tail, AllowedKeys)];
 		false -> filter_user_options(Tail, AllowedKeys)
 	end;
-filter_user_options([Opt = {raw, _, _, _}|Tail], AllowedKeys) ->
+filter_user_options([Opt = {raw, _, _, _} | Tail], AllowedKeys) ->
 	case lists:member(raw, AllowedKeys) of
-		true -> [Opt|filter_user_options(Tail, AllowedKeys)];
+		true -> [Opt | filter_user_options(Tail, AllowedKeys)];
 		false -> filter_user_options(Tail, AllowedKeys)
 	end;
 filter_user_options([], _) ->
@@ -140,20 +140,20 @@ filter_user_options([], _) ->
 merge_options({Key, _} = Option, OptionList) ->
 	lists:keystore(Key, 1, OptionList, Option);
 merge_options(Option, OptionList) ->
-	[Option|OptionList].
+	[Option | OptionList].
 
 -spec set_option_default(Opts, atom(), any())
-	-> Opts when Opts :: [{atom(), any()}].
+		-> Opts when Opts :: [{atom(), any()}].
 set_option_default(Opts, Key, Value) ->
 	case lists:keymember(Key, 1, Opts) of
 		true -> Opts;
-		false -> [{Key, Value}|Opts]
+		false -> [{Key, Value} | Opts]
 	end.
 
 -spec require([atom()]) -> ok.
 require([]) ->
 	ok;
-require([App|Tail]) ->
+require([App | Tail]) ->
 	case application:start(App) of
 		ok -> ok;
 		{error, {already_started, App}} -> ok

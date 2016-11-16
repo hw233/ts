@@ -3,10 +3,10 @@
 -define(cfg_chatCommon, 1).
 
 -record(chatCommonCfg, {
-        id,
+	id,
 
-        sentence
+	sentence
 
- }).
+}).
 
 -endif.

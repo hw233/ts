@@ -10,4 +10,10 @@
 -author("Administrator").
 
 %% API
--export([]).
+-export([
+	onLogout/1
+]).
+
+
+onLogout(Reason)->
+	ok.

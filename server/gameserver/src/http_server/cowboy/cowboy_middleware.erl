@@ -18,8 +18,8 @@
 -export_type([env/0]).
 
 -callback execute(Req, Env)
-	-> {ok, Req, Env}
+		-> {ok, Req, Env}
 	| {suspend, module(), atom(), [any()]}
 	| {halt, Req}
 	| {error, cowboy:http_status(), Req}
-	when Req::cowboy_req:req(), Env::env().
+	when Req :: cowboy_req:req(), Env :: env().

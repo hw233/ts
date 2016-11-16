@@ -29,7 +29,7 @@
 ]).
 
 %% 设置副本最大进度为，当前配置的最大进度
--spec setCopyMapMaxSchedule(GroupID::uint()) -> ok.
+-spec setCopyMapMaxSchedule(GroupID :: uint()) -> ok.
 setCopyMapMaxSchedule(GroupID) ->
 	MapID = gameMapLogic:getMapID(GroupID),
 	Max = case getCfg:getCfgPStack(cfg_mapsetting, MapID) of
@@ -42,7 +42,7 @@ setCopyMapMaxSchedule(GroupID) ->
 	ok.
 
 %% 进度初始化
--spec initCopyMapSchedule(GroupID::uint(), Schedule) -> ok when Schedule::uint().
+-spec initCopyMapSchedule(GroupID :: uint(), Schedule) -> ok when Schedule :: uint().
 initCopyMapSchedule(GroupID, Schedule) ->
 	MapID = gameMapLogic:getMapID(GroupID),
 	case copyMapScheduleComplete:getCopyMapScheduleConf(MapID, Schedule) of
@@ -80,7 +80,7 @@ initCopyMapSchedule(GroupID, Schedule) ->
 					end,
 					ok;
 				_ ->
-					?ERROR_OUT("initCopyMapSchedule cannot find cfg[~p]",[InitConf]),
+					?ERROR_OUT("initCopyMapSchedule cannot find cfg[~p]", [InitConf]),
 					false
 			end;
 		_ ->
@@ -89,7 +89,7 @@ initCopyMapSchedule(GroupID, Schedule) ->
 	ok.
 
 %% 初始化并行进度
--spec initParallelScheduleConf(GroupID::uint()) -> ok.
+-spec initParallelScheduleConf(GroupID :: uint()) -> ok.
 initParallelScheduleConf(GroupID) ->
 	MapID = gameMapLogic:getMapID(GroupID),
 	PCList = case getCfg:getCfgPStack(cfg_mapsetting, MapID) of
@@ -108,7 +108,7 @@ initParallelScheduleConf(GroupID) ->
 					         _ ->
 						         AccList
 				         end
-			         end,
+			               end,
 			         lists:foldl(Fun, [], PConf);
 		         _ ->
 			         []
@@ -117,12 +117,12 @@ initParallelScheduleConf(GroupID) ->
 	ok.
 
 %% 完成了一个并行子进度，做一个初始化
--spec initParallelScheduleConf(GroupID::uint(), InitID::uint()) -> ok.
+-spec initParallelScheduleConf(GroupID :: uint(), InitID :: uint()) -> ok.
 initParallelScheduleConf(GroupID, InitID) when erlang:is_integer(InitID) andalso InitID > 0 ->
 	case getCfg:getCfgPStack(cfg_copymapScheduleInit, InitID) of
 		#copymapScheduleInitCfg{addcollect = AddCollect,
-								openthedoor1 = OpenBlock1, openthedoor2 = OpenBlock2, openthedoor3 = OpenBlock3, openthedoor4 = OpenBlock4,
-								radius = Radius} = Conf ->
+			openthedoor1 = OpenBlock1, openthedoor2 = OpenBlock2, openthedoor3 = OpenBlock3, openthedoor4 = OpenBlock4,
+			radius = Radius} = Conf ->
 			?DEBUG_OUT("initParallelScheduleConf: ~p, ~p, ~p", [gameMapLogic:getMapID(GroupID), self(), InitID]),
 			%% 刷怪
 			addMonsterToMap(GroupID, Conf),
@@ -144,17 +144,17 @@ initParallelScheduleConf(_GroupID, _InitID) ->
 	ok.
 
 %% 解析并行进度配置list
--spec analysisList(InList::list() | term()) -> list().
+-spec analysisList(InList :: list() | term()) -> list().
 analysisList(InList) when ?IsListValid(InList) ->
 	Fun = fun({TargetID, NeedNumber}, List) ->
 		[#recKCcalc{id = TargetID, needNumber = NeedNumber, curNumber = 0} | List]
-	end,
+	      end,
 	lists:foldl(Fun, [], InList);
 analysisList(_) ->
 	[].
 
 %% 往地图中刷怪
--spec addMonsterToMap(GroupID::uint(), #copymapScheduleInitCfg{}) -> ok.
+-spec addMonsterToMap(GroupID :: uint(), #copymapScheduleInitCfg{}) -> ok.
 addMonsterToMap(GroupID, #copymapScheduleInitCfg{} = Conf) ->
 	#copymapScheduleInitCfg{
 		addmonster = AddMonster,
@@ -183,18 +183,18 @@ addMonsterToMap(GroupID, #copymapScheduleInitCfg{} = Conf) ->
 addMonsterToMap_EscortPower({GroupID, Radius, AddList, {_RoleID, Level}}) ->
 	List = getMapObjDataList(GroupID, AddList, Radius),
 	CallBack = copyMapDemonBattle:createPropCallback_EscortPower(Level),
-	mapBase:spawnAllMonster(List,CallBack,Level),
+	mapBase:spawnAllMonster(List, CallBack, Level),
 	ok.
 
 addMonsterToMap_EscortGharry({GroupID, Radius, AddList, {_RoleID, _Level, HDRatio, MonsterLevel}}) ->
 	List = getMapObjDataList(GroupID, AddList, Radius),
 	CallBack = copyMapDemonBattle:createPropCallback_EscortGharry(HDRatio),
-	mapBase:spawnAllMonster(List,CallBack,MonsterLevel),
+	mapBase:spawnAllMonster(List, CallBack, MonsterLevel),
 	ok.
 
 %% 往地图中指定刷怪
--spec addMonsterToMap(GroupID, AddList, Radius::uint() | float()) -> ok when
-	GroupID::uint(), AddList::list().
+-spec addMonsterToMap(GroupID, AddList, Radius :: uint() | float()) -> ok when
+	GroupID :: uint(), AddList :: list().
 addMonsterToMap(GroupID, AddList, Radius) when ?IsListValid(AddList) ->
 	List = getMapObjDataList(GroupID, AddList, Radius),
 
@@ -210,7 +210,7 @@ addMonsterToMap(GroupID, AddList, Radius) when ?IsListValid(AddList) ->
 			CallBack = copyMapDemonBattle:createPropCallback_Rift(MapLevel),
 
 			%%?DEBUG_OUT("addMonsterToMap matching:~p,~p,~p,~p", [self(),GroupID,MapLevel,List]),
-			mapBase:spawnAllMonster(List,CallBack,MapLevel);
+			mapBase:spawnAllMonster(List, CallBack, MapLevel);
 		_ ->
 			case getCfg:getCfgPStack(cfg_mapsetting, MapID) of
 				#mapsettingCfg{difficulty = Difficulty} when erlang:is_integer(Difficulty) andalso Difficulty > 0 ->
@@ -225,7 +225,7 @@ addMonsterToMap(GroupID, AddList, Radius) when ?IsListValid(AddList) ->
 			end
 	end,
 	ok;
-addMonsterToMap(_,_,_) ->
+addMonsterToMap(_, _, _) ->
 	ok.
 
 %% 往地图中随机刷普通怪
@@ -236,10 +236,10 @@ addRandMonsterToMap(GroupID, RandMonster, PosList, Radius) when ?IsListValid(Ran
 		MonsterList = lists:nth(Index, RandMonster),
 		AddList = [{ID, 1, TX, TY} || ID <- MonsterList],
 		addMonsterToMap(GroupID, AddList, Radius)
-	end,
+	      end,
 	lists:foreach(Fun, PosList),
 	ok;
-addRandMonsterToMap(_,_,_,_) ->
+addRandMonsterToMap(_, _, _, _) ->
 	ok.
 
 %% 往地图中随机刷精英怪
@@ -250,26 +250,26 @@ addRandEliteToMap(GroupID, RandElite, RandEliteNum, PosList, Radius) when ?IsLis
 		Index = misc:rand(1, Len),
 		Elite = lists:nth(Index, RandElite),
 		[Elite | List]
-	end,
+	               end,
 	TupleList = lists:foldl(FunTupleList, [], LLLL),
-	
+
 	Fun = fun(EliteList, SurplusPoss) ->
 		Poss = case SurplusPoss of
-				   [] ->
-					   PosList;
-				   _ ->
-					   SurplusPoss
-			   end,
+			       [] ->
+				       PosList;
+			       _ ->
+				       SurplusPoss
+		       end,
 		PosLen = length(Poss),
 		PosIndex = misc:rand(1, PosLen),
 		Pos = [TX, TY] = lists:nth(PosIndex, Poss),
 		AddList = [[ID, 1, TX, TY] || ID <- EliteList],
 		addMonsterToMap(GroupID, AddList, Radius),
 		lists:delete(Pos, Poss)
-	end,
+	      end,
 	lists:foldl(Fun, PosList, TupleList),
 	ok;
-addRandEliteToMap(_,_,_,_,_) ->
+addRandEliteToMap(_, _, _, _, _) ->
 	ok.
 
 %% 往地图中刷boss
@@ -278,28 +278,28 @@ addBossToMap(GroupID, Boss, Radius) ->
 	ok.
 
 %% 往地图中刷采集物
--spec addCollectToMap(GroupID::uint(), AddList::list(), Radius::uint() | float()) -> ok.
+-spec addCollectToMap(GroupID :: uint(), AddList :: list(), Radius :: uint() | float()) -> ok.
 addCollectToMap(GroupID, AddList, Radius) when ?IsListValid(AddList) ->
 	List = getMapObjDataList(GroupID, AddList, Radius),
 	%%?DEBUG_OUT("addCollectToMap:~p,~p,~p", [GroupID, AddList,List]),
 	mapBase:spawnAllCollect(List),
 	ok;
-addCollectToMap(_,_,_) ->
+addCollectToMap(_, _, _) ->
 	ok.
 
 %% 打开npc阻挡
--spec openNpcBlock(GroupID::uint(), BlockList::list()) -> ok.
+-spec openNpcBlock(GroupID :: uint(), BlockList :: list()) -> ok.
 openNpcBlock(GroupID, [BlockID | List] = BlockList) when ?IsListValid(BlockList) ->
 	%% 打开这个阻挡npc
 	setBlockNpcStatus(GroupID, BlockID, ?BlockNpc_Open),
 
 	%% 继续
 	openNpcBlock(GroupID, List);
-openNpcBlock(_,_) ->
+openNpcBlock(_, _) ->
 	ok.
 
 %% 设置阻挡NPC的状态
--spec setBlockNpcStatus(GroupID::uint(), BlockStringID::string() | uint(), Status::?BlockNpc_Close | ?BlockNpc_Open) -> boolean().
+-spec setBlockNpcStatus(GroupID :: uint(), BlockStringID :: string() | uint(), Status :: ?BlockNpc_Close | ?BlockNpc_Open) -> boolean().
 setBlockNpcStatus(_GroupID, BlockStringID, _Status) when erlang:is_integer(BlockStringID) ->
 	false;
 setBlockNpcStatus(_GroupID, "", _Status) ->
@@ -340,7 +340,7 @@ setBlockNpcStatus(GroupID, BlockStringID, Status) when erlang:is_list(BlockStrin
 	end.
 
 %% 获得已经通过进度的阻档名
--spec getOpenBlockList(PassedSchedule::[{_,_},...]) -> list().
+-spec getOpenBlockList(PassedSchedule :: [{_, _}, ...]) -> list().
 getOpenBlockList(PassedSchedule) ->
 	?DEBUG_OUT("getOpenBlockList:~p,~p", [mapState:getMapOwnerID(0), PassedSchedule]),
 	Fun = fun({InitConf, _}, AccList) ->
@@ -348,7 +348,7 @@ getOpenBlockList(PassedSchedule) ->
 			true ->
 				case getCfg:getCfgPStack(cfg_copymapScheduleInit, InitConf) of
 					#copymapScheduleInitCfg{openthedoor1 = OpenBlock1, openthedoor2 = OpenBlock2,
-											openthedoor3 = OpenBlock3, openthedoor4 = OpenBlock4} ->
+						openthedoor3 = OpenBlock3, openthedoor4 = OpenBlock4} ->
 						%% 阻档npc打开
 						L = [OpenBlock1, OpenBlock2, OpenBlock3, OpenBlock4],
 						LL = [AA || AA <- L, AA /= "", AA /= "0", AA /= undefined, not erlang:is_integer(AA)],
@@ -359,11 +359,11 @@ getOpenBlockList(PassedSchedule) ->
 			_ ->
 				AccList
 		end
-	end,
+	      end,
 	lists:foldl(Fun, [], PassedSchedule).
 
 %% 发送阻挡的改变状态给客户端
--spec sendBlockStatusChangeToPlayer(GroupID::uint(), BlockStringID::string(), Status::?BlockNpc_Close | ?BlockNpc_Open) -> ok.
+-spec sendBlockStatusChangeToPlayer(GroupID :: uint(), BlockStringID :: string(), Status :: ?BlockNpc_Close | ?BlockNpc_Open) -> ok.
 sendBlockStatusChangeToPlayer(GroupID, BlockStringID, Status) ->
 	Ets = mapState:getMapPlayerEts(),
 	Fun =
@@ -384,19 +384,19 @@ sendBlockStatusChangeToPlayer(GroupID, BlockStringID, Status) ->
 	ok.
 
 %% 根据添加列表，或者能识别的mapobj对象
--spec getMapObjDataList(GroupID::uint(), AddList::list(), Radius::uint() | float()) -> list().
+-spec getMapObjDataList(GroupID :: uint(), AddList :: list(), Radius :: uint() | float()) -> list().
 getMapObjDataList(GroupID, AddList, Radius) when ?IsListValid(AddList) ->
 	R = erlang:float(Radius),
 
 	Fun = fun(Need, ObjList) ->
 		{ObjID, Number, XX, YY} = case Need of
-									  {O, N, X, Y} ->
-										  {O, N, erlang:float(X), erlang:float(Y)};
+			                          {O, N, X, Y} ->
+				                          {O, N, erlang:float(X), erlang:float(Y)};
 			                          [O, N, X, Y] ->
 				                          {O, N, erlang:float(X), erlang:float(Y)};
-									  {O, N} ->
-										  {LX, LY} = getMapOwnerPos(GroupID),
-										  {O, N, LX, LY};
+			                          {O, N} ->
+				                          {LX, LY} = getMapOwnerPos(GroupID),
+				                          {O, N, LX, LY};
 			                          [O, N] ->
 				                          {LX, LY} = getMapOwnerPos(GroupID),
 				                          {O, N, LX, LY}
@@ -408,24 +408,24 @@ getMapObjDataList(GroupID, AddList, Radius) when ?IsListValid(AddList) ->
 				FunAddObj = fun(_, List) ->
 					{NX, NY} = getAddMonsterPos(XX, YY, R),
 					[#recMapObjData{id = ObjID, mapX = NX, mapY = NY, groupID = GroupID} | List]
-				end,
+				            end,
 				lists:foldl(FunAddObj, ObjList, L);
 			Number =:= 1 ->
 				[#recMapObjData{id = ObjID, mapX = XX, mapY = YY, groupID = GroupID} | ObjList];
 			true ->
 				ObjList
 		end
-	end,
+	      end,
 	lists:foldl(Fun, [], AddList);
-getMapObjDataList(_,_,_) ->
+getMapObjDataList(_, _, _) ->
 	[].
 
 %% 获取副本或者位面拥有者的当前坐标
--spec getMapOwnerPos(GroupID::uint()) -> {X::float(), Y::float()}.
+-spec getMapOwnerPos(GroupID :: uint()) -> {X :: float(), Y :: float()}.
 getMapOwnerPos(GroupID) ->
 	PlayerEts = mapState:getMapPlayerEts(),
 	case mapView:getGroupObject(PlayerEts, GroupID) of
-		[#recMapObject{teamID = TeamID, x = X, y = Y}|_] = PlayerList ->
+		[#recMapObject{teamID = TeamID, x = X, y = Y} | _] = PlayerList ->
 			case TeamID /= undefined andalso TeamID > 0 of
 				true ->
 					LeaderID = team:getTeamLeaderID(TeamID),
@@ -439,19 +439,19 @@ getMapOwnerPos(GroupID) ->
 					{X, Y}
 			end;
 		_ ->
-			?ERROR_OUT("getMapOwnerPos:~p,~p,~p,~p", [mapState:getMapId(),self(),GroupID,PlayerEts]),
+			?ERROR_OUT("getMapOwnerPos:~p,~p,~p,~p", [mapState:getMapId(), self(), GroupID, PlayerEts]),
 			{0.0, 0.0}
 	end.
 
 %% 获取随机坐标
--spec getAddMonsterPos(X, Y, Radius) -> {NX,NY} when
-	X::float(),Y::float(),NX::float(),NY::float(),Radius::float().
+-spec getAddMonsterPos(X, Y, Radius) -> {NX, NY} when
+	X :: float(), Y :: float(), NX :: float(), NY :: float(), Radius :: float().
 getAddMonsterPos(X, Y, Radius) when erlang:is_float(X) andalso erlang:is_float(Y) ->
 	R = case Radius > 0 of
-			true ->
-				Radius;
-			_ ->
-				?AddMonsterRange
+		    true ->
+			    Radius;
+		    _ ->
+			    ?AddMonsterRange
 	    end,
 	XMin = X - R,
 	XMax = X + R,

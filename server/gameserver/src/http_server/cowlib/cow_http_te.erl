@@ -27,18 +27,18 @@
 -type state() :: {non_neg_integer(), non_neg_integer()}.
 
 -type decode_ret() :: more
-	| {more, Data::binary(), state()}
-	| {more, Data::binary(), RemLen::non_neg_integer(), state()}
-	| {more, Data::binary(), Rest::binary(), state()}
-	| {done, TotalLen::non_neg_integer(), Rest::binary()}
-	| {done, Data::binary(), TotalLen::non_neg_integer(), Rest::binary()}.
+| {more, Data :: binary(), state()}
+| {more, Data :: binary(), RemLen :: non_neg_integer(), state()}
+| {more, Data :: binary(), Rest :: binary(), state()}
+| {done, TotalLen :: non_neg_integer(), Rest :: binary()}
+| {done, Data :: binary(), TotalLen :: non_neg_integer(), Rest :: binary()}.
 -export_type([decode_ret/0]).
 
 -ifdef(EXTRA).
-dripfeed(<< C, Rest/bits >>, Acc, State, F) ->
-	case F(<< Acc/binary, C >>, State) of
+dripfeed(<<C, Rest/bits>>, Acc, State, F) ->
+	case F(<<Acc/binary, C>>, State) of
 		more ->
-			dripfeed(Rest, << Acc/binary, C >>, State, F);
+			dripfeed(Rest, <<Acc/binary, C>>, State, F);
 		{more, _, State2} ->
 			dripfeed(Rest, <<>>, State2, F);
 		{more, _, Length, State2} when is_integer(Length) ->
@@ -57,8 +57,8 @@ dripfeed(<< C, Rest/bits >>, Acc, State, F) ->
 %% @doc Decode an identity stream.
 
 -spec stream_identity(Data, State)
-	-> {more, Data, Len, State} | {done, Data, Len, Data}
-	when Data::binary(), State::state(), Len::non_neg_integer().
+		-> {more, Data, Len, State} | {done, Data, Len, Data}
+	when Data :: binary(), State :: state(), Len :: non_neg_integer().
 stream_identity(Data, {Streamed, Total}) ->
 	Streamed2 = Streamed + byte_size(Data),
 	if
@@ -66,11 +66,11 @@ stream_identity(Data, {Streamed, Total}) ->
 			{more, Data, Total - Streamed2, {Streamed2, Total}};
 		true ->
 			Size = Total - Streamed,
-			<< Data2:Size/binary, Rest/bits >> = Data,
+			<<Data2:Size/binary, Rest/bits>> = Data,
 			{done, Data2, Total, Rest}
 	end.
 
--spec identity(Data) -> Data when Data::iodata().
+-spec identity(Data) -> Data when Data :: iodata().
 identity(Data) ->
 	Data.
 
@@ -80,17 +80,17 @@ stream_identity_test() ->
 		= stream_identity(identity(<<>>), {0, 0}),
 	{done, <<"\r\n">>, 2, <<>>}
 		= stream_identity(identity(<<"\r\n">>), {0, 2}),
-	{done, << 0:80000 >>, 10000, <<>>}
-		= stream_identity(identity(<< 0:80000 >>), {0, 10000}),
+	{done, <<0:80000>>, 10000, <<>>}
+		= stream_identity(identity(<<0:80000>>), {0, 10000}),
 	ok.
 
 stream_identity_parts_test() ->
-	{more, << 0:8000 >>, 1999, S1}
-		= stream_identity(<< 0:8000 >>, {0, 2999}),
-	{more, << 0:8000 >>, 999, S2}
-		= stream_identity(<< 0:8000 >>, S1),
-	{done, << 0:7992 >>, 2999, <<>>}
-		= stream_identity(<< 0:7992 >>, S2),
+	{more, <<0:8000>>, 1999, S1}
+		= stream_identity(<<0:8000>>, {0, 2999}),
+	{more, <<0:8000>>, 999, S2}
+		= stream_identity(<<0:8000>>, S1),
+	{done, <<0:7992>>, 2999, <<>>}
+		= stream_identity(<<0:7992>>, S2),
 	ok.
 -endif.
 
@@ -129,15 +129,15 @@ horse_stream_identity_dripfeed() ->
 %% @doc Decode a chunked stream.
 
 -spec stream_chunked(Data, State)
-	-> more | {more, Data, State} | {more, Data, Len, State}
+		-> more | {more, Data, State} | {more, Data, Len, State}
 	| {more, Data, Data, State}
 	| {done, Len, Data} | {done, Data, Len, Data}
-	when Data::binary(), State::state(), Len::non_neg_integer().
+	when Data :: binary(), State :: state(), Len :: non_neg_integer().
 stream_chunked(Data, State) ->
 	stream_chunked(Data, State, <<>>).
 
 %% New chunk.
-stream_chunked(Data = << C, _/bits >>, {0, Streamed}, Acc) when C =/= $\r ->
+stream_chunked(Data = <<C, _/bits>>, {0, Streamed}, Acc) when C =/= $\r ->
 	case chunked_len(Data, Streamed, Acc, 0) of
 		{next, Rest, State, Acc2} ->
 			stream_chunked(Rest, State, Acc2);
@@ -147,13 +147,13 @@ stream_chunked(Data = << C, _/bits >>, {0, Streamed}, Acc) when C =/= $\r ->
 			Ret
 	end;
 %% Trailing \r\n before next chunk.
-stream_chunked(<< "\r\n", Rest/bits >>, {2, Streamed}, Acc) ->
+stream_chunked(<<"\r\n", Rest/bits>>, {2, Streamed}, Acc) ->
 	stream_chunked(Rest, {0, Streamed}, Acc);
 %% Trailing \r before next chunk.
-stream_chunked(<< "\r" >>, {2, Streamed}, Acc) ->
+stream_chunked(<<"\r">>, {2, Streamed}, Acc) ->
 	{more, Acc, {1, Streamed}};
 %% Trailing \n before next chunk.
-stream_chunked(<< "\n", Rest/bits >>, {1, Streamed}, Acc) ->
+stream_chunked(<<"\n", Rest/bits>>, {1, Streamed}, Acc) ->
 	stream_chunked(Rest, {0, Streamed}, Acc);
 %% More data needed.
 stream_chunked(<<>>, State = {Rem, _}, Acc) ->
@@ -163,44 +163,44 @@ stream_chunked(Data, {Rem, Streamed}, Acc) when Rem > 2 ->
 	DataSize = byte_size(Data),
 	RemSize = Rem - 2,
 	case Data of
-		<< Chunk:RemSize/binary, "\r\n", Rest/bits >> ->
-			stream_chunked(Rest, {0, Streamed + RemSize}, << Acc/binary, Chunk/binary >>);
-		<< Chunk:RemSize/binary, "\r" >> ->
-			{more, << Acc/binary, Chunk/binary >>, {1, Streamed + RemSize}};
+		<<Chunk:RemSize/binary, "\r\n", Rest/bits>> ->
+			stream_chunked(Rest, {0, Streamed + RemSize}, <<Acc/binary, Chunk/binary>>);
+		<<Chunk:RemSize/binary, "\r">> ->
+			{more, <<Acc/binary, Chunk/binary>>, {1, Streamed + RemSize}};
 		%% Everything in Data is part of the chunk.
 		_ ->
 			Rem2 = Rem - DataSize,
-			{more, << Acc/binary, Data/binary >>, Rem2, {Rem2, Streamed + DataSize}}
+			{more, <<Acc/binary, Data/binary>>, Rem2, {Rem2, Streamed + DataSize}}
 	end.
 
-chunked_len(<< $0, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16);
-chunked_len(<< $1, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 1);
-chunked_len(<< $2, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 2);
-chunked_len(<< $3, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 3);
-chunked_len(<< $4, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 4);
-chunked_len(<< $5, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 5);
-chunked_len(<< $6, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 6);
-chunked_len(<< $7, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 7);
-chunked_len(<< $8, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 8);
-chunked_len(<< $9, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 9);
-chunked_len(<< $A, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 10);
-chunked_len(<< $B, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 11);
-chunked_len(<< $C, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 12);
-chunked_len(<< $D, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 13);
-chunked_len(<< $E, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 14);
-chunked_len(<< $F, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 15);
-chunked_len(<< $a, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 10);
-chunked_len(<< $b, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 11);
-chunked_len(<< $c, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 12);
-chunked_len(<< $d, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 13);
-chunked_len(<< $e, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 14);
-chunked_len(<< $f, R/bits >>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 15);
+chunked_len(<<$0, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16);
+chunked_len(<<$1, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 1);
+chunked_len(<<$2, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 2);
+chunked_len(<<$3, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 3);
+chunked_len(<<$4, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 4);
+chunked_len(<<$5, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 5);
+chunked_len(<<$6, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 6);
+chunked_len(<<$7, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 7);
+chunked_len(<<$8, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 8);
+chunked_len(<<$9, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 9);
+chunked_len(<<$A, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 10);
+chunked_len(<<$B, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 11);
+chunked_len(<<$C, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 12);
+chunked_len(<<$D, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 13);
+chunked_len(<<$E, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 14);
+chunked_len(<<$F, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 15);
+chunked_len(<<$a, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 10);
+chunked_len(<<$b, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 11);
+chunked_len(<<$c, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 12);
+chunked_len(<<$d, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 13);
+chunked_len(<<$e, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 14);
+chunked_len(<<$f, R/bits>>, S, A, Len) -> chunked_len(R, S, A, Len * 16 + 15);
 %% Final chunk.
-chunked_len(<< "\r\n\r\n", R/bits >>, S, <<>>, 0) -> {done, S, R};
-chunked_len(<< "\r\n\r\n", R/bits >>, S, A, 0) -> {done, A, S, R};
+chunked_len(<<"\r\n\r\n", R/bits>>, S, <<>>, 0) -> {done, S, R};
+chunked_len(<<"\r\n\r\n", R/bits>>, S, A, 0) -> {done, A, S, R};
 chunked_len(_, _, _, 0) -> more;
 %% Normal chunk. Add 2 to Len for the trailing \r\n.
-chunked_len(<< "\r\n", R/bits >>, S, A, Len) -> {next, R, {Len + 2, S}, A};
+chunked_len(<<"\r\n", R/bits>>, S, A, Len) -> {next, R, {Len + 2, S}, A};
 chunked_len(<<"\r">>, _, <<>>, _) -> more;
 chunked_len(<<"\r">>, S, A, _) -> {more, {0, S}, A};
 chunked_len(<<>>, _, <<>>, _) -> more;
@@ -208,14 +208,14 @@ chunked_len(<<>>, S, A, _) -> {more, {0, S}, A}.
 
 %% @doc Encode a chunk.
 
--spec chunk(D) -> D when D::iodata().
+-spec chunk(D) -> D when D :: iodata().
 chunk(Data) ->
 	[integer_to_list(iolist_size(Data), 16), <<"\r\n">>,
 		Data, <<"\r\n">>].
 
 %% @doc Encode the last chunk of a chunked stream.
 
--spec last_chunk() -> << _:40 >>.
+-spec last_chunk() -> <<_:40>>.
 last_chunk() ->
 	<<"0\r\n\r\n">>.
 
@@ -223,25 +223,25 @@ last_chunk() ->
 stream_chunked_identity_test() ->
 	{done, <<"Wikipedia in\r\n\r\nchunks.">>, 23, <<>>}
 		= stream_chunked(iolist_to_binary([
-			chunk("Wiki"),
-			chunk("pedia"),
-			chunk(" in\r\n\r\nchunks."),
-			last_chunk()
-		]), {0, 0}),
+		chunk("Wiki"),
+		chunk("pedia"),
+		chunk(" in\r\n\r\nchunks."),
+		last_chunk()
+	]), {0, 0}),
 	ok.
 
 stream_chunked_one_pass_test() ->
 	{done, 0, <<>>} = stream_chunked(<<"0\r\n\r\n">>, {0, 0}),
 	{done, <<"Wikipedia in\r\n\r\nchunks.">>, 23, <<>>}
 		= stream_chunked(<<
-			"4\r\n"
-			"Wiki\r\n"
-			"5\r\n"
-			"pedia\r\n"
-			"e\r\n"
-			" in\r\n\r\nchunks.\r\n"
-			"0\r\n"
-			"\r\n">>, {0, 0}),
+		"4\r\n"
+		"Wiki\r\n"
+		"5\r\n"
+		"pedia\r\n"
+		"e\r\n"
+		" in\r\n\r\nchunks.\r\n"
+		"0\r\n"
+		"\r\n">>, {0, 0}),
 	ok.
 
 stream_chunked_n_passes_test() ->
@@ -271,17 +271,17 @@ stream_chunked_dripfeed_test() ->
 		"\r\n">>, <<>>, {0, 0}, fun stream_chunked/2).
 
 do_body_to_chunks(_, <<>>, Acc) ->
-	lists:reverse([<<"0\r\n\r\n">>|Acc]);
+	lists:reverse([<<"0\r\n\r\n">> | Acc]);
 do_body_to_chunks(ChunkSize, Body, Acc) ->
 	BodySize = byte_size(Body),
 	ChunkSize2 = case BodySize < ChunkSize of
-		true -> BodySize;
-		false -> ChunkSize
-	end,
-	<< Chunk:ChunkSize2/binary, Rest/binary >> = Body,
+		             true -> BodySize;
+		             false -> ChunkSize
+	             end,
+	<<Chunk:ChunkSize2/binary, Rest/binary>> = Body,
 	ChunkSizeBin = list_to_binary(integer_to_list(ChunkSize2, 16)),
 	do_body_to_chunks(ChunkSize, Rest,
-		[<< ChunkSizeBin/binary, "\r\n", Chunk/binary, "\r\n" >>|Acc]).
+		[<<ChunkSizeBin/binary, "\r\n", Chunk/binary, "\r\n">> | Acc]).
 
 stream_chunked_dripfeed2_test() ->
 	Body = list_to_binary(io_lib:format("~p", [lists:seq(1, 100)])),
@@ -295,7 +295,7 @@ stream_chunked_error_test_() ->
 	],
 	[{lists:flatten(io_lib:format("value ~p state ~p", [V, S])),
 		fun() -> {'EXIT', _} = (catch stream_chunked(V, S)) end}
-			|| {V, S} <- Tests].
+		|| {V, S} <- Tests].
 -endif.
 
 -ifdef(PERF).

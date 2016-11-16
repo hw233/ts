@@ -20,33 +20,33 @@
 %%	ftool:fstart(5).
 %%	ftool:fstart(pid(0,18,0),5).
 
--spec fstart(Sec) -> ok when Sec::non_neg_integer().
+-spec fstart(Sec) -> ok when Sec :: non_neg_integer().
 fstart(Sec) when erlang:is_integer(Sec), Sec > 0 ->
 	fstart(),
 	Pid = spawn(fun ps_loop/0),
-	erlang:send_after(Sec * 1000,Pid,stop),
+	erlang:send_after(Sec * 1000, Pid, stop),
 	ok.
 
--spec fstart(Pid,Sec) -> ok when Pid::pid(),Sec::non_neg_integer().
-fstart(Pid,Sec) when erlang:is_pid(Pid),erlang:is_integer(Sec), Sec > 0 ->
-	fprof:trace([start,{procs,[Pid]}]),
+-spec fstart(Pid, Sec) -> ok when Pid :: pid(), Sec :: non_neg_integer().
+fstart(Pid, Sec) when erlang:is_pid(Pid), erlang:is_integer(Sec), Sec > 0 ->
+	fprof:trace([start, {procs, [Pid]}]),
 	Pid = spawn(fun ps_loop/0),
-	erlang:send_after(Sec * 1000,Pid,stop),
+	erlang:send_after(Sec * 1000, Pid, stop),
 	ok.
 
 -spec fstart() -> ok.
 fstart() ->
 	Procs = erlang:processes(),
-	fprof:trace([start,{procs,Procs}]),
+	fprof:trace([start, {procs, Procs}]),
 	ok.
 
 -spec fstop() -> ok.
 fstop() ->
 	fprof:trace(stop),
 	fprof:profile(),
-	{{Y,M,D},{H,Min,S}} = calendar:now_to_local_time(os:timestamp()),
-	FileName = io_lib:format("fprof_~p_~p_~p_~p_~p_~p.txt",[Y,M,D,H,Min,S]),
-	fprof:analyse([totals, details, {sort, own},callers,{dest, FileName}]),
+	{{Y, M, D}, {H, Min, S}} = calendar:now_to_local_time(os:timestamp()),
+	FileName = io_lib:format("fprof_~p_~p_~p_~p_~p_~p.txt", [Y, M, D, H, Min, S]),
+	fprof:analyse([totals, details, {sort, own}, callers, {dest, FileName}]),
 	fprof:stop(),
 	ok.
 

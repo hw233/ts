@@ -13,18 +13,18 @@
 %% API functions
 %% ====================================================================
 -export([
-		 addBr/2,
-		 getCl/1,
-		 getAcl/0,
-		 getBrl/1,
-		 getInte/1,
-		 
-		 writeMn/2,
-		 updateMn/4
-		]).
+	addBr/2,
+	getCl/1,
+	getAcl/0,
+	getBrl/1,
+	getInte/1,
+
+	writeMn/2,
+	updateMn/4
+]).
 
 %%增加战报
--spec addBr(RoleID::uint(), #rec_battle_report{}) -> ok.
+-spec addBr(RoleID :: uint(), #rec_battle_report{}) -> ok.
 addBr(RoleID, #rec_battle_report{} = Br) ->
 	L = mnesia:dirty_read(rec_pet_battle_report, RoleID),
 	addBr(RoleID, Br, L).
@@ -39,7 +39,7 @@ addBr(RoleID, Br, [#rec_pet_battle_report{roleID = RoleID, br_list = Brl} = Pbr]
 	updateMn(new_rec_pet_battle_report, update_rec_pet_battle_report, RoleID, NewPbr).
 
 %%获取领地城池列表
--spec getCl(RoleID::uint()) -> [#rec_manor_battle{}, ...].
+-spec getCl(RoleID :: uint()) -> [#rec_manor_battle{}, ...].
 getCl(RoleID) ->
 	Pattern = #rec_manor_battle{roleID = RoleID, _ = '_'},
 	case mnesia:dirty_match_object(rec_manor_battle, Pattern) of
@@ -55,7 +55,7 @@ getAcl() ->
 	edb:readAllRecord(rec_manor_battle).
 
 %%获取自己战报
--spec getBrl(RoleID::uint()) -> list().
+-spec getBrl(RoleID :: uint()) -> list().
 getBrl(RoleID) ->
 	Vl = mnesia:dirty_read(rec_pet_battle_report, RoleID),
 	getBrl1(Vl).
@@ -65,13 +65,13 @@ getBrl1(_) ->
 	[].
 
 %%获取最新战报列表
--spec getBrl(Brl::[#rec_battle_report{}, ...], #rec_battle_report{}) -> [#rec_battle_report{},...].
+-spec getBrl(Brl :: [#rec_battle_report{}, ...], #rec_battle_report{}) -> [#rec_battle_report{}, ...].
 getBrl(Brl, Br) when length(Brl) >= ?MaxBrlNum ->
 	[Br | lists:delete(lists:last(Brl), Brl)];
 getBrl(Brl, Br) ->
 	[Br | Brl].
 
--spec getInte(RoleID::uint()) -> uint().
+-spec getInte(RoleID :: uint()) -> uint().
 getInte(RoleID) ->
 	PB = mnesia:dirty_read(rec_pet_manor_battle, RoleID),
 	getInte(RoleID, PB).

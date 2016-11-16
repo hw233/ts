@@ -3,12 +3,12 @@
 -define(cfg_panelHelp, 1).
 
 -record(panelHelpCfg, {
-        id,
+	id,
 
-        help,
+	help,
 
-        tesk
+	tesk
 
- }).
+}).
 
 -endif.

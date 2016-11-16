@@ -22,7 +22,7 @@
 
 %%玩家在副本中杀死了一个怪物
 -spec killedMonsterInCopyMap(GroupID, MonsterCode, MonsterID) -> ok when
-	GroupID::uint(), MonsterCode::uint(),MonsterID::uint().
+	GroupID :: uint(), MonsterCode :: uint(), MonsterID :: uint().
 killedMonsterInCopyMap(GroupID, MonsterCode, MonsterID) ->
 	%%勇士试炼副本特殊处理
 	case mapState:getMapSubType() of
@@ -30,8 +30,8 @@ killedMonsterInCopyMap(GroupID, MonsterCode, MonsterID) ->
 			%%获取bossid列表
 			Fun = fun(MissionID, AccList) ->
 				#warriortrialCfg{bossid = BossID} = getCfg:getCfgPStack(cfg_warriortrial, MissionID),
-				[BossID|AccList]
-				end,
+				[BossID | AccList]
+			      end,
 			BossIDList = lists:foldl(Fun, [], getCfg:get1KeyList(cfg_warriortrial)),
 			case lists:member(MonsterID, BossIDList) of
 				true ->
@@ -39,8 +39,8 @@ killedMonsterInCopyMap(GroupID, MonsterCode, MonsterID) ->
 					MatchSpec = ets:fun2ms(fun(Mapobject) when
 						Mapobject#recMapObject.mapPid =:= self() andalso Mapobject#recMapObject.groupID =:= GroupID ->
 						Mapobject#recMapObject.pid
-					end),
-					[PlayerPid| _] = myEts:selectEts(Ets, MatchSpec),
+					                       end),
+					[PlayerPid | _] = myEts:selectEts(Ets, MatchSpec),
 					psMgr:sendMsg2PS(PlayerPid, warriorTrialKillBoss, {});
 				_ ->
 					skip
@@ -71,7 +71,7 @@ killedMonsterInCopyMap(GroupID, MonsterCode, MonsterID) ->
 	ok.
 
 %% 玩家在副本中完成了一次采集
--spec collectItemInCopyMap(GroupID::uint(), ItemID::uint(), Number::uint()) -> ok.
+-spec collectItemInCopyMap(GroupID :: uint(), ItemID :: uint(), Number :: uint()) -> ok.
 collectItemInCopyMap(GroupID, ItemID, Number) ->
 	case getHasCompleteCopyMapCondition(GroupID, ?CopyMapEndCond_CollectItem, ItemID) of
 		true ->
@@ -99,14 +99,14 @@ collectItemInCopyMap(GroupID, ItemID, Number) ->
 	ok.
 
 %% 完成并行进度中的一个
--spec completeParallelScheduleConf(GroupID::uint(), Type::copyMapEndCond(), ID::uint(), Number::uint()) -> ok.
+-spec completeParallelScheduleConf(GroupID :: uint(), Type :: copyMapEndCond(), ID :: uint(), Number :: uint()) -> ok.
 completeParallelScheduleConf(GroupID, Type, ID, Number) ->
 	%% 获取需求
 	NeedList = case copyMapScheduleState:getParallelScheduleConfList(GroupID) of
-				   undefined ->
-					   [];
-				   L ->
-					   L
+		           undefined ->
+			           [];
+		           L ->
+			           L
 	           end,
 	{_GID, _Type, _ID, _Number, NList} = lists:foldl(fun updateCompleteParallel/2, {GroupID, Type, ID, Number, []}, NeedList),
 	copyMapScheduleState:setParallelScheduleConfList(GroupID, NList),
@@ -114,7 +114,7 @@ completeParallelScheduleConf(GroupID, Type, ID, Number) ->
 
 %% 更新并行进度
 -spec updateCompleteParallel(#recPSConf{}, Tuple) ->
-	Tuple when Tuple::{GroupID::uint(), Type::copyMapEndCond(), ID::uint(), Number::uint(), AccList::list()}.
+	Tuple when Tuple :: {GroupID :: uint(), Type :: copyMapEndCond(), ID :: uint(), Number :: uint(), AccList :: list()}.
 updateCompleteParallel(#recPSConf{} = PS, {GroupID, Type, ID, Number, AccList}) ->
 	{NPS, NPSIsComplete} = case Type of
 		                       ?CopyMapEndCond_KillMonster ->
@@ -138,7 +138,7 @@ updateCompleteParallel(#recPSConf{} = PS, {GroupID, Type, ID, Number, AccList}) 
 					       case NPSIsComplete of
 						       true ->
 							       %% 又完成一个并行进度，初始化
-							       ?DEBUG_OUT("updateCompleteParallel.initParallelScheduleConf:~p,~p",[NPSIsComplete,NPS]),
+							       ?DEBUG_OUT("updateCompleteParallel.initParallelScheduleConf:~p,~p", [NPSIsComplete, NPS]),
 							       copyMapScheduleInit:initParallelScheduleConf(GroupID, NPS#recPSConf.completeDo),
 
 							       NPS#recPSConf{isComplete = NPSIsComplete};
@@ -150,7 +150,7 @@ updateCompleteParallel(#recPSConf{} = PS, {GroupID, Type, ID, Number, AccList}) 
 	{GroupID, Type, ID, Number, [NNPS | AccList]}.
 
 %% 更新并行进度中的列表
--spec addTargetSchedule(#recKCcalc{}, {ID::copyMapEndCond(), Number::uint(), IsComplete::boolean(), AccList::list()}) ->
+-spec addTargetSchedule(#recKCcalc{}, {ID :: copyMapEndCond(), Number :: uint(), IsComplete :: boolean(), AccList :: list()}) ->
 	{copyMapEndCond(), uint(), boolean(), list()}.
 addTargetSchedule(#recKCcalc{id = NeedID, needNumber = NeedNumber, curNumber = CurNumber} = KC, {ID, Number, IsComplete, AccList}) ->
 	NKC = case NeedID =:= ID of
@@ -168,7 +168,7 @@ addTargetSchedule(#recKCcalc{id = NeedID, needNumber = NeedNumber, curNumber = C
 
 %% 获取目标是否在副本完成条件范围内
 -spec getHasCompleteCopyMapCondition(GroupID, Type, Param) -> boolean() when
-	GroupID::uint(), Type::copyMapEndCond(),Param::term().
+	GroupID :: uint(), Type :: copyMapEndCond(), Param :: term().
 getHasCompleteCopyMapCondition(GroupID, Type, Param) ->
 	MapID = gameMapLogic:getMapID(GroupID),
 	MapPlan = copyMapScheduleState:getMapSchedule(GroupID),
@@ -202,19 +202,19 @@ getHasCompleteCopyMapCondition(GroupID, Type, Param) ->
 
 %% key是否在list中
 -spec isKeyInList(List, Key) -> boolean() when
-	List::list(),Key::term().
+	List :: list(), Key :: term().
 isKeyInList(List, Key) ->
 	case List of
-		[{_,_}|_] ->
+		[{_, _} | _] ->
 			lists:keymember(Key, 1, List);
-		[_|_] ->
+		[_ | _] ->
 			lists:member(Key, List);
 		_ ->
 			false
 	end.
 
 %% 检查是否达到完成副本的条件
--spec checkCompleteCopyMap(GroupID::uint(), MonsterCode::uint()) -> boolean().
+-spec checkCompleteCopyMap(GroupID :: uint(), MonsterCode :: uint()) -> boolean().
 checkCompleteCopyMap(GroupID, MonsterCode) ->
 	MapID = gameMapLogic:getMapID(GroupID),
 	MapPlan = copyMapScheduleState:getMapSchedule(GroupID),
@@ -246,8 +246,8 @@ checkIsKillAllMonster(GroupID, MonsterCode) ->
 			Object#recMapObject.groupID =:= GroupID andalso
 			Object#recMapObject.type =:= ?ObjTypeMonster andalso
 			Object#recMapObject.code /= MonsterCode ->
-		{Object#recMapObject.code,Object#recMapObject.pid}
-	end),
+		{Object#recMapObject.code, Object#recMapObject.pid}
+	                       end),
 	case myEts:selectEts(MonEts, MatchSpec) of
 		[] ->
 			true;
@@ -257,26 +257,26 @@ checkIsKillAllMonster(GroupID, MonsterCode) ->
 
 %% 判断击杀怪物是否足够
 -spec checkKillMonsterIsEnough(GroupID, Need) -> boolean() when
-	GroupID::uint(), Need::list().
+	GroupID :: uint(), Need :: list().
 checkKillMonsterIsEnough(GroupID, Need) when ?IsListValid(Need) ->
 	Fun = fun({MonsterID, NeedNumber}) ->
 		getKilledMonsterNum(GroupID, MonsterID) < NeedNumber
-	end,
+	      end,
 	lists:filter(Fun, Need) =:= [];
-checkKillMonsterIsEnough(_,_) ->
+checkKillMonsterIsEnough(_, _) ->
 	true.
 
 %% 判断采集物品个数是否足够
 checkCollectItemIsEnough(GroupID, Need) when ?IsListValid(Need) ->
 	Fun = fun({ItemID, NeedNumber}) ->
 		getCollectItemNum(GroupID, ItemID) < NeedNumber
-	end,
+	      end,
 	lists:filter(Fun, Need) =:= [];
-checkCollectItemIsEnough(_,_) ->
+checkCollectItemIsEnough(_, _) ->
 	true.
 
 %% 通知完成了一次采集
--spec noticeCollectItem(GroupID::uint()) -> ok.
+-spec noticeCollectItem(GroupID :: uint()) -> ok.
 noticeCollectItem(GroupID) ->
 	MapID = gameMapLogic:getMapID(GroupID),
 	MapPlan = copyMapScheduleState:getMapSchedule(GroupID),
@@ -286,7 +286,7 @@ noticeCollectItem(GroupID) ->
 		NN = Number + NNumber,
 		CC = getCollectItemNum(GroupID, ItemID) + CNumber,
 		{NN, CC}
-	end,
+	      end,
 	{NeedNumber, CollectNumber} = lists:foldl(Fun, {0, 0}, C),
 	case playerCopyMapRift:isRiftMap(MapID) of
 		true ->
@@ -306,19 +306,19 @@ getCopyMapScheduleConf(MapID, Schedule) ->
 				true ->
 					lists:nth(Schedule, Conf);
 				_ ->
-					{0,0}
+					{0, 0}
 			end;
 		_ ->
-			{0,0}
+			{0, 0}
 	end.
 
 -spec getKilledMonsterNum(GroupID, MonsterID) -> uint() when
-	GroupID::uint(), MonsterID::monsterId().
+	GroupID :: uint(), MonsterID :: monsterId().
 getKilledMonsterNum(GroupID, MonsterID) ->
 	case copyMapScheduleState:getKilledMonsterList(GroupID) of
 		List when erlang:is_list(List) ->
 			case lists:keyfind(MonsterID, 1, List) of
-				{MonsterID,Num} ->
+				{MonsterID, Num} ->
 					Num;
 				_ ->
 					0
@@ -327,7 +327,7 @@ getKilledMonsterNum(GroupID, MonsterID) ->
 			0
 	end.
 
--spec getCollectItemNum(GroupID::uint(), ItemID::uint()) -> uint().
+-spec getCollectItemNum(GroupID :: uint(), ItemID :: uint()) -> uint().
 getCollectItemNum(GroupID, ItemID) ->
 	case copyMapScheduleState:getCollectItemList(GroupID) of
 		List when erlang:is_list(List) ->
@@ -342,41 +342,41 @@ getCollectItemNum(GroupID, ItemID) ->
 	end.
 
 -spec incKilledMonsterNum(GroupID, MonsterID) -> ok when
-	GroupID::uint(), MonsterID::monsterId().
+	GroupID :: uint(), MonsterID :: monsterId().
 incKilledMonsterNum(GroupID, MonsterID) ->
 	L = case copyMapScheduleState:getKilledMonsterList(GroupID) of
 		    List when erlang:is_list(List) ->
 			    case lists:keyfind(MonsterID, 1, List) of
-				    {MonsterID,Num} ->
-					    lists:keystore(MonsterID, 1, List, {MonsterID,Num + 1});
+				    {MonsterID, Num} ->
+					    lists:keystore(MonsterID, 1, List, {MonsterID, Num + 1});
 				    _ ->
-					    lists:keystore(MonsterID, 1, List, {MonsterID,1})
+					    lists:keystore(MonsterID, 1, List, {MonsterID, 1})
 			    end;
 		    _ ->
-			    [{MonsterID,1}]
+			    [{MonsterID, 1}]
 	    end,
 	copyMapScheduleState:setKilledMonsterList(GroupID, L),
 	ok.
 
 
--spec incCollectItemNum(GroupID::uint(), ItemID::uint(), Number::uint()) -> ok.
+-spec incCollectItemNum(GroupID :: uint(), ItemID :: uint(), Number :: uint()) -> ok.
 incCollectItemNum(GroupID, ItemID, Number) ->
 	L = case copyMapScheduleState:getCollectItemList(GroupID) of
 		    List when erlang:is_list(List) ->
 			    case lists:keyfind(ItemID, 1, List) of
-				    {ItemID,Num} ->
+				    {ItemID, Num} ->
 					    lists:keystore(ItemID, 1, List, {ItemID, Num + Number});
 				    _ ->
 					    lists:keystore(ItemID, 1, List, {ItemID, Number})
 			    end;
 		    _ ->
-			    [{ItemID,1}]
+			    [{ItemID, 1}]
 	    end,
 	copyMapScheduleState:setCollectItemList(GroupID, L),
 	ok.
 
 %% 获取副本进度完成情况
--spec getCopyMapProcessList(GroupID::uint()) -> list().
+-spec getCopyMapProcessList(GroupID :: uint()) -> list().
 getCopyMapProcessList(GroupID) ->
 	CurPlan = copyMapScheduleState:getMapSchedule(GroupID),
 	MaxPlan = copyMapScheduleState:getMapScheduleMax(GroupID),
@@ -387,25 +387,25 @@ getCopyMapProcessList(GroupID) ->
 				#copymapScheduleSettleCfg{killmonster = K, collect = C, countdown = _CD, task = _T} ->
 					%% 取当前杀的怪物个数
 					NList = case ?IsListValid(K) of
-						true ->
-							Fun = fun({MonsterID, NeedNumber}, List) ->
-								CurNumber = getKilledMonsterNum(GroupID, MonsterID),
-								R = #pk_CopyObj{targetID = MonsterID,targetType = ?CopyMapMonster,curNumber = CurNumber,allNumber = NeedNumber},
-								[R|List]
-							end,
-							lists:foldl(Fun, [], K);
-						_ ->
-							[]
-					end,
+						        true ->
+							        Fun = fun({MonsterID, NeedNumber}, List) ->
+								        CurNumber = getKilledMonsterNum(GroupID, MonsterID),
+								        R = #pk_CopyObj{targetID = MonsterID, targetType = ?CopyMapMonster, curNumber = CurNumber, allNumber = NeedNumber},
+								        [R | List]
+							              end,
+							        lists:foldl(Fun, [], K);
+						        _ ->
+							        []
+					        end,
 
 					%% 取当前采集的物品个数
 					case ?IsListValid(C) of
 						true ->
 							FunCollect = fun({ItemID, NeedNumber}, List) ->
 								CurNumber = getCollectItemNum(GroupID, ItemID),
-								R = #pk_CopyObj{targetID = ItemID,targetType = ?CopyMapCollect,curNumber = CurNumber,allNumber = NeedNumber},
-								[R|List]
-							end,
+								R = #pk_CopyObj{targetID = ItemID, targetType = ?CopyMapCollect, curNumber = CurNumber, allNumber = NeedNumber},
+								[R | List]
+							             end,
 							lists:foldl(FunCollect, NList, C);
 						_ ->
 							NList
@@ -418,27 +418,27 @@ getCopyMapProcessList(GroupID) ->
 	end.
 
 %% 获取副本进度，发送给客户端的
--spec getCopyMapProcessRec(GroupID::uint()) -> #pk_GS2U_CopyMapProcess{} | skip.
+-spec getCopyMapProcessRec(GroupID :: uint()) -> #pk_GS2U_CopyMapProcess{} | skip.
 getCopyMapProcessRec(GroupID) ->
 	Cur = copyMapScheduleState:getMapSchedule(GroupID),
 	Max = copyMapScheduleState:getMapScheduleMax(GroupID),
 	case erlang:is_integer(Cur)
-		 andalso erlang:is_integer(Max)
-		 andalso Cur >= 0 andalso Cur =< 256
-		 andalso Max >= 0 andalso Cur =< 256 of
+		andalso erlang:is_integer(Max)
+		andalso Cur >= 0 andalso Cur =< 256
+		andalso Max >= 0 andalso Cur =< 256 of
 		true ->
 			#pk_GS2U_CopyMapProcess{
 				curSchedule = Cur,
 				allSchedule = Max,
 				scheduleList = getCopyMapProcessList(GroupID)};
 		_ ->
-			?ERROR_OUT("getCopyMapProcessRec.error:mapID=~p,GroupID=~p,cur=~p,max=~p", [mapState:getMapId(),GroupID,Cur,Max]),
+			?ERROR_OUT("getCopyMapProcessRec.error:mapID=~p,GroupID=~p,cur=~p,max=~p", [mapState:getMapId(), GroupID, Cur, Max]),
 			skip
 
 	end.
 
 %% 发送进度给玩家进程，再发给客户端
--spec sendProcessToPlayer(GroupID::uint()) -> ok.
+-spec sendProcessToPlayer(GroupID :: uint()) -> ok.
 sendProcessToPlayer(GroupID) ->
 	case getCopyMapProcessRec(GroupID) of
 		#pk_GS2U_CopyMapProcess{} = R ->
@@ -447,7 +447,7 @@ sendProcessToPlayer(GroupID) ->
 			MatchSpec = ets:fun2ms(fun(Mapobject) when
 				Mapobject#recMapObject.mapPid =:= MapPid andalso Mapobject#recMapObject.groupID =:= GroupID ->
 				Mapobject#recMapObject.pid
-			end),
+			                       end),
 			List = myEts:selectEts(Ets, MatchSpec),
 			Fun = fun(PID) ->
 				case misc:is_process_alive(PID) of
@@ -457,7 +457,7 @@ sendProcessToPlayer(GroupID) ->
 						skip
 				end,
 				ok
-			end,
+			      end,
 			lists:foreach(Fun, List);
 		_ ->
 			skip
@@ -465,7 +465,7 @@ sendProcessToPlayer(GroupID) ->
 	ok.
 
 %% 完成副本
--spec completeCopyMap(GroupID::uint()) -> ok.
+-spec completeCopyMap(GroupID :: uint()) -> ok.
 completeCopyMap(GroupID) ->
 	%% 当前进度+1
 	Plan = copyMapScheduleState:getMapSchedule(GroupID) + 1,
@@ -480,16 +480,16 @@ completeCopyMap(GroupID) ->
 	case MapType =:= ?MapTypeCopyMap andalso SubType =:= ?MapSubTypeGuild of
 		true ->
 			GuildID = mapState:getGuildID(),
-			{InitConf, _} = lists:nth(Plan-1, ScheduleConf),
-			#copymapScheduleInitCfg{addmonster = Addmonster}= getCfg:getCfgPStack(cfg_copymapScheduleInit, InitConf),
-			[Monster, _, _, _] = lists:nth(1,Addmonster),
+			{InitConf, _} = lists:nth(Plan - 1, ScheduleConf),
+			#copymapScheduleInitCfg{addmonster = Addmonster} = getCfg:getCfgPStack(cfg_copymapScheduleInit, InitConf),
+			[Monster, _, _, _] = lists:nth(1, Addmonster),
 			#monsterCfg{showName = BossName} = getCfg:getCfgPStack(cfg_monster, Monster),
 			%%发奖品
-			psMgr:sendMsg2PS(?PsNameGuild, queryCopyMapAwardMemberList, {GuildID, Plan-1, BossName}),
+			psMgr:sendMsg2PS(?PsNameGuild, queryCopyMapAwardMemberList, {GuildID, Plan - 1, BossName}),
 			%%通知在线玩家
 			Content = stringCfg:getString(cnTextGuildCopyBossDefeat, [BossName]),
 			PidList = playerGuild:getOnlinePidList(GuildID),
-			[psMgr:sendMsg2PS(Pid ,sendSystemChatMsg, {Content}) || Pid <- PidList],
+			[psMgr:sendMsg2PS(Pid, sendSystemChatMsg, {Content}) || Pid <- PidList],
 			%%副本结束
 			case Plan - 1 >= MaxPlan of
 				true ->
@@ -497,7 +497,7 @@ completeCopyMap(GroupID) ->
 %%					psMgr:sendMsg2PS(?PsNamePlayerMgr, disbandSysTeam, mapState:getTeamID()),
 					%% 发系统通告
 					Content2 = stringCfg:getString(cnTextGuildCopyEnd),
-					[psMgr:sendMsg2PS(Pid ,sendSystemChatMsg, {Content2}) || Pid <- PidList];
+					[psMgr:sendMsg2PS(Pid, sendSystemChatMsg, {Content2}) || Pid <- PidList];
 				_ ->
 					skip
 			end;
@@ -539,7 +539,7 @@ completeCopyMap(GroupID) ->
 				true ->
 					skip
 			end,
-			?LOG_OUT("completeCopyMap: ~p, ~p", [self(),MapID]),
+			?LOG_OUT("completeCopyMap: ~p, ~p", [self(), MapID]),
 			ok;
 		_ ->
 			%% 本副本还有进度，继续下一进度
@@ -559,11 +559,11 @@ completeCopyMap(GroupID) ->
 	ok.
 
 %% 计算副本
--spec calCopyMapReward(GroupID::uint()) -> ok.
+-spec calCopyMapReward(GroupID :: uint()) -> ok.
 calCopyMapReward(GroupID) ->
 	%% 计算副本评分 以及 随机生成给玩家的宝箱
-	EndTime = time:getUTCNowMS(),				%% 完成时间
-	StartTime = mapState:getMapStartTime(GroupID),		%% 开始时间
+	EndTime = time:getUTCNowMS(),                %% 完成时间
+	StartTime = mapState:getMapStartTime(GroupID),        %% 开始时间
 
 	%% 时间差
 	DiffTime = (EndTime - StartTime) / 1000,
@@ -577,7 +577,7 @@ calCopyMapReward(GroupID) ->
 	ok.
 
 %% %% 给通关副本的玩家发放奖励
--spec onCopyMapAward(GroupID::uint(), Score :: uint()) -> ok.
+-spec onCopyMapAward(GroupID :: uint(), Score :: uint()) -> ok.
 onCopyMapAward(GroupID, Score) when erlang:is_integer(Score) ->
 	%% 通关玩家（本副本所在的所有玩家）
 	PlayerEts = mapState:getMapPlayerEts(),
@@ -592,6 +592,6 @@ onCopyMapAward(GroupID, Score) when erlang:is_integer(Score) ->
 		end;
 		(_NotPid) ->
 			skip
-	end,
+	            end,
 	myEts:etsFor(PlayerEts, RewardFun),
 	ok.

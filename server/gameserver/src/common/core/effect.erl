@@ -13,71 +13,71 @@
 %% API functions
 %% ====================================================================
 -export([
-		  getTriEffIDList/2,
-		  skillEffect/3,
-		  getEffList/1,
-		  getSameIDList/3
-	    ]).
+	getTriEffIDList/2,
+	skillEffect/3,
+	getEffList/1,
+	getSameIDList/3
+]).
 
 %%获取技能触发效果列表ID
 -spec getTriEffIDList(SkillID, InterValTime) -> list() when
-       SkillID :: uint(),
-       InterValTime :: number().
+	SkillID :: uint(),
+	InterValTime :: number().
 getTriEffIDList(SkillID, InterValTime) ->
 	#skillCfg{effects = Effects} = getCfg:getCfgPStack(cfg_skill, SkillID),
 	Fun = fun(EffectID, Acc) ->
-				  case getCfg:getCfgPStack(cfg_skill_effect, EffectID) of
-					  #skill_effectCfg{effectChance = EffChance} ->
-						  case isTrigger(EffChance, InterValTime) of
-							  true ->
-								  [EffectID | Acc];
-							  _ ->
-								  Acc
-						  end;
-					  _ ->
-						  Acc
-				  end
-		  end,
+		case getCfg:getCfgPStack(cfg_skill_effect, EffectID) of
+			#skill_effectCfg{effectChance = EffChance} ->
+				case isTrigger(EffChance, InterValTime) of
+					true ->
+						[EffectID | Acc];
+					_ ->
+						Acc
+				end;
+			_ ->
+				Acc
+		end
+	      end,
 	lists:foldl(Fun, [], Effects).
 
 %%分离攻击者和被攻击者技能效果列表
 -spec skillEffect(HitList, EffIDList, IsMainTarget) -> list() when
-       HitList :: list(),
-       EffIDList :: list(),
-       IsMainTarget :: boolean().
+	HitList :: list(),
+	EffIDList :: list(),
+	IsMainTarget :: boolean().
 skillEffect(HitList, EffIDList, IsMainTarget) ->
 	EffectList = getEffList(EffIDList),
-	Fun = fun(#skill_effectCfg{effectcondition = Condition, effectTarget = ETarget} = Effect,[A,B]) ->
-				  if
-					  Condition =:= ?NoCondition ->
-						  joinEffectList(ETarget, A, B, IsMainTarget, Effect);
-					  Condition =:= ?DodageCondition ->
-						  case isSkillParryOrDodage(HitList) of
-							  true ->  
-								  joinEffectList(ETarget, A, B, IsMainTarget, Effect);
-							  _ -> 
-								  [A,B]
-						  end;
-					  Condition =:= ?CriticalCondition ->
-						  case isSkillCritical(HitList) of
-							  true -> 
-								  joinEffectList(ETarget, A, B, IsMainTarget, Effect);
-							  _ -> 
-								  [A,B]
-						  end;
-					  true -> 
-						  [A,B]
-				  end
-		  end,
-	lists:foldl(Fun, [[],[]], EffectList).
+	Fun = fun(#skill_effectCfg{effectcondition = Condition, effectTarget = ETarget} = Effect, [A, B]) ->
+		if
+			Condition =:= ?NoCondition ->
+				joinEffectList(ETarget, A, B, IsMainTarget, Effect);
+			Condition =:= ?DodageCondition ->
+				case isSkillParryOrDodage(HitList) of
+					true ->
+						joinEffectList(ETarget, A, B, IsMainTarget, Effect);
+					_ ->
+						[A, B]
+				end;
+			Condition =:= ?CriticalCondition ->
+				case isSkillCritical(HitList) of
+					true ->
+						joinEffectList(ETarget, A, B, IsMainTarget, Effect);
+					_ ->
+						[A, B]
+				end;
+			true ->
+				[A, B]
+		end
+	      end,
+	lists:foldl(Fun, [[], []], EffectList).
 
 %%根据技能效果ID列表获取效果
 -spec getEffList(EffIDList) -> list() when
-       EffIDList :: list().
+	EffIDList :: list().
 getEffList(EffIDList) ->
-	lists:map(fun(Key) -> 
-					  getCfg:getCfgPStack(cfg_skill_effect, Key)
-			  end,EffIDList).
+	lists:map(fun(Key) ->
+		getCfg:getCfgPStack(cfg_skill_effect, Key)
+	          end, EffIDList).
 
 %% ====================================================================
 %% Internal functions
@@ -85,11 +85,11 @@ getEffList(EffIDList) ->
 
 %%根据效果目标加入相应的效果列表
 -spec joinEffectList(ETarget, AEffectList, BEffectList, IsMainTarget, Effect) -> list() when
-       ETarget :: uint(),
-       AEffectList :: list(),
-       BEffectList :: list(),
-       IsMainTarget :: boolean(),
-       Effect :: #skill_effectCfg{}.
+	ETarget :: uint(),
+	AEffectList :: list(),
+	BEffectList :: list(),
+	IsMainTarget :: boolean(),
+	Effect :: #skill_effectCfg{}.
 joinEffectList(?TargetToAll, AEffectList, BEffectList, _IsMainTarget, Effect) ->
 	[AEffectList, [Effect | BEffectList]];
 joinEffectList(?TargetToMyselfOne, AEffectList, BEffectList, _IsMainTarget, Effect) ->
@@ -109,18 +109,18 @@ joinEffectList(_ETarget, AEffectList, BEffectList, _IsMainTarget, _Effect) ->
 
 %%判断技能效果是否触发
 -spec isTrigger(EffChance, InterValTime) -> boolean() when
-       EffChance :: float(),
-	   InterValTime :: uint().
+	EffChance :: float(),
+	InterValTime :: uint().
 isTrigger(0, _InterValTime) ->
 	false;
 isTrigger(1, _InterValTime) ->
 	true;
 isTrigger(EffChance, _InterValTime) when EffChance > 0 andalso EffChance < 1 ->
-	RandomNum = random:uniform(?PROBALITY_WEIGHT),   
+	RandomNum = random:uniform(?PROBALITY_WEIGHT),
 	if
 		EffChance * ?PROBALITY_WEIGHT > RandomNum ->
 			true;
-		true -> 
+		true ->
 			false
 	end;
 isTrigger(EffChance, InterValTime) when EffChance > 1 ->
@@ -128,30 +128,30 @@ isTrigger(EffChance, InterValTime) when EffChance > 1 ->
 	if
 		EffChance1 >= 1 ->
 			true;
-		true -> 
+		true ->
 			isTrigger(EffChance1, InterValTime)
 	end;
 isTrigger(_EffChance, _InterValTime) ->
 	false.
 
 %%判断技能是否暴击
--spec  isSkillCritical(HitList) -> boolean()  when 
-        HitList :: list().
+-spec isSkillCritical(HitList) -> boolean() when
+	HitList :: list().
 isSkillCritical([]) ->
 	false;
 isSkillCritical([State | HitList]) ->
 	if
-		State =:= ?HitResultCritical -> 
+		State =:= ?HitResultCritical ->
 			true;
 		State =:= ?HitResultCritical ->
 			true;
-		true -> 
+		true ->
 			isSkillCritical(HitList)
 	end.
 
 %%判断技能是否闪避和招架
--spec isSkillParryOrDodage(HitList) -> boolean() when 
-       HitList :: list().
+-spec isSkillParryOrDodage(HitList) -> boolean() when
+	HitList :: list().
 isSkillParryOrDodage([]) ->
 	false;
 isSkillParryOrDodage([State | HitList]) ->
@@ -170,12 +170,12 @@ isSkillParryOrDodage([State | HitList]) ->
 
 %%获取同ID的载体,怪物,宠物列表
 -spec getSameIDList(ID, List, SameList) -> list() when
-		  ID :: uint(),
-          List :: list(),
-          SameList :: list().
+	ID :: uint(),
+	List :: list(),
+	SameList :: list().
 getSameIDList(_ID, [], SameList) ->
 	lists:reverse(SameList);
-getSameIDList(ID, [{Code, NewID, Pid} | List], SameList) when ID =:=  NewID ->
+getSameIDList(ID, [{Code, NewID, Pid} | List], SameList) when ID =:= NewID ->
 	getSameIDList(ID, List, [{Code, NewID, Pid} | SameList]);
 getSameIDList(ID, [#recCallPet{pet_id = NewID} = CallPet | List], SameList) when ID =:= NewID ->
 	getSameIDList(ID, List, [CallPet | SameList]);

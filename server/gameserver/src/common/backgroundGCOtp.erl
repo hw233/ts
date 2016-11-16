@@ -76,7 +76,7 @@ start_link() ->
 	{ok, State :: #state{}} | {ok, State :: #state{}, timeout() | hibernate} |
 	{stop, Reason :: term()} | ignore).
 init([]) ->
-	{ok, interval_gc(#state{ last_interval = ?IDEAL_INTERVAL }) }.
+	{ok, interval_gc(#state{last_interval = ?IDEAL_INTERVAL})}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -167,10 +167,10 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 interval_gc(State = #state{last_interval = LastInterval}) ->
-	{ok, Micros,Interval} = interval_operation(
+	{ok, Micros, Interval} = interval_operation(
 		{?MODULE, gc, []},
 		?MAX_RATIO, ?IDEAL_INTERVAL, LastInterval),
-	?LOG_OUT("backgroundGC,UseTime:~p ms",[Micros]),
+	?LOG_OUT("backgroundGC,UseTime:~p ms", [Micros]),
 	erlang:send_after(Interval, self(), interval_run),
 	State#state{last_interval = Interval}.
 
@@ -192,8 +192,8 @@ interval_operation({M, F, A}, MaxRatio, IdealInterval, LastInterval) ->
 		Micros,
 		case {Micros > 1000 * (MaxRatio * IdealInterval),
 			Micros > 1000 * (MaxRatio * LastInterval)} of
-			{true,  true}  -> round(LastInterval * 1.5);
-			{true,  false} -> LastInterval;
+			{true, true} -> round(LastInterval * 1.5);
+			{true, false} -> LastInterval;
 			{false, false} -> lists:max([IdealInterval,
 				round(LastInterval / 1.5)])
 		end

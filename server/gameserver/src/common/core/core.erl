@@ -28,7 +28,7 @@
 	boardcastAllGSMsg/2,
 	queryRoleKeyInfoByRoleID/1,
 	queryRoleKeyInfoByRoleName/1,
-    queryOnLineRoleByRoleID/1,
+	queryOnLineRoleByRoleID/1,
 	queryPlayerPidByRoleID/1,
 	queryNetPidByRoleID/1,
 	sendBroadcastNotice/1,       %% 全服发公告
@@ -51,46 +51,46 @@
 ]).
 
 -export([
-    getPlayerDataMgrOtp/0,
-    getPublicDataMgrOtp/0
+	getPlayerDataMgrOtp/0,
+	getPublicDataMgrOtp/0
 ]).
 
 %%是不是在跨服里
--spec isCross() ->boolean().
+-spec isCross() -> boolean().
 isCross() ->
 	case application:get_env(isCrossServer) of
-		{ok, V} ->V;
-		_ ->false
+		{ok, V} -> V;
+		_ -> false
 	end.
 
 %%获取某地图的配置信息
 -spec getMapCfg(MapID) -> [] | #recGameMapCfg{} when
-	MapID::uint().
+	MapID :: uint().
 getMapCfg(MapID) ->
 	MapMod = "cfg_gamemapcfg" ++ integer_to_list(MapID),
 	Module = list_to_atom(MapMod),
 	case Module:getRow(MapID) of
-		[]->
-			?ERROR_OUT("GetMapCfg err Module:~p Key1:~p, ~p",[Module, MapID, misc:getStackTrace()]),
+		[] ->
+			?ERROR_OUT("GetMapCfg err Module:~p Key1:~p, ~p", [Module, MapID, misc:getStackTrace()]),
 			[];
-		Value->
+		Value ->
 			Value
 	end.
 
 %% 获取Map的路径点
 -spec getMapWayPt(MapID) -> list() when
-	MapID::integer().
+	MapID :: integer().
 getMapWayPt(MapID) when erlang:is_integer(MapID) andalso MapID > 0 ->
 	V = getMapCfg(MapID),
 	case V of
 		#recGameMapCfg{mapWayPt = MapObjWayPt} ->
 			MapObjWayPt;
 		_ ->
-			?ERROR_OUT("Error Get MapID:~p WayPt",[MapID]),
+			?ERROR_OUT("Error Get MapID:~p WayPt", [MapID]),
 			[]
 	end;
 getMapWayPt(MapID) ->
-	?ERROR_OUT("Error Get MapID:~p WayPt",[MapID]),
+	?ERROR_OUT("Error Get MapID:~p WayPt", [MapID]),
 	[].
 
 %% 获取世界等级
@@ -116,40 +116,40 @@ getWorldLevel() ->
 %% 获取玩家数据管理进程PID
 -spec getPlayerDataMgrOtp() -> pid().
 getPlayerDataMgrOtp() ->
-    whereis(?PlayerDataMgr).
+	whereis(?PlayerDataMgr).
 
 %% 获取公共数据管理进程PID
 -spec getPublicDataMgrOtp() -> pid().
 getPublicDataMgrOtp() ->
-    whereis(?PublicDataMgr).
+	whereis(?PublicDataMgr).
 
 %%发送消息到不同地图管理器
--spec sendMsgToMapMgr(MapID,MsgID,Msg) -> ok when
-	MapID::uint16(),MsgID::atom(),Msg::term().
-sendMsgToMapMgr(MapID,MsgID,Msg) ->
+-spec sendMsgToMapMgr(MapID, MsgID, Msg) -> ok when
+	MapID :: uint16(), MsgID :: atom(), Msg :: term().
+sendMsgToMapMgr(MapID, MsgID, Msg) ->
 	case getCfg:getCfgPStack(cfg_mapsetting, MapID) of
 		#mapsettingCfg{type = ?MapTypeNormal} ->
 			%%发送到普通地图管理器
-			psMgr:sendMsg2PS(?PSNameNormalMapMgr,MsgID,Msg);
+			psMgr:sendMsg2PS(?PSNameNormalMapMgr, MsgID, Msg);
 		_ ->
 			%%发送到副本管理器
-			psMgr:sendMsg2PS(?PSNameCopyMapMgr,MsgID,Msg)
+			psMgr:sendMsg2PS(?PSNameCopyMapMgr, MsgID, Msg)
 	end,
 	ok.
 %%call地图管理器
--spec callMap(MapID::uint(), MsgID::atom(), Msg::term()) -> term().
+-spec callMap(MapID :: uint(), MsgID :: atom(), Msg :: term()) -> term().
 callMap(MapID, MsgID, Msg) ->
 	case getCfg:getCfgPStack(cfg_mapsetting, MapID) of
 		#mapsettingCfg{type = ?MapTypeNormal} ->
 			%%发送到普通地图管理器
-			psMgr:call(?PSNameNormalMapMgr, MsgID, Msg,10000);
+			psMgr:call(?PSNameNormalMapMgr, MsgID, Msg, 10000);
 		_ ->
 			%%发送到副本管理器
-			psMgr:call(?PSNameCopyMapMgr, MsgID, Msg,10000)
+			psMgr:call(?PSNameCopyMapMgr, MsgID, Msg, 10000)
 	end.
 
 %% 发送消息给活动进程
--spec sendMsgToActivity(ActivityType::activityType(), MsgID::atom(), Msg::term()) -> ok.
+-spec sendMsgToActivity(ActivityType :: activityType(), MsgID :: atom(), Msg :: term()) -> ok.
 sendMsgToActivity(ActivityType, MsgID, Msg) ->
 	case activityMgrLogic:getActivityChildProcessName(ActivityType) of
 		error ->
@@ -160,12 +160,12 @@ sendMsgToActivity(ActivityType, MsgID, Msg) ->
 	ok.
 
 %%设置全局变量，并通知CS及其它所有GS
--spec setGlobalVariant(VarIndex,Value) -> boolean() when VarIndex::uint(),Value::int().
-setGlobalVariant(VarIndex,Value) ->
+-spec setGlobalVariant(VarIndex, Value) -> boolean() when VarIndex :: uint(), Value :: int().
+setGlobalVariant(VarIndex, Value) ->
 	case variant:setGlobalVariant(VarIndex, Value) of
 		true ->
 %%			gsSendMsg:sendMsg2CSServer(updateGlobalVariant,{VarIndex,Value}),
-			saveGlobalVariant(VarIndex,Value),
+			saveGlobalVariant(VarIndex, Value),
 			playerVariant:sendGlobalVarChangeToAllOnlinePlayer(VarIndex, Value),
 			true;
 		_ ->
@@ -173,7 +173,7 @@ setGlobalVariant(VarIndex,Value) ->
 	end.
 
 %%设置全局开关变量，并通知CS及其它所有GS
--spec setGlobalBitVariant(BitIndex, Value) -> boolean() when BitIndex::uint(),Value::boolean().
+-spec setGlobalBitVariant(BitIndex, Value) -> boolean() when BitIndex :: uint(), Value :: boolean().
 setGlobalBitVariant(BitIndex, Value) ->
 	Ret =
 		case variant:setGlobalBitVariant(BitIndex, Value) of
@@ -181,7 +181,7 @@ setGlobalBitVariant(BitIndex, Value) ->
 %%				gsSendMsg:sendMsg2CSServer(updateGlobalBitVariant, {BitIndex, Value}),
 				Index = BitIndex div ?Setting_Switch_BitSize,
 				Value1 = variant:getGlobalVariant(Index),
-				saveGlobalVariant(Index,Value1),
+				saveGlobalVariant(Index, Value1),
 				playerVariant:sendGlobalBitVarChangeToAllOnlinePlayer(BitIndex, Value),
 				true;
 			_ ->
@@ -190,9 +190,9 @@ setGlobalBitVariant(BitIndex, Value) ->
 	sendGlobalBitVariantToLs(BitIndex),
 	Ret.
 
--spec saveGlobalVariant(Index,Value) -> ok when
-	Index::uint(),Value::int().
-saveGlobalVariant(Index,Value) ->
+-spec saveGlobalVariant(Index, Value) -> ok when
+	Index :: uint(), Value :: int().
+saveGlobalVariant(Index, Value) ->
 	gsSendMsg:sendMsg2DBServer(saveVariant, 0, #rec_variant0{
 		roleID = ?GlobalVariantID,
 		index = Index,
@@ -200,33 +200,33 @@ saveGlobalVariant(Index,Value) ->
 	ok.
 
 %%设置世界变量，并保存数据库
--spec setWorldVariant(VarIndex,Value) -> boolean() when VarIndex::uint(),Value::int().
-setWorldVariant(VarIndex,Value) ->
-	case variant:setWorldVariant(gsMainLogic:getServerID(),VarIndex, Value) of
+-spec setWorldVariant(VarIndex, Value) -> boolean() when VarIndex :: uint(), Value :: int().
+setWorldVariant(VarIndex, Value) ->
+	case variant:setWorldVariant(gsMainLogic:getServerID(), VarIndex, Value) of
 		true ->
-			saveWorldVariant(VarIndex,Value),
+			saveWorldVariant(VarIndex, Value),
 			true;
 		_ ->
 			false
 	end.
 
 %%设置世界开关变量，并保存数据库
--spec setWorldBitVariant(BitIndex,Value) -> boolean() when BitIndex::uint(),Value::boolean().
-setWorldBitVariant(BitIndex,Value) when erlang:is_boolean(Value)->
-	case variant:setWorldBitVariant(gsMainLogic:getServerID(),BitIndex, Value) of
+-spec setWorldBitVariant(BitIndex, Value) -> boolean() when BitIndex :: uint(), Value :: boolean().
+setWorldBitVariant(BitIndex, Value) when erlang:is_boolean(Value) ->
+	case variant:setWorldBitVariant(gsMainLogic:getServerID(), BitIndex, Value) of
 		true ->
 			Index = BitIndex div ?Setting_Switch_BitSize,
-			Value1 = variant:getWorldVariant(gsMainLogic:getServerID(),Index),
-			saveWorldVariant(Index,Value1),
+			Value1 = variant:getWorldVariant(gsMainLogic:getServerID(), Index),
+			saveWorldVariant(Index, Value1),
 			true;
 		_ ->
 			false
 	end.
 
--spec saveWorldVariant(Index,Value) -> ok when
-	Index::uint(),Value::int().
-saveWorldVariant(Index,Value) ->
-	gsSendMsg:sendMsg2DBServer(saveVariant,0,#rec_variant0{
+-spec saveWorldVariant(Index, Value) -> ok when
+	Index :: uint(), Value :: int().
+saveWorldVariant(Index, Value) ->
+	gsSendMsg:sendMsg2DBServer(saveVariant, 0, #rec_variant0{
 		roleID = gsMainLogic:getServerID(),
 		index = Index,
 		value = Value}),
@@ -246,22 +246,22 @@ sendGlobalBitVariantToLs(BitIndex) ->
 	psMgr:sendMsg2PS(?PsNameLS, variantChangeMsg, {BitIndex, Value}),
 	ok.
 
--spec boardcastAllGSNetMsg(Msg::tuple()) ->ok.
+-spec boardcastAllGSNetMsg(Msg :: tuple()) -> ok.
 boardcastAllGSNetMsg(Msg) ->
 	try
 		List = packNetMsg(Msg),
-        Fun =
-            fun(#rec_OnlinePlayer{netPid = NetPid}, _) ->
-                psMgr:sendMsg2PS(NetPid, sendPackage, List)
-            end,
-        ets:foldl(Fun, 0, ets_rec_OnlinePlayer)
+		Fun =
+			fun(#rec_OnlinePlayer{netPid = NetPid}, _) ->
+				psMgr:sendMsg2PS(NetPid, sendPackage, List)
+			end,
+		ets:foldl(Fun, 0, ets_rec_OnlinePlayer)
 	catch
 		_:Why ->
 			?ERROR_OUT("boardcastAllGSNetMsg:msg=~p,~p ~p", [Msg, Why, misc:getStackTrace()])
 	end,
 	ok.
 
--spec boardcastAllGSMsg(MsgID::atom(), Params::list()) ->ok.
+-spec boardcastAllGSMsg(MsgID :: atom(), Params :: list()) -> ok.
 boardcastAllGSMsg(MsgID, Params) ->
 	try
 		Fun =
@@ -276,7 +276,7 @@ boardcastAllGSMsg(MsgID, Params) ->
 	ok.
 
 %% 根据角色ID查询角色信息
--spec queryRoleKeyInfoByRoleID(RoleID::uint64()) -> #?RoleKeyRec{} | {}.
+-spec queryRoleKeyInfoByRoleID(RoleID :: uint64()) -> #?RoleKeyRec{} | {}.
 queryRoleKeyInfoByRoleID(RoleID) when erlang:is_integer(RoleID) andalso RoleID > 0 ->
 	case ets:lookup(ets_rolekeyinfo, RoleID) of
 		[#?RoleKeyRec{} = Rec] ->
@@ -288,7 +288,7 @@ queryRoleKeyInfoByRoleID(_RoleID) ->
 	{}.
 
 %% 根据角色姓名查询角色信息
--spec queryRoleKeyInfoByRoleName(RoleName::string()) -> #?RoleKeyRec{} | {}.
+-spec queryRoleKeyInfoByRoleName(RoleName :: string()) -> #?RoleKeyRec{} | {}.
 queryRoleKeyInfoByRoleName(RoleName) when erlang:is_list(RoleName) ->
 	FunFind =
 		fun(#?RoleKeyRec{roleName = RoleName_} = Data, {Result, IsContinue}) ->
@@ -310,15 +310,15 @@ queryRoleKeyInfoByRoleName(_RoleName) ->
 	{}.
 
 %% 根据角色ID查询在线玩家
--spec queryOnLineRoleByRoleID(RoleID::uint64()) -> #rec_OnlinePlayer{} | {}.
+-spec queryOnLineRoleByRoleID(RoleID :: uint64()) -> #rec_OnlinePlayer{} | {}.
 queryOnLineRoleByRoleID(RoleID) ->
-    case ets:lookup(ets_rec_OnlinePlayer, RoleID) of
-        [#rec_OnlinePlayer{} = Online] -> Online;
-        _ -> {}
-    end.
+	case ets:lookup(ets_rec_OnlinePlayer, RoleID) of
+		[#rec_OnlinePlayer{} = Online] -> Online;
+		_ -> {}
+	end.
 
 %%根据角色ID查询玩家进程的PID，如果成功则返回Pid，失败返回offline
--spec queryPlayerPidByRoleID(RoleID) -> pid() | offline when RoleID::uint().
+-spec queryPlayerPidByRoleID(RoleID) -> pid() | offline when RoleID :: uint().
 queryPlayerPidByRoleID(RoleID) ->
 	case uidMgr:checkUID(?UID_TYPE_Role, RoleID) of
 		true ->
@@ -338,7 +338,7 @@ queryPlayerPidByRoleID(RoleID) ->
 	end.
 
 %%根据角色ID查询玩家进程的PID，如果成功则返回Pid，失败返回offline
--spec queryNetPidByRoleID(RoleID) -> pid() | offline when RoleID::uint().
+-spec queryNetPidByRoleID(RoleID) -> pid() | offline when RoleID :: uint().
 queryNetPidByRoleID(RoleID) ->
 	case uidMgr:checkUID(?UID_TYPE_Role, RoleID) of
 		true ->
@@ -358,7 +358,7 @@ queryNetPidByRoleID(RoleID) ->
 	end.
 
 %% 全服通告
--spec sendBroadcastChatNotice(Content::list()) -> ok.
+-spec sendBroadcastChatNotice(Content :: list()) -> ok.
 sendBroadcastChatNotice(Content) ->
 	%% 系统消息
 	ChatInfo = #pk_GS2U_Chatinfo{channel = 6, senderID = 0, senderName = [],
@@ -369,7 +369,7 @@ sendBroadcastChatNotice(Content) ->
 
 %% 全服通告
 -spec sendBroadcastNotice(
-		Notice::{uint32(), list()}|list()
+	Notice :: {uint32(), list()}|list()
 ) ->
 	ok.
 sendBroadcastNotice({Color, Content}) ->
@@ -388,7 +388,7 @@ sendBroadcastNoticeColor(Color, Content) ->
 		duration = 120,
 		interval = 30
 	},
-	PMDMsg = #pk_GS2U_NoticeAdd{notice =[NoticeInfo]},
+	PMDMsg = #pk_GS2U_NoticeAdd{notice = [NoticeInfo]},
 
 	%% 系统消息
 	ChatInfo = #pk_GS2U_Chatinfo{channel = 6, senderID = 0, senderName = [],
@@ -399,14 +399,14 @@ sendBroadcastNoticeColor(Color, Content) ->
 
 
 %% 全服通告
--spec sendBroadcastErrorCode(Code::uint(),Params::list()) -> ok.
+-spec sendBroadcastErrorCode(Code :: uint(), Params :: list()) -> ok.
 sendBroadcastErrorCode(Code, Params) ->
 	psMgr:sendMsg2PS(?PsNamePlayerMgr,
 		pidMsg2AllOLPlayer, {sendSystemChatMsgByECode, {Code, Params}}),
 	ok.
 
 %%通告指定玩家
--spec sendBroadcastNotice(Content::list(), NetPID::pid()) -> ok.
+-spec sendBroadcastNotice(Content :: list(), NetPID :: pid()) -> ok.
 sendBroadcastNotice(Content, NetPID) ->
 	%% 跑马灯
 	NoticeInfo = #pk_NoticeInfo{
@@ -419,7 +419,7 @@ sendBroadcastNotice(Content, NetPID) ->
 		duration = 120,
 		interval = 30
 	},
-	PMDMsg = #pk_GS2U_NoticeAdd{notice =[NoticeInfo]},
+	PMDMsg = #pk_GS2U_NoticeAdd{notice = [NoticeInfo]},
 
 	%% 系统消息
 	ChatInfo = #pk_GS2U_Chatinfo{channel = 6, senderID = 0, senderName = [],
@@ -428,13 +428,13 @@ sendBroadcastNotice(Content, NetPID) ->
 	gsSendMsg:sendNetMsg(NetPID, ChatInfo).
 
 %% 全服通告，通过ls转发所有gs线
--spec sendBroadcastNoticeLS(Color::uint(), Content::list()) -> ok.
+-spec sendBroadcastNoticeLS(Color :: uint(), Content :: list()) -> ok.
 sendBroadcastNoticeLS(Color, Content) ->
 	gsLSOtp:send2ls(getGameNotice, {Color, Content}),
 	ok.
 
 %% 删除玩家保存数据
--spec deletePlayerData(RoleID::uint64()) -> boolean().
+-spec deletePlayerData(RoleID :: uint64()) -> boolean().
 deletePlayerData(RoleID) ->
 	F =
 		fun() ->
@@ -462,14 +462,14 @@ deletePlayerData(RoleID) ->
 
 %% 指定时间是否同一小时
 %% Time 为本地绝对时间秒
--spec timeIsOnHour(Time::uint64()) -> boolean().
+-spec timeIsOnHour(Time :: uint64()) -> boolean().
 timeIsOnHour(0) -> false;
 timeIsOnHour(Time) ->
 	timeIsOnHour(Time, time:getSyncTime1970FromDBS()).
 
 %% 指定时间是否在同一小时
 %% Time 为本地绝对时间秒
--spec timeIsOnHour(Time::uint64(), NowTime::uint64()) -> boolean().
+-spec timeIsOnHour(Time :: uint64(), NowTime :: uint64()) -> boolean().
 timeIsOnHour(0, _NowTime) -> false;
 timeIsOnHour(Time, NowTime) ->
 	{{_, _, _}, {Hour, _, _}} = time:convertSec2DateTime(Time),
@@ -481,14 +481,14 @@ timeIsOnHour(Time, NowTime) ->
 
 %% 指定时间是否在当天范围
 %% Time 为本地绝对时间秒
--spec timeIsOnDay(Time::uint64()) -> boolean().
+-spec timeIsOnDay(Time :: uint64()) -> boolean().
 timeIsOnDay(0) -> false;
 timeIsOnDay(Time) ->
 	timeIsOnDay(Time, time:getSyncTime1970FromDBS()).
 
 %% 指定时间是否在当天范围
 %% Time 为本地绝对时间秒
--spec timeIsOnDay(Time::uint64(), NowTime::uint64()) -> boolean().
+-spec timeIsOnDay(Time :: uint64(), NowTime :: uint64()) -> boolean().
 timeIsOnDay(0, _NowTime) -> false;
 timeIsOnDay(Time, NowTime) ->
 	{{Year, Month, Day}, {Hour, _Minute, _Second}} = time:convertSec2DateTime(Time),
@@ -509,12 +509,12 @@ timeIsOnWeek(Time) ->
 timeIsOnWeek(0, _) -> false;
 timeIsOnWeek(Time, NowTime) ->
 	WeekSec = time:getWeekBeginSecondsByDay(time:convertSec2DateTime(Time)),
-	{Start, End} = case Time >= WeekSec + ?ResetTimeHour * 3600  of
-		true ->
-			{WeekSec + ?ResetTimeHour * 3600, WeekSec + ?ResetTimeHour * 3600 + 7 * 24 * 3600};
-		_ ->
-			{WeekSec + ?ResetTimeHour * 3600 - (7 * 24 * 3600), WeekSec + ?ResetTimeHour * 3600}
-	end,
+	{Start, End} = case Time >= WeekSec + ?ResetTimeHour * 3600 of
+		               true ->
+			               {WeekSec + ?ResetTimeHour * 3600, WeekSec + ?ResetTimeHour * 3600 + 7 * 24 * 3600};
+		               _ ->
+			               {WeekSec + ?ResetTimeHour * 3600 - (7 * 24 * 3600), WeekSec + ?ResetTimeHour * 3600}
+	               end,
 	NowTime >= Start andalso NowTime < End.
 
 timeIsOnMonth(0) -> false;
@@ -526,11 +526,11 @@ timeIsOnMonth(Time, NowTime) ->
 	{{Year, Month, _Day}, {_Hour, _Minute, _Second}} = time:convertSec2DateTime(Time),
 	CurMounthDays = calendar:last_day_of_the_month(Year, Month),
 	LastMounthDay = case Month of
-		1 ->
-			calendar:last_day_of_the_month(Year - 1, 12);
-		_ ->
-			calendar:last_day_of_the_month(Year, Month - 1)
-	end,
+		                1 ->
+			                calendar:last_day_of_the_month(Year - 1, 12);
+		                _ ->
+			                calendar:last_day_of_the_month(Year, Month - 1)
+	                end,
 	Mid = time:convertDateTime1970ToSec({{Year, Month, 1}, {?ResetTimeHour, 0, 0}}),
 	{Start, End} = case Time >= Mid of
 		               true ->
@@ -541,19 +541,19 @@ timeIsOnMonth(Time, NowTime) ->
 	NowTime >= Start andalso NowTime < End.
 
 %%判断一个utc时间是否需要每日重置，重置规则为游戏的默认规则【每日凌晨4点】
--spec utcTimeIsDayReset(Time::uint64()) -> boolean().
+-spec utcTimeIsDayReset(Time :: uint64()) -> boolean().
 utcTimeIsDayReset(0) -> false;
 utcTimeIsDayReset(TempUTCSec) ->
 	NowTime = time:getUTCNowSec1970(),
 	NowUTC_YMD = calendar:gregorian_seconds_to_datetime(NowTime),
-	{{LocalYear, LocalMonth,LocalDay}, _} =calendar:universal_time_to_local_time(NowUTC_YMD),
+	{{LocalYear, LocalMonth, LocalDay}, _} = calendar:universal_time_to_local_time(NowUTC_YMD),
 	TempUTCYMD = calendar:gregorian_seconds_to_datetime(TempUTCSec),
 	{{Year, Month, Day}, {Hour, _Minute, _Second}} = calendar:universal_time_to_local_time(TempUTCYMD),
 	{Start, End} = case Hour >= ?ResetTimeHour of
-									 true ->
-										 {TempUTCSec, TempUTCSec + 24 * 3600};
-									 _ ->
-										 {TempUTCSec - 24 * 3600, TempUTCSec}
-								 end,
+		               true ->
+			               {TempUTCSec, TempUTCSec + 24 * 3600};
+		               _ ->
+			               {TempUTCSec - 24 * 3600, TempUTCSec}
+	               end,
 	NowTime >= Start andalso NowTime < End.
 

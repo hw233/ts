@@ -3,18 +3,18 @@
 -define(cfg_rune_randomPro, 1).
 
 -record(rune_randomProCfg, {
-        random_property_group_id,
+	random_property_group_id,
 
-        property_id,
+	property_id,
 
-        property_number_min,
+	property_number_min,
 
-        property_number_max,
+	property_number_max,
 
-        mulityOrPlus,
+	mulityOrPlus,
 
-        weight
+	weight
 
- }).
+}).
 
 -endif.

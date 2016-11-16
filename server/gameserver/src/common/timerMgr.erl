@@ -16,16 +16,16 @@
 -record(recTimer,
 {
 	time,
-	m,f,a,
+	m, f, a,
 	lastTickTime
 }).
 
 %%注册一个计时器，在指定时间间隔去执行指定函数
-registerTimer(Time,M,F,A) ->
+registerTimer(Time, M, F, A) ->
 	TL = getTimerList(),
-	case lists:keyfind(Time,#recTimer.time,TL) of
+	case lists:keyfind(Time, #recTimer.time, TL) of
 		#recTimer{} ->
-			?ERROR_OUT("duplicate register Timer for time:~p in pid:~p,stack:~p",[Time,self(),misc:getStackTrace()]),
+			?ERROR_OUT("duplicate register Timer for time:~p in pid:~p,stack:~p", [Time, self(), misc:getStackTrace()]),
 			false;
 		_ ->
 			T = #recTimer{
@@ -42,9 +42,9 @@ registerTimer(Time,M,F,A) ->
 %%注销一个计时器
 unregisterTimer(Time) ->
 	List = getTimerList(),
-	case lists:keyfind(Time,#recTimer.time,List) of
+	case lists:keyfind(Time, #recTimer.time, List) of
 		#recTimer{} ->
-			L = lists:keydelete(Time,#recTimer.time,List),
+			L = lists:keydelete(Time, #recTimer.time, List),
 			setTimerList(L),
 			true;
 		_ ->
@@ -54,7 +54,7 @@ unregisterTimer(Time) ->
 %%执行计时器
 tick(NowTime) ->
 	List = getTimerList(),
-	Fun = fun(#recTimer{time = Time,lastTickTime = LT,m = M,f = F,a = A} = T,AccIn) ->
+	Fun = fun(#recTimer{time = Time, lastTickTime = LT, m = M, f = F, a = A} = T, AccIn) ->
 		case NowTime - LT >= Time of
 			true ->
 				erlang:apply(M, F, A),
@@ -62,8 +62,8 @@ tick(NowTime) ->
 			_ ->
 				[T | AccIn]
 		end
-	end,
-	setTimerList(lists:foldl(Fun,[],List)),
+	      end,
+	setTimerList(lists:foldl(Fun, [], List)),
 	ok.
 
 
@@ -76,7 +76,7 @@ getTimerList() ->
 	end.
 
 setTimerList(List) ->
-	put(timer,List),
+	put(timer, List),
 	ok.
 
 
@@ -355,7 +355,7 @@ setTimerList(List) ->
 %% 	catch
 %% 		{return}->ok
 %% 	end.
-	
+
 %% make_timerManager_TimerArray
 %% 				MyFunc = fun( Index )->
 %% 								TimerManager_TimerArray = get( "timerManager_TimerArray" ),

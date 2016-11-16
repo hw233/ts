@@ -103,19 +103,19 @@ count_connections(Ref) ->
 init([]) ->
 	Monitors = [{{erlang:monitor(process, Pid), Pid}, Ref} ||
 		[Ref, Pid] <- ets:match(?TAB, {{conns_sup, '$1'}, '$2'})],
-	{ok, #state{monitors=Monitors}}.
+	{ok, #state{monitors = Monitors}}.
 
 handle_call({set_new_listener_opts, Ref, MaxConns, Opts}, _, State) ->
 	ets:insert(?TAB, {{max_conns, Ref}, MaxConns}),
 	ets:insert(?TAB, {{opts, Ref}, Opts}),
 	{reply, ok, State};
 handle_call({set_connections_sup, Ref, Pid}, _,
-		State=#state{monitors=Monitors}) ->
+	State = #state{monitors = Monitors}) ->
 	case ets:insert_new(?TAB, {{conns_sup, Ref}, Pid}) of
 		true ->
 			MonitorRef = erlang:monitor(process, Pid),
 			{reply, true,
-				State#state{monitors=[{{MonitorRef, Pid}, Ref}|Monitors]}};
+				State#state{monitors = [{{MonitorRef, Pid}, Ref} | Monitors]}};
 		false ->
 			{reply, false, State}
 	end;
@@ -139,11 +139,11 @@ handle_cast(_Request, State) ->
 	{noreply, State}.
 
 handle_info({'DOWN', MonitorRef, process, Pid, _},
-		State=#state{monitors=Monitors}) ->
+	State = #state{monitors = Monitors}) ->
 	{_, Ref} = lists:keyfind({MonitorRef, Pid}, 1, Monitors),
 	true = ets:delete(?TAB, {conns_sup, Ref}),
 	Monitors2 = lists:keydelete({MonitorRef, Pid}, 1, Monitors),
-	{noreply, State#state{monitors=Monitors2}};
+	{noreply, State#state{monitors = Monitors2}};
 handle_info(_Info, State) ->
 	{noreply, State}.
 

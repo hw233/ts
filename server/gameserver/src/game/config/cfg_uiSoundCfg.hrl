@@ -3,14 +3,14 @@
 -define(cfg_uiSoundCfg, 1).
 
 -record(uiSoundCfgCfg, {
-        id,
+	id,
 
-        sound,
+	sound,
 
-        uiType,
+	uiType,
 
-        desc
+	desc
 
- }).
+}).
 
 -endif.

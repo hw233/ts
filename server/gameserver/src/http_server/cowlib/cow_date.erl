@@ -21,19 +21,19 @@
 -spec rfc2109(calendar:datetime()) -> binary().
 rfc2109({Date = {Y, Mo, D}, {H, Mi, S}}) ->
 	Wday = calendar:day_of_the_week(Date),
-	<<	(weekday(Wday))/binary, ", ",
+	<<(weekday(Wday))/binary, ", ",
 		(pad_int(D))/binary, "-",
 		(month(Mo))/binary, "-",
 		(year(Y))/binary, " ",
 		(pad_int(H))/binary, ":",
 		(pad_int(Mi))/binary, ":",
-		(pad_int(S))/binary, " GMT" >>.
+		(pad_int(S))/binary, " GMT">>.
 
 -ifdef(TEST).
 rfc2109_test_() ->
 	Tests = [
 		{<<"Sat, 14-May-2011 14:25:33 GMT">>, {{2011, 5, 14}, {14, 25, 33}}},
-		{<<"Sun, 01-Jan-2012 00:00:00 GMT">>, {{2012, 1,  1}, { 0,  0,  0}}}
+		{<<"Sun, 01-Jan-2012 00:00:00 GMT">>, {{2012, 1, 1}, {0, 0, 0}}}
 	],
 	[{R, fun() -> R = rfc2109(D) end} || {R, D} <- Tests].
 -endif.
@@ -58,16 +58,16 @@ horse_rfc2019_12340506_070809() ->
 %% Internal.
 
 -spec pad_int(0..59) -> <<_:16>>.
-pad_int( 0) -> <<"00">>;
-pad_int( 1) -> <<"01">>;
-pad_int( 2) -> <<"02">>;
-pad_int( 3) -> <<"03">>;
-pad_int( 4) -> <<"04">>;
-pad_int( 5) -> <<"05">>;
-pad_int( 6) -> <<"06">>;
-pad_int( 7) -> <<"07">>;
-pad_int( 8) -> <<"08">>;
-pad_int( 9) -> <<"09">>;
+pad_int(0) -> <<"00">>;
+pad_int(1) -> <<"01">>;
+pad_int(2) -> <<"02">>;
+pad_int(3) -> <<"03">>;
+pad_int(4) -> <<"04">>;
+pad_int(5) -> <<"05">>;
+pad_int(6) -> <<"06">>;
+pad_int(7) -> <<"07">>;
+pad_int(8) -> <<"08">>;
+pad_int(9) -> <<"09">>;
 pad_int(10) -> <<"10">>;
 pad_int(11) -> <<"11">>;
 pad_int(12) -> <<"12">>;
@@ -129,15 +129,15 @@ weekday(6) -> <<"Sat">>;
 weekday(7) -> <<"Sun">>.
 
 -spec month(1..12) -> <<_:24>>.
-month( 1) -> <<"Jan">>;
-month( 2) -> <<"Feb">>;
-month( 3) -> <<"Mar">>;
-month( 4) -> <<"Apr">>;
-month( 5) -> <<"May">>;
-month( 6) -> <<"Jun">>;
-month( 7) -> <<"Jul">>;
-month( 8) -> <<"Aug">>;
-month( 9) -> <<"Sep">>;
+month(1) -> <<"Jan">>;
+month(2) -> <<"Feb">>;
+month(3) -> <<"Mar">>;
+month(4) -> <<"Apr">>;
+month(5) -> <<"May">>;
+month(6) -> <<"Jun">>;
+month(7) -> <<"Jul">>;
+month(8) -> <<"Aug">>;
+month(9) -> <<"Sep">>;
 month(10) -> <<"Oct">>;
 month(11) -> <<"Nov">>;
 month(12) -> <<"Dec">>.

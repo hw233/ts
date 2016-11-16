@@ -3,14 +3,14 @@
 -define(cfg_skillmoneycost, 1).
 
 -record(skillmoneycostCfg, {
-        %%: 技能id
-        skillID,
+	%%: 技能id
+	skillID,
 
-        level,
+	level,
 
-        %%: 游戏币消耗
-        money
+	%%: 游戏币消耗
+	money
 
- }).
+}).
 
 -endif.

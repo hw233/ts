@@ -20,8 +20,8 @@
 ]).
 
 -import(misc, [
-	ini_ReadString/3,
-	ini_ReadInt/3
+ini_ReadString/3,
+ini_ReadInt/3
 ]).
 
 -spec init() -> true.

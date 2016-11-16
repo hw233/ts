@@ -3,10 +3,10 @@
 -define(cfg_vIP_expression, 1).
 
 -record(vIP_expressionCfg, {
-        vIP_LEVEL,
+	vIP_LEVEL,
 
-        expression
+	expression
 
- }).
+}).
 
 -endif.

@@ -3,10 +3,10 @@
 -define(cfg_offstringingame, 1).
 
 -record(offstringingameCfg, {
-        id,
+	id,
 
-        offstring
+	offstring
 
- }).
+}).
 
 -endif.

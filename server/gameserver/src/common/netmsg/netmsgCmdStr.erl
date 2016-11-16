@@ -184,7 +184,8 @@ getNetMsgCmdStr(?CMD_GS2U_QueryItemResult) -> "CMD_GS2U_QueryItemResult";
 getNetMsgCmdStr(?CMD_GS2U_Report) -> "CMD_GS2U_Report";
 getNetMsgCmdStr(?CMD_GS2U_Report_Max) -> "CMD_GS2U_Report_Max";
 getNetMsgCmdStr(?CMD_GS2U_RequesBuyIDAck) -> "CMD_GS2U_RequesBuyIDAck";
-getNetMsgCmdStr(?CMD_GS2U_RequestExchangeResourceForeverLimitIDAck) -> "CMD_GS2U_RequestExchangeResourceForeverLimitIDAck";
+getNetMsgCmdStr(?CMD_GS2U_RequestExchangeResourceForeverLimitIDAck) ->
+	"CMD_GS2U_RequestExchangeResourceForeverLimitIDAck";
 getNetMsgCmdStr(?CMD_GS2U_RequestForeverLimitIDAck) -> "CMD_GS2U_RequestForeverLimitIDAck";
 getNetMsgCmdStr(?CMD_GS2U_ResourceExchangeList) -> "CMD_GS2U_ResourceExchangeList";
 getNetMsgCmdStr(?CMD_GS2U_SendPlayerPersonalityInfo) -> "CMD_GS2U_SendPlayerPersonalityInfo";
@@ -553,7 +554,8 @@ getNetMsgCmdStr(?CMD_GS2U_Chatinfo) -> "CMD_GS2U_Chatinfo";
 getNetMsgCmdStr(?CMD_GS2U_ClearFightObject) -> "CMD_GS2U_ClearFightObject";
 getNetMsgCmdStr(?CMD_GS2U_CopyMapProcess) -> "CMD_GS2U_CopyMapProcess";
 getNetMsgCmdStr(?CMD_GS2U_CopyMapProcessCurrentScheduleStatus) -> "CMD_GS2U_CopyMapProcessCurrentScheduleStatus";
-getNetMsgCmdStr(?CMD_GS2U_CopyMapProcessCurrentScheduleSurplusSecond) -> "CMD_GS2U_CopyMapProcessCurrentScheduleSurplusSecond";
+getNetMsgCmdStr(?CMD_GS2U_CopyMapProcessCurrentScheduleSurplusSecond) ->
+	"CMD_GS2U_CopyMapProcessCurrentScheduleSurplusSecond";
 getNetMsgCmdStr(?CMD_GS2U_CopyMapResult) -> "CMD_GS2U_CopyMapResult";
 getNetMsgCmdStr(?CMD_GS2U_CopyMapStatHurtList) -> "CMD_GS2U_CopyMapStatHurtList";
 getNetMsgCmdStr(?CMD_GS2U_CreatePlayerResult) -> "CMD_GS2U_CreatePlayerResult";

@@ -3,14 +3,14 @@
 -define(cfg_treasure_map, 1).
 
 -record(treasure_mapCfg, {
-        id,
+	id,
 
-        %%: 地图的ID
-        map,
+	%%: 地图的ID
+	map,
 
-        %%: 该地图下可能出现的坐标点
-        coordinate
+	%%: 该地图下可能出现的坐标点
+	coordinate
 
- }).
+}).
 
 -endif.

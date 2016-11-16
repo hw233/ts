@@ -25,7 +25,7 @@
 -spec init() -> ok.
 init() ->
 	%% 开启采集物管理心跳
-	timerMgr:registerTimer(?GatherNpcFreshTick,gatherNpcMgr,gatherTick,[]),
+	timerMgr:registerTimer(?GatherNpcFreshTick, gatherNpcMgr, gatherTick, []),
 	ok.
 
 %% 采集物刷新
@@ -38,27 +38,27 @@ gatherTick() ->
 	end,
 	ok.
 
-gatherFresh(#gatherWaitReliveRec{code = Code, id = GatherID, deadTime = DeadTime,x = X,y = Y} = WG) ->
+gatherFresh(#gatherWaitReliveRec{code = Code, id = GatherID, deadTime = DeadTime, x = X, y = Y} = WG) ->
 	IsDel = case getCfg:getCfgPStack(cfg_object, GatherID) of
-				#objectCfg{freshCD = 0} ->
-					%% 不刷新
-					true;
-				#objectCfg{freshCD = CD} when CD > 0 ->
-					NowTime = time:getUTCNowMS(),
-					case ((NowTime - DeadTime) div 1000) >= CD of
-						true ->
-							%% 到刷新时间
-							GroupID = WG#gatherWaitReliveRec.groupid,
-							copyMapScheduleInit:addCollectToMap(GroupID, [{GatherID,1,X,Y}], ?AddMonsterRange),
+		        #objectCfg{freshCD = 0} ->
+			        %% 不刷新
+			        true;
+		        #objectCfg{freshCD = CD} when CD > 0 ->
+			        NowTime = time:getUTCNowMS(),
+			        case ((NowTime - DeadTime) div 1000) >= CD of
+				        true ->
+					        %% 到刷新时间
+					        GroupID = WG#gatherWaitReliveRec.groupid,
+					        copyMapScheduleInit:addCollectToMap(GroupID, [{GatherID, 1, X, Y}], ?AddMonsterRange),
 
-							true;
-						_ ->
-							false
-					end;
-				_ ->
-					?ERROR_OUT("gatherFresh:~p", [GatherID]),
-					true
-			end,
+					        true;
+				        _ ->
+					        false
+			        end;
+		        _ ->
+			        ?ERROR_OUT("gatherFresh:~p", [GatherID]),
+			        true
+	        end,
 	case IsDel of
 		true ->
 			Msg = #recAcCollectItemArg{
@@ -70,7 +70,7 @@ gatherFresh(#gatherWaitReliveRec{code = Code, id = GatherID, deadTime = DeadTime
 				code = Code
 			},
 			AcList = activity:getOperateActCfgByType(?OperateActType_CollectItem),
-			activity:castOperateActEvent(AcList, #recOperateActivityArg{type = ?OperateActType_CollectItem,arg = Msg}),
+			activity:castOperateActEvent(AcList, #recOperateActivityArg{type = ?OperateActType_CollectItem, arg = Msg}),
 			mapState:delGatherWaitReliveList(Code);
 		_ ->
 			skip
@@ -78,7 +78,7 @@ gatherFresh(#gatherWaitReliveRec{code = Code, id = GatherID, deadTime = DeadTime
 	ok.
 
 %% 请求采集
--spec requestGatherItem({Code::uint(), GatherID::uint()}) -> false | uint().
+-spec requestGatherItem({Code :: uint(), GatherID :: uint()}) -> false | uint().
 requestGatherItem({Code, GatherID}) ->
 	CollectEts = mapState:getMapCollectEts(),
 	case myEts:lookUpEts(CollectEts, Code) of
@@ -120,7 +120,7 @@ requestGatherItem({Code, GatherID}) ->
 	end.
 
 %% 删除采集物
--spec deleteCollect(Code::uint()) -> ok.
+-spec deleteCollect(Code :: uint()) -> ok.
 deleteCollect(Code) ->
 	%% 从复活列表中删除
 	mapState:delGatherWaitReliveList(Code),
@@ -140,7 +140,7 @@ deleteCollect(Code) ->
 	ok.
 
 %% 从ets删除对象
--spec deleteObject(TargetEts::etsTab(), Code::uint()) -> ok.
+-spec deleteObject(TargetEts :: etsTab(), Code :: uint()) -> ok.
 deleteObject(TargetEts, Code) ->
 	case ets:member(TargetEts, Code) of
 		true ->
@@ -156,7 +156,7 @@ deleteObject(TargetEts, Code) ->
 			Msg = #pk_GS2U_BroadcastDisapear{code = [Code]},
 			mapView:sendMsg2NearPlayerByPos(self(), PlayerEts, Msg, X, Y, GroupID);
 		_ ->
-			?ERROR_OUT("Map Pid:~p deleteObject Code:~p from Ets:~p", [self(),TargetEts,Code]),
+			?ERROR_OUT("Map Pid:~p deleteObject Code:~p from Ets:~p", [self(), TargetEts, Code]),
 			skip
 	end,
 	ok.

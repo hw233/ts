@@ -28,8 +28,8 @@
 
 
 -record(config, {
-    labels = binary,
-    return_maps = false
+	labels = binary,
+	return_maps = false
 }).
 
 -type config() :: list().
@@ -37,24 +37,24 @@
 
 -ifndef(maps_support).
 -type json_value() :: list(json_value())
-    | list({binary() | atom(), json_value()})
-    | true
-    | false
-    | null
-    | integer()
-    | float()
-    | binary().
+| list({binary() | atom(), json_value()})
+| true
+| false
+| null
+| integer()
+| float()
+| binary().
 -endif.
 
 -ifdef(maps_support).
 -type json_value() :: list(json_value())
-    | map()
-    | true
-    | false
-    | null
-    | integer()
-    | float()
-    | binary().
+| map()
+| true
+| false
+| null
+| integer()
+| float()
+| binary().
 -endif.
 
 
@@ -65,35 +65,35 @@ opts(Opts) -> [return_maps, multi_term] ++ Opts.
 opts(Opts) -> [multi_term] ++ Opts.
 -endif.
 
--spec consult(File::file:name_all(), Config::config()) -> [json_value()].
+-spec consult(File :: file:name_all(), Config :: config()) -> [json_value()].
 
 consult(File, Config) when is_list(Config) ->
-    case file:read_file(File) of
-      {ok, Bin}  ->
-          {Final, _, _} = (jsx:decoder(
-              ?MODULE,
-              opts(Config),
-              jsx_config:extract_config(opts(Config))
-          ))(Bin),
-          lists:reverse(Final);
-      {error, _} -> erlang:error(badarg)
-    end.
+	case file:read_file(File) of
+		{ok, Bin} ->
+			{Final, _, _} = (jsx:decoder(
+				?MODULE,
+				opts(Config),
+				jsx_config:extract_config(opts(Config))
+			))(Bin),
+			lists:reverse(Final);
+		{error, _} -> erlang:error(badarg)
+	end.
 
 
 -type state() :: {list(), #config{}}.
--spec init(Config::proplists:proplist()) -> state().
+-spec init(Config :: proplists:proplist()) -> state().
 
 init(Config) -> {[], Config, jsx_to_term:start_term(Config)}.
 
 
--spec reset(State::state()) -> state().
+-spec reset(State :: state()) -> state().
 
 reset({Acc, Config, _}) -> {Acc, Config, jsx_to_term:start_term(Config)}.
 
 
--spec handle_event(Event::any(), State::state()) -> state().
+-spec handle_event(Event :: any(), State :: state()) -> state().
 
 handle_event(end_json, {Acc, Config, State}) ->
-    {[jsx_to_term:get_value(State)] ++ Acc, Config, State};
+	{[jsx_to_term:get_value(State)] ++ Acc, Config, State};
 handle_event(Event, {Acc, Config, State}) ->
-    {Acc, Config, jsx_to_term:handle_event(Event, State)}.
+	{Acc, Config, jsx_to_term:handle_event(Event, State)}.

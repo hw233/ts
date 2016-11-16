@@ -3,12 +3,12 @@
 -define(cfg_serverstrings, 1).
 
 -record(serverstringsCfg, {
-        id,
+	id,
 
-        stringID,
+	stringID,
 
-        chs
+	chs
 
- }).
+}).
 
 -endif.

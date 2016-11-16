@@ -3,18 +3,18 @@
 -define(cfg_color, 1).
 
 -record(colorCfg, {
-        %%: 颜色id
-        id,
+	%%: 颜色id
+	id,
 
-        %%: red
-        red,
+	%%: red
+	red,
 
-        %%: green
-        green,
+	%%: green
+	green,
 
-        %%: blue
-        blue
+	%%: blue
+	blue
 
- }).
+}).
 
 -endif.

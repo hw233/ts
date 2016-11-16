@@ -17,13 +17,13 @@
 -type opts() :: any().
 -type state() :: any().
 -type terminate_reason() :: {normal, shutdown}
-	| {normal, timeout}
-	| {error, closed}
-	| {error, overflow}
-	| {error, atom()}.
+| {normal, timeout}
+| {error, closed}
+| {error, overflow}
+| {error, atom()}.
 
 -callback init({atom(), http}, Req, opts())
-	-> {ok, Req, state()}
+		-> {ok, Req, state()}
 	| {loop, Req, state()}
 	| {loop, Req, state(), hibernate}
 	| {loop, Req, state(), timeout()}
@@ -31,10 +31,10 @@
 	| {shutdown, Req, state()}
 	| {upgrade, protocol, module()}
 	| {upgrade, protocol, module(), Req, opts()}
-	when Req::cowboy_req:req().
+	when Req :: cowboy_req:req().
 -callback info(any(), Req, State)
-	-> {ok, Req, State}
+		-> {ok, Req, State}
 	| {loop, Req, State}
 	| {loop, Req, State, hibernate}
-	when Req::cowboy_req:req(), State::state().
+	when Req :: cowboy_req:req(), State :: state().
 -callback terminate(terminate_reason(), cowboy_req:req(), state()) -> ok.

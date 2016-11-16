@@ -26,16 +26,16 @@
 -module(emysql_sup).
 -behaviour(supervisor).
 
--export([start_link/0 ,init/1]).
+-export([start_link/0, init/1]).
 
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+	supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init(_) ->
-    {ok, {{one_for_one, 10, 10}, [
-        {emysql_statements, {emysql_statements, start_link, []}, permanent, 5000, worker, [emysql_statements]},
-        {emysql_pool_mgr, {emysql_pool_mgr, start_link, []}, permanent, 5000, worker, [emysql_pool_mgr]},
-        {emysql_sup_pool_mgr,
-             {emysql_sup_mgr, start_link, [emysql_conn_pool_sup, emysql_conn_mgr]},
-             permanent, 5000, supervisor, [emysql_sup_pool_mgr]}
-    ]}}.
+	{ok, {{one_for_one, 10, 10}, [
+		{emysql_statements, {emysql_statements, start_link, []}, permanent, 5000, worker, [emysql_statements]},
+		{emysql_pool_mgr, {emysql_pool_mgr, start_link, []}, permanent, 5000, worker, [emysql_pool_mgr]},
+		{emysql_sup_pool_mgr,
+			{emysql_sup_mgr, start_link, [emysql_conn_pool_sup, emysql_conn_mgr]},
+			permanent, 5000, supervisor, [emysql_sup_pool_mgr]}
+	]}}.

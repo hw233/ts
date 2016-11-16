@@ -24,7 +24,7 @@
 ]).
 
 %% 通过副本和拥有者ID查询已经有的进度
--spec queryCopyMapData(CopyMapID::uint(), OwnerID::uint()) -> #recCopyMapData{} | {}.
+-spec queryCopyMapData(CopyMapID :: uint(), OwnerID :: uint()) -> #recCopyMapData{} | {}.
 queryCopyMapData(CopyMapID, OwnerID) ->
 	%% 先立即处理一下过期的副本进度
 	dealTimeOutCopyMapScheduleData(),
@@ -38,9 +38,9 @@ queryCopyMapData(CopyMapID, OwnerID) ->
 			_ ->
 				AccRet
 		end
-	end,
+	      end,
 	case ets:foldl(Fun, [], ?Ets_CopyMapSchedule) of
-		[#recCopyMapData{} = D|_] = Ret ->
+		[#recCopyMapData{} = D | _] = Ret ->
 			%% 保护日志，这里理论上来说，只能打一条！
 			case length(Ret) > 1 of
 				true ->
@@ -55,7 +55,7 @@ queryCopyMapData(CopyMapID, OwnerID) ->
 	end.
 
 %% 删除保存的副本进度数据
--spec delCopyMapScheduleData(OwnerID::uint(), CopyMapID::uint()) -> ok.
+-spec delCopyMapScheduleData(OwnerID :: uint(), CopyMapID :: uint()) -> ok.
 delCopyMapScheduleData(OwnerID, CopyMapID) ->
 	%% 从数据库中删除
 	gsSendMsg:sendMsg2DBServer(delCopyMapScheduleData, 0, {OwnerID, CopyMapID}),
@@ -69,14 +69,14 @@ delCopyMapScheduleData(OwnerID, CopyMapID) ->
 			_ ->
 				AccRet
 		end
-	end,
+	      end,
 	DelList = ets:foldl(Fun, [], ?Ets_CopyMapSchedule),
 	[ets:delete_object(?Ets_CopyMapSchedule, R) || R <- DelList],
 	ok.
 
 %% 保存进度数据
--spec saveCopyMapScheduleData({OldOwnerID::uint64(), OldMapID::uint(), #recCopyMapSchedule{}}) -> ok.
-saveCopyMapScheduleData({OldOwnerID, OldMapID,#recCopyMapSchedule{roleID = RoleID, copyMapID = MapID}} = Msg) ->
+-spec saveCopyMapScheduleData({OldOwnerID :: uint64(), OldMapID :: uint(), #recCopyMapSchedule{}}) -> ok.
+saveCopyMapScheduleData({OldOwnerID, OldMapID, #recCopyMapSchedule{roleID = RoleID, copyMapID = MapID}} = Msg) ->
 	case OldOwnerID =:= RoleID andalso OldMapID =:= MapID of
 		true ->
 			skip;
@@ -101,21 +101,21 @@ dealTimeOutCopyMapScheduleData() ->
 				%% 需要删除
 				delCopyMapScheduleData(RoleID, CopyMapID)
 		end
-	end,
+	      end,
 	ets:foldl(Fun, 0, ?Ets_CopyMapSchedule),
 	ok.
 
 %% 返回已有的副本进度列表
--spec getCopyMapScheduleAck(Result::list()) -> ok.
+-spec getCopyMapScheduleAck(Result :: list()) -> ok.
 getCopyMapScheduleAck(Result) ->
 	Fun = fun(#recCopyMapSchedule{roleID = RoleID, copyMapID = CopyMapID,
-								  usedTime = UsedTime, curSchedule = S, curParallelSchedule = PS} = Schedule) ->
+		usedTime = UsedTime, curSchedule = S, curParallelSchedule = PS} = Schedule) ->
 		IsChange = case getCfg:getCfgPStack(cfg_mapsetting, CopyMapID) of
-					   #mapsettingCfg{} = Conf ->
-						   isCopyMapConfigChange(Conf, UsedTime, S, PS);
-					   _ ->
-						   true
-				   end,
+			           #mapsettingCfg{} = Conf ->
+				           isCopyMapConfigChange(Conf, UsedTime, S, PS);
+			           _ ->
+				           true
+		           end,
 		case IsChange of
 			true ->
 				%% 需要告诉数据库删除这条配置了，以后直接开新副本
@@ -131,7 +131,7 @@ getCopyMapScheduleAck(Result) ->
 				?LOG_OUT("getCopyMapScheduleAck:~p", [R]),
 				ets:insert(?Ets_CopyMapSchedule, R)
 		end
-	end,
+	      end,
 	lists:foreach(Fun, Result),
 	ok.
 

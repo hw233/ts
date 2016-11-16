@@ -100,7 +100,7 @@
 %% @spec () -> string()
 %% @doc Returns the IANA-registered MIME type for JSON data.
 mime_type() ->
-    "application/json".
+	"application/json".
 
 %% @spec (json()) -> [byte()]
 %%
@@ -114,7 +114,7 @@ mime_type() ->
 %% objects (type {@link jsonkey()}) as well as the usual strings
 %% (lists of character codepoints).
 encode(X) ->
-    unicode_encode({'utf-8', encode_noauto(X)}).
+	unicode_encode({'utf-8', encode_noauto(X)}).
 
 %% @spec (json()) -> string()
 %%
@@ -128,69 +128,69 @@ encode(X) ->
 %% objects (type {@link jsonkey()}) as well as the usual strings
 %% (lists of character codepoints).
 encode_noauto(X) ->
-    lists:reverse(encode_noauto(X, [])).
+	lists:reverse(encode_noauto(X, [])).
 
 %% @spec (json(), string()) -> string()
 %%
 %% @doc As {@link encode_noauto/1}, but prepends <i>reversed</i> text
 %% to the supplied accumulator string.
 encode_noauto(true, Acc) ->
-    "eurt" ++ Acc;
+	"eurt" ++ Acc;
 encode_noauto(false, Acc) ->
-    "eslaf" ++ Acc;
+	"eslaf" ++ Acc;
 encode_noauto(null, Acc) ->
-    "llun" ++ Acc;
+	"llun" ++ Acc;
 encode_noauto(Str, Acc) when is_binary(Str) ->
-    Codepoints = xmerl_ucs:from_utf8(Str),
-    quote_and_encode_string(Codepoints, Acc);
+	Codepoints = xmerl_ucs:from_utf8(Str),
+	quote_and_encode_string(Codepoints, Acc);
 encode_noauto(Str, Acc) when is_atom(Str) ->
-    quote_and_encode_string(atom_to_list(Str), Acc);
+	quote_and_encode_string(atom_to_list(Str), Acc);
 encode_noauto(Num, Acc) when is_number(Num) ->
-    encode_number(Num, Acc);
+	encode_number(Num, Acc);
 encode_noauto({obj, Fields}, Acc) ->
-    "}" ++ encode_object(Fields, "{" ++ Acc);
+	"}" ++ encode_object(Fields, "{" ++ Acc);
 encode_noauto(Dict, Acc) when element(1, Dict) =:= dict ->
-    "}" ++ encode_object(dict:to_list(Dict), "{" ++ Acc);
+	"}" ++ encode_object(dict:to_list(Dict), "{" ++ Acc);
 encode_noauto({Str}, Acc) when is_list(Str) ->
 	Codepoints = xmerl_ucs:from_utf8(Str),
-    quote_and_encode_string(Codepoints, Acc);
+	quote_and_encode_string(Codepoints, Acc);
 encode_noauto(Arr, Acc) when is_list(Arr) ->
-    "]" ++ encode_array(Arr, "[" ++ Acc).
+	"]" ++ encode_array(Arr, "[" ++ Acc).
 
 encode_object([], Acc) ->
-    Acc;
+	Acc;
 encode_object([{Key, Value}], Acc) ->
-    encode_field(Key, Value, Acc);
+	encode_field(Key, Value, Acc);
 encode_object([{Key, Value} | Rest], Acc) ->
-    encode_object(Rest, "," ++ encode_field(Key, Value, Acc)).
+	encode_object(Rest, "," ++ encode_field(Key, Value, Acc)).
 
 encode_field(Key, Value, Acc) when is_binary(Key) ->
-    Codepoints = xmerl_ucs:from_utf8(Key),
-    encode_noauto(Value, ":" ++ quote_and_encode_string(Codepoints, Acc));
+	Codepoints = xmerl_ucs:from_utf8(Key),
+	encode_noauto(Value, ":" ++ quote_and_encode_string(Codepoints, Acc));
 encode_field(Key, Value, Acc) when is_atom(Key) ->
-    encode_noauto(Value, ":" ++ quote_and_encode_string(atom_to_list(Key), Acc));
+	encode_noauto(Value, ":" ++ quote_and_encode_string(atom_to_list(Key), Acc));
 encode_field(Key, Value, Acc) when is_list(Key) ->
-    encode_noauto(Value, ":" ++ quote_and_encode_string(Key, Acc)).
+	encode_noauto(Value, ":" ++ quote_and_encode_string(Key, Acc)).
 encode_array([], Acc) ->
-    Acc;
+	Acc;
 encode_array([X], Acc) ->
-    encode_noauto(X, Acc);
+	encode_noauto(X, Acc);
 encode_array([X | Rest], Acc) ->
-    encode_array(Rest, "," ++ encode_noauto(X, Acc)).
+	encode_array(Rest, "," ++ encode_noauto(X, Acc)).
 
 quote_and_encode_string(Str, Acc) ->
-    "\"" ++ encode_string(Str, "\"" ++ Acc).
+	"\"" ++ encode_string(Str, "\"" ++ Acc).
 
 encode_string([], Acc) ->
-    Acc;
+	Acc;
 encode_string([$" | Rest], Acc) ->
-    encode_string(Rest, [$", $\\ | Acc]);
+	encode_string(Rest, [$", $\\ | Acc]);
 encode_string([$\\ | Rest], Acc) ->
-    encode_string(Rest, [$\\, $\\ | Acc]);
+	encode_string(Rest, [$\\, $\\ | Acc]);
 encode_string([X | Rest], Acc) when X < 32 orelse X > 127 ->
-    encode_string(Rest, encode_general_char(X, Acc));
+	encode_string(Rest, encode_general_char(X, Acc));
 encode_string([X | Rest], Acc) ->
-    encode_string(Rest, [X | Acc]).
+	encode_string(Rest, [X | Acc]).
 
 encode_general_char(8, Acc) -> [$b, $\\ | Acc];
 encode_general_char(9, Acc) -> [$t, $\\ | Acc];
@@ -199,20 +199,20 @@ encode_general_char(12, Acc) -> [$f, $\\ | Acc];
 encode_general_char(13, Acc) -> [$r, $\\ | Acc];
 encode_general_char(X, Acc) when X > 127 -> [X | Acc];
 encode_general_char(X, Acc) ->
-    %% FIXME currently this branch never runs.
-    %% We could make it configurable, maybe?
-    Utf16Bytes = xmerl_ucs:to_utf16be(X),
-    encode_utf16be_chars(Utf16Bytes, Acc).
+	%% FIXME currently this branch never runs.
+	%% We could make it configurable, maybe?
+	Utf16Bytes = xmerl_ucs:to_utf16be(X),
+	encode_utf16be_chars(Utf16Bytes, Acc).
 
 encode_utf16be_chars([], Acc) ->
-    Acc;
+	Acc;
 encode_utf16be_chars([B1, B2 | Rest], Acc) ->
-    encode_utf16be_chars(Rest, [hex_digit((B2) band 16#F),
-				hex_digit((B2 bsr 4) band 16#F),
-				hex_digit((B1) band 16#F),
-				hex_digit((B1 bsr 4) band 16#F),
-				$u,
-				$\\ | Acc]).
+	encode_utf16be_chars(Rest, [hex_digit((B2) band 16#F),
+		hex_digit((B2 bsr 4) band 16#F),
+		hex_digit((B1) band 16#F),
+		hex_digit((B1 bsr 4) band 16#F),
+		$u,
+		$\\ | Acc]).
 
 %% @spec (Nibble::integer()) -> char()
 %% @doc Returns the character code corresponding to Nibble.
@@ -222,9 +222,9 @@ hex_digit(N) when is_integer(N), N >= 0, N =< 9 -> $0 + N;
 hex_digit(N) when is_integer(N), N >= 10, N =< 15 -> $A + N - 10.
 
 encode_number(Num, Acc) when is_integer(Num) ->
-    lists:reverse(integer_to_list(Num), Acc);
+	lists:reverse(integer_to_list(Num), Acc);
 encode_number(Num, Acc) when is_float(Num) ->
-    lists:reverse(float_to_list(Num), Acc).
+	lists:reverse(float_to_list(Num), Acc).
 
 %% @spec (Input::(binary() | [byte()])) -> ({ok, json(), Remainder} | {error, Reason})
 %% where Remainder = string()
@@ -244,10 +244,10 @@ encode_number(Num, Acc) when is_float(Num) ->
 %% remaining portion of the input that was not consumed in the process
 %% of decoding Result, or `{error, Reason}'.
 decode(Bin) when is_binary(Bin) ->
-    decode(binary_to_list(Bin));
+	decode(binary_to_list(Bin));
 decode(Bytes) ->
-    {_Charset, Codepoints} = unicode_decode(Bytes),
-    decode_noauto(Codepoints).
+	{_Charset, Codepoints} = unicode_decode(Bytes),
+	decode_noauto(Codepoints).
 
 %% @spec (Input::string()) -> ({ok, json(), string()} | {error, any()})
 %%
@@ -256,16 +256,16 @@ decode(Bytes) ->
 %% Expects a list of codepoints - an ordinary Erlang string - rather
 %% than a list of Unicode-encoded bytes.
 decode_noauto(Bin) when is_binary(Bin) ->
-    decode_noauto(binary_to_list(Bin));
+	decode_noauto(binary_to_list(Bin));
 decode_noauto(Chars) ->
-    case catch parse(skipws(Chars)) of
-	{'EXIT', Reason} ->
-	    %% Reason is usually far too much information, but helps
-	    %% if needing to debug this module.
-	    {error, Reason};
-	{Value, Remaining} ->
-	    {ok, Value, skipws(Remaining)}
-    end.
+	case catch parse(skipws(Chars)) of
+		{'EXIT', Reason} ->
+			%% Reason is usually far too much information, but helps
+			%% if needing to debug this module.
+			{error, Reason};
+		{Value, Remaining} ->
+			{ok, Value, skipws(Remaining)}
+	end.
 
 %% @spec ([byte()]) -> [char()]
 %%
@@ -303,15 +303,15 @@ decode_noauto(Chars) ->
 %% Note that I'm using xmerl's UCS/UTF support here. There's another
 %% UTF-8 codec in asn1rt, which works on binaries instead of lists.
 %%
-unicode_decode([0,0,254,255|C]) -> {'utf-32', xmerl_ucs:from_ucs4be(C)};
-unicode_decode([255,254,0,0|C]) -> {'utf-32', xmerl_ucs:from_ucs4le(C)};
-unicode_decode([254,255|C]) -> {'utf-16', xmerl_ucs:from_utf16be(C)};
-unicode_decode([239,187,191|C]) -> {'utf-8', xmerl_ucs:from_utf8(C)};
-unicode_decode(C=[0,0,_,_|_]) -> {'utf-32be', xmerl_ucs:from_ucs4be(C)};
-unicode_decode(C=[_,_,0,0|_]) -> {'utf-32le', xmerl_ucs:from_ucs4le(C)};
-unicode_decode(C=[0,_|_]) -> {'utf-16be', xmerl_ucs:from_utf16be(C)};
-unicode_decode(C=[_,0|_]) -> {'utf-16le', xmerl_ucs:from_utf16le(C)};
-unicode_decode(C=_) -> {'utf-8', xmerl_ucs:from_utf8(C)}.
+unicode_decode([0, 0, 254, 255 | C]) -> {'utf-32', xmerl_ucs:from_ucs4be(C)};
+unicode_decode([255, 254, 0, 0 | C]) -> {'utf-32', xmerl_ucs:from_ucs4le(C)};
+unicode_decode([254, 255 | C]) -> {'utf-16', xmerl_ucs:from_utf16be(C)};
+unicode_decode([239, 187, 191 | C]) -> {'utf-8', xmerl_ucs:from_utf8(C)};
+unicode_decode(C = [0, 0, _, _ | _]) -> {'utf-32be', xmerl_ucs:from_ucs4be(C)};
+unicode_decode(C = [_, _, 0, 0 | _]) -> {'utf-32le', xmerl_ucs:from_ucs4le(C)};
+unicode_decode(C = [0, _ | _]) -> {'utf-16be', xmerl_ucs:from_utf16be(C)};
+unicode_decode(C = [_, 0 | _]) -> {'utf-16le', xmerl_ucs:from_utf16le(C)};
+unicode_decode(C = _) -> {'utf-8', xmerl_ucs:from_utf8(C)}.
 
 %% @spec (EncodingAndCharacters::{Encoding, [char()]}) -> [byte()]
 %% where Encoding = 'utf-32' | 'utf-32be' | 'utf-32le' | 'utf-16' |
@@ -323,17 +323,17 @@ unicode_decode(C=_) -> {'utf-8', xmerl_ucs:from_utf8(C)}.
 %% a BOM is requested, we more-or-less arbitrarily pick the big-endian
 %% variant of the encoding, since big-endian is network-order. We
 %% don't support UTF-8 with BOM here.
-unicode_encode({'utf-32', C}) -> [0,0,254,255|xmerl_ucs:to_ucs4be(C)];
+unicode_encode({'utf-32', C}) -> [0, 0, 254, 255 | xmerl_ucs:to_ucs4be(C)];
 unicode_encode({'utf-32be', C}) -> xmerl_ucs:to_ucs4be(C);
 unicode_encode({'utf-32le', C}) -> xmerl_ucs:to_ucs4le(C);
-unicode_encode({'utf-16', C}) -> [254,255|xmerl_ucs:to_utf16be(C)];
+unicode_encode({'utf-16', C}) -> [254, 255 | xmerl_ucs:to_utf16be(C)];
 unicode_encode({'utf-16be', C}) -> xmerl_ucs:to_utf16be(C);
 unicode_encode({'utf-16le', C}) -> xmerl_ucs:to_utf16le(C);
 unicode_encode({'utf-8', C}) -> xmerl_ucs:to_utf8(C).
 
 parse([$" | Rest]) -> %% " emacs balancing
-    {Codepoints, Rest1} = parse_string(Rest, []),
-    {list_to_binary(xmerl_ucs:to_utf8(Codepoints)), Rest1};
+	{Codepoints, Rest1} = parse_string(Rest, []),
+	{list_to_binary(xmerl_ucs:to_utf8(Codepoints)), Rest1};
 parse("true" ++ Rest) -> {true, Rest};
 parse("false" ++ Rest) -> {false, Rest};
 parse("null" ++ Rest) -> {null, Rest};
@@ -343,24 +343,24 @@ parse([]) -> exit(unexpected_end_of_input);
 parse(Chars) -> parse_number(Chars, []).
 
 skipws([X | Rest]) when X =< 32 ->
-    skipws(Rest);
+	skipws(Rest);
 skipws(Chars) ->
-    Chars.
+	Chars.
 
 parse_string(Chars, Acc) ->
-    case parse_codepoint(Chars) of
-	{done, Rest} ->
-	    {lists:reverse(Acc), Rest};
-	{ok, Codepoint, Rest} ->
-	    parse_string(Rest, [Codepoint | Acc])
-    end.
+	case parse_codepoint(Chars) of
+		{done, Rest} ->
+			{lists:reverse(Acc), Rest};
+		{ok, Codepoint, Rest} ->
+			parse_string(Rest, [Codepoint | Acc])
+	end.
 
 parse_codepoint([$" | Rest]) -> %% " emacs balancing
-    {done, Rest};
+	{done, Rest};
 parse_codepoint([$\\, Key | Rest]) ->
-    parse_general_char(Key, Rest);
+	parse_general_char(Key, Rest);
 parse_codepoint([X | Rest]) ->
-    {ok, X, Rest}.
+	{ok, X, Rest}.
 
 parse_general_char($b, Rest) -> {ok, 8, Rest};
 parse_general_char($t, Rest) -> {ok, 9, Rest};
@@ -371,28 +371,28 @@ parse_general_char($/, Rest) -> {ok, $/, Rest};
 parse_general_char($\\, Rest) -> {ok, $\\, Rest};
 parse_general_char($", Rest) -> {ok, $", Rest};
 parse_general_char($u, [D0, D1, D2, D3 | Rest]) ->
-    Codepoint =
-	(digit_hex(D0) bsl 12) +
-	(digit_hex(D1) bsl 8) +
-	(digit_hex(D2) bsl 4) +
-	(digit_hex(D3)),
-    if
-	Codepoint >= 16#D800 andalso Codepoint < 16#DC00 ->
-	    % High half of surrogate pair
-	    case parse_codepoint(Rest) of
-		{low_surrogate_pair, Codepoint2, Rest1} ->
-		    [FinalCodepoint] =
-			xmerl_ucs:from_utf16be(<<Codepoint:16/big-unsigned-integer,
-						Codepoint2:16/big-unsigned-integer>>),
-		    {ok, FinalCodepoint, Rest1};
-		_ ->
-		    exit(incorrect_usage_of_surrogate_pair)
-	    end;
-	Codepoint >= 16#DC00 andalso Codepoint < 16#E000 ->
-	    {low_surrogate_pair, Codepoint, Rest};
-	true ->
-	    {ok, Codepoint, Rest}
-    end.
+	Codepoint =
+		(digit_hex(D0) bsl 12) +
+			(digit_hex(D1) bsl 8) +
+			(digit_hex(D2) bsl 4) +
+			(digit_hex(D3)),
+	if
+		Codepoint >= 16#D800 andalso Codepoint < 16#DC00 ->
+			% High half of surrogate pair
+			case parse_codepoint(Rest) of
+				{low_surrogate_pair, Codepoint2, Rest1} ->
+					[FinalCodepoint] =
+						xmerl_ucs:from_utf16be(<<Codepoint:16/big-unsigned-integer,
+							Codepoint2:16/big-unsigned-integer>>),
+					{ok, FinalCodepoint, Rest1};
+				_ ->
+					exit(incorrect_usage_of_surrogate_pair)
+			end;
+		Codepoint >= 16#DC00 andalso Codepoint < 16#E000 ->
+			{low_surrogate_pair, Codepoint, Rest};
+		true ->
+			{ok, Codepoint, Rest}
+	end.
 
 %% @spec (Hexchar::char()) -> integer()
 %% @doc Returns the number corresponding to Hexchar.
@@ -404,83 +404,83 @@ digit_hex(C) when is_integer(C), C >= $A, C =< $F -> C - $A + 10;
 digit_hex(C) when is_integer(C), C >= $a, C =< $f -> C - $a + 10.
 
 finish_number(Acc, Rest) ->
-    Str = lists:reverse(Acc),
-    {case catch list_to_integer(Str) of
-	 {'EXIT', _} -> list_to_float(Str);
-	 Value -> Value
-     end, Rest}.
+	Str = lists:reverse(Acc),
+	{case catch list_to_integer(Str) of
+		 {'EXIT', _} -> list_to_float(Str);
+		 Value -> Value
+	 end, Rest}.
 
 parse_number([$- | Rest], Acc) ->
-    parse_number1(Rest, [$- | Acc]);
+	parse_number1(Rest, [$- | Acc]);
 parse_number(Rest = [C | _], Acc) ->
-    case is_digit(C) of
-	true -> parse_number1(Rest, Acc);
-	false -> exit(syntax_error)
-    end.
+	case is_digit(C) of
+		true -> parse_number1(Rest, Acc);
+		false -> exit(syntax_error)
+	end.
 
 parse_number1(Rest, Acc) ->
-    {Acc1, Rest1} = parse_int_part(Rest, Acc),
-    case Rest1 of
-	[] -> finish_number(Acc1, []);
-	[$. | More] ->
-            {Acc2, Rest2} = parse_int_part(More, [$. | Acc1]),
-            parse_exp(Rest2, Acc2, false);
-        _ ->
-            parse_exp(Rest1, Acc1, true)
-    end.
+	{Acc1, Rest1} = parse_int_part(Rest, Acc),
+	case Rest1 of
+		[] -> finish_number(Acc1, []);
+		[$. | More] ->
+			{Acc2, Rest2} = parse_int_part(More, [$. | Acc1]),
+			parse_exp(Rest2, Acc2, false);
+		_ ->
+			parse_exp(Rest1, Acc1, true)
+	end.
 
 parse_int_part(Chars = [_Ch | _Rest], Acc) ->
-    parse_int_part0(Chars, Acc).
+	parse_int_part0(Chars, Acc).
 
 parse_int_part0([], Acc) ->
-    {Acc, []};
+	{Acc, []};
 parse_int_part0([Ch | Rest], Acc) ->
-    case is_digit(Ch) of
-	true -> parse_int_part0(Rest, [Ch | Acc]);
-	false -> {Acc, [Ch | Rest]}
-    end.
+	case is_digit(Ch) of
+		true -> parse_int_part0(Rest, [Ch | Acc]);
+		false -> {Acc, [Ch | Rest]}
+	end.
 
 parse_exp([$e | Rest], Acc, NeedFrac) ->
-    parse_exp1(Rest, Acc, NeedFrac);
+	parse_exp1(Rest, Acc, NeedFrac);
 parse_exp([$E | Rest], Acc, NeedFrac) ->
-    parse_exp1(Rest, Acc, NeedFrac);
+	parse_exp1(Rest, Acc, NeedFrac);
 parse_exp(Rest, Acc, _NeedFrac) ->
-    finish_number(Acc, Rest).
+	finish_number(Acc, Rest).
 
 parse_exp1(Rest, Acc, NeedFrac) ->
-    {Acc1, Rest1} = parse_signed_int_part(Rest, if
-						    NeedFrac -> [$e, $0, $. | Acc];
-						    true -> [$e | Acc]
-						end),
-    finish_number(Acc1, Rest1).
+	{Acc1, Rest1} = parse_signed_int_part(Rest, if
+		                                            NeedFrac -> [$e, $0, $. | Acc];
+		                                            true -> [$e | Acc]
+	                                            end),
+	finish_number(Acc1, Rest1).
 
 parse_signed_int_part([$+ | Rest], Acc) ->
-    parse_int_part(Rest, [$+ | Acc]);
+	parse_int_part(Rest, [$+ | Acc]);
 parse_signed_int_part([$- | Rest], Acc) ->
-    parse_int_part(Rest, [$- | Acc]);
+	parse_int_part(Rest, [$- | Acc]);
 parse_signed_int_part(Rest, Acc) ->
-    parse_int_part(Rest, Acc).
+	parse_int_part(Rest, Acc).
 
 is_digit(N) when is_integer(N) -> N >= $0 andalso N =< $9;
 is_digit(_) -> false.
 
 parse_object([$} | Rest], Acc) ->
-    {{obj, lists:reverse(Acc)}, Rest};
+	{{obj, lists:reverse(Acc)}, Rest};
 parse_object([$, | Rest], Acc) ->
-    parse_object(skipws(Rest), Acc);
+	parse_object(skipws(Rest), Acc);
 parse_object([$" | Rest], Acc) -> %% " emacs balancing
-    {KeyCodepoints, Rest1} = parse_string(Rest, []),
-    [$: | Rest2] = skipws(Rest1),
-    {Value, Rest3} = parse(skipws(Rest2)),
-    parse_object(skipws(Rest3), [{KeyCodepoints, Value} | Acc]).
+	{KeyCodepoints, Rest1} = parse_string(Rest, []),
+	[$: | Rest2] = skipws(Rest1),
+	{Value, Rest3} = parse(skipws(Rest2)),
+	parse_object(skipws(Rest3), [{KeyCodepoints, Value} | Acc]).
 
 parse_array([$] | Rest], Acc) ->
-    {lists:reverse(Acc), Rest};
+	{lists:reverse(Acc), Rest};
 parse_array([$, | Rest], Acc) ->
-    parse_array(skipws(Rest), Acc);
+	parse_array(skipws(Rest), Acc);
 parse_array(Chars, Acc) ->
-    {Value, Rest} = parse(Chars),
-    parse_array(skipws(Rest), [Value | Acc]).
+	{Value, Rest} = parse(Chars),
+	parse_array(skipws(Rest), [Value | Acc]).
 
 %% @spec (Record, atom(), [any()]) -> jsonobj()
 %% where Record = tuple()
@@ -493,17 +493,17 @@ parse_array(Chars, Acc) ->
 %% with fields corresponding to the fields of the record. The macro
 %% expands to a call to the `from_record' function.
 from_record(R, _RecordName, Fields) ->
-    {obj, encode_record_fields(R, 2, Fields)}.
+	{obj, encode_record_fields(R, 2, Fields)}.
 
 encode_record_fields(_R, _Index, []) ->
-    [];
+	[];
 encode_record_fields(R, Index, [Field | Rest]) ->
-    case element(Index, R) of
-	undefined ->
-	    encode_record_fields(R, Index + 1, Rest);
-	Value ->
-	    [{atom_to_list(Field), Value} | encode_record_fields(R, Index + 1, Rest)]
-    end.
+	case element(Index, R) of
+		undefined ->
+			encode_record_fields(R, Index + 1, Rest);
+		Value ->
+			[{atom_to_list(Field), Value} | encode_record_fields(R, Index + 1, Rest)]
+	end.
 
 %% @spec (JsonObject::jsonobj(), DefaultValue::Record, [atom()]) -> Record
 %% where Record = tuple()
@@ -516,43 +516,43 @@ encode_record_fields(R, Index, [Field | Rest]) ->
 %% will return a record ``#myrecord{field1 = 123, field2 = 234}''.
 %% The macro expands to a call to the `to_record' function.
 to_record({obj, Values}, Fallback, Fields) ->
-    list_to_tuple([element(1, Fallback) | decode_record_fields(Values, Fallback, 2, Fields)]).
+	list_to_tuple([element(1, Fallback) | decode_record_fields(Values, Fallback, 2, Fields)]).
 
 decode_record_fields(_Values, _Fallback, _Index, []) ->
-    [];
+	[];
 decode_record_fields(Values, Fallback, Index, [Field | Rest]) ->
-    [case lists:keysearch(atom_to_list(Field), 1, Values) of
-	 {value, {_, Value}} ->
-	     Value;
-	 false ->
-	     element(Index, Fallback)
-     end | decode_record_fields(Values, Fallback, Index + 1, Rest)].
+	[case lists:keysearch(atom_to_list(Field), 1, Values) of
+		 {value, {_, Value}} ->
+			 Value;
+		 false ->
+			 element(Index, Fallback)
+	 end | decode_record_fields(Values, Fallback, Index + 1, Rest)].
 
 %% @spec (JsonObject::jsonobj(), atom()) -> jsonobj()
 %% @doc Exclude a named field from a JSON "object".
 exclude_field({obj, Props}, Key) ->
-    {obj, lists:keydelete(Key, 1, Props)}.
+	{obj, lists:keydelete(Key, 1, Props)}.
 
 %% @spec (JsonObject::jsonobj(), atom()) -> {ok, json()} | not_found
 %% @doc Retrieves the value of a named field of a JSON "object".
 get_field({obj, Props}, Key) ->
-    case lists:keysearch(Key, 1, Props) of
-	{value, {_K, Val}} ->
-	    {ok, Val};
-	false ->
-	    not_found
-    end.
+	case lists:keysearch(Key, 1, Props) of
+		{value, {_K, Val}} ->
+			{ok, Val};
+		false ->
+			not_found
+	end.
 
 %% @spec (jsonobj(), atom(), json()) -> json()
 %% @doc Retrieves the value of a named field of a JSON "object", or a
 %% default value if no such field is present.
 get_field(Obj, Key, DefaultValue) ->
-    case get_field(Obj, Key) of
-	{ok, Val} ->
-	    Val;
-	not_found ->
-	    DefaultValue
-    end.
+	case get_field(Obj, Key) of
+		{ok, Val} ->
+			Val;
+		not_found ->
+			DefaultValue
+	end.
 
 %% @spec (JsonObject::jsonobj(), atom(), json()) -> jsonobj()
 %% @doc Adds or replaces a named field with the given value.
@@ -560,29 +560,29 @@ get_field(Obj, Key, DefaultValue) ->
 %% Returns a JSON "object" that contains the new field value as well
 %% as all the unmodified fields from the first argument.
 set_field({obj, Props}, Key, NewValue) ->
-    {obj, [{Key, NewValue} | lists:keydelete(Key, 1, Props)]}.
+	{obj, [{Key, NewValue} | lists:keydelete(Key, 1, Props)]}.
 
 %% @spec (A::json(), B::json()) -> bool()
 %% @doc Tests equivalence of JSON terms.
 %%
 %% After Bob Ippolito's `equiv' predicate in mochijson.
 equiv({obj, Props1}, {obj, Props2}) ->
-    L1 = lists:keysort(1, Props1),
-    L2 = lists:keysort(1, Props2),
-    equiv_sorted_plists(L1, L2);
+	L1 = lists:keysort(1, Props1),
+	L2 = lists:keysort(1, Props2),
+	equiv_sorted_plists(L1, L2);
 equiv(A, B) when is_list(A) andalso is_list(B) ->
-    equiv_arrays(A, B);
+	equiv_arrays(A, B);
 equiv(A, B) ->
-    A == B.
+	A == B.
 
 equiv_sorted_plists([], []) -> true;
 equiv_sorted_plists([], _) -> false;
 equiv_sorted_plists(_, []) -> false;
 equiv_sorted_plists([{K1, V1} | R1], [{K2, V2} | R2]) ->
-    K1 == K2 andalso equiv(V1, V2) andalso equiv_sorted_plists(R1, R2).
+	K1 == K2 andalso equiv(V1, V2) andalso equiv_sorted_plists(R1, R2).
 
 equiv_arrays([], []) -> true;
 equiv_arrays([], _) -> false;
 equiv_arrays(_, []) -> false;
 equiv_arrays([V1 | R1], [V2 | R2]) ->
-    equiv(V1, V2) andalso equiv_arrays(R1, R2).
+	equiv(V1, V2) andalso equiv_arrays(R1, R2).

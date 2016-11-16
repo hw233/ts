@@ -13,7 +13,7 @@
 
 %% Application callbacks
 -export([start/2,
-         stop/1]).
+	stop/1]).
 
 %%%===================================================================
 %%% Application callbacks
@@ -31,10 +31,10 @@
 %% @end
 %%--------------------------------------------------------------------
 -spec(start(StartType :: normal | {takeover, node()} | {failover, node()},
-            StartArgs :: term()) ->
-	           {ok, pid()} |
-	           {ok, pid(), State :: term()} |
-	           {error, Reason :: term()}).
+	StartArgs :: term()) ->
+	{ok, pid()} |
+	{ok, pid(), State :: term()} |
+	{error, Reason :: term()}).
 start(_StartType, _StartArgs) ->
 	case logSup:start_link() of
 		{ok, Pid} ->

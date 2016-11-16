@@ -35,33 +35,33 @@
 -export([close/1]).
 
 -type opts() :: [{backlog, non_neg_integer()}
-	| {cacertfile, string()}
-	| {cacerts, [Der::binary()]}
-	| {cert, Der::binary()}
-	| {certfile, string()}
-	| {ciphers, [ssl:erl_cipher_suite()] | string()}
-	| {fail_if_no_peer_cert, boolean()}
-	| {hibernate_after, integer() | undefined}
-	| {honor_cipher_order, boolean()}
-	| {ip, inet:ip_address()}
-	| {key, Der::binary()}
-	| {keyfile, string()}
-	| {linger, {boolean(), non_neg_integer()}}
-	| {log_alert, boolean()}
-	| {next_protocols_advertised, [binary()]}
-	| {nodelay, boolean()}
-	| {password, string()}
-	| {port, inet:port_number()}
-	| {raw, non_neg_integer(), non_neg_integer(),
-		non_neg_integer() | binary()}
-	| {reuse_session, fun()}
-	| {reuse_sessions, boolean()}
-	| {secure_renegotiate, boolean()}
-	| {send_timeout, timeout()}
-	| {send_timeout_close, boolean()}
-	| {verify, ssl:verify_type()}
-	| {verify_fun, {fun(), InitialUserState::term()}}
-	| {versions, [atom()]}].
+| {cacertfile, string()}
+| {cacerts, [Der :: binary()]}
+| {cert, Der :: binary()}
+| {certfile, string()}
+| {ciphers, [ssl:erl_cipher_suite()] | string()}
+| {fail_if_no_peer_cert, boolean()}
+| {hibernate_after, integer() | undefined}
+| {honor_cipher_order, boolean()}
+| {ip, inet:ip_address()}
+| {key, Der :: binary()}
+| {keyfile, string()}
+| {linger, {boolean(), non_neg_integer()}}
+| {log_alert, boolean()}
+| {next_protocols_advertised, [binary()]}
+| {nodelay, boolean()}
+| {password, string()}
+| {port, inet:port_number()}
+| {raw, non_neg_integer(), non_neg_integer(),
+	non_neg_integer() | binary()}
+| {reuse_session, fun()}
+| {reuse_sessions, boolean()}
+| {secure_renegotiate, boolean()}
+| {send_timeout, timeout()}
+| {send_timeout_close, boolean()}
+| {verify, ssl:verify_type()}
+| {verify_fun, {fun(), InitialUserState :: term()}}
+| {versions, [atom()]}].
 -export_type([opts/0]).
 
 name() -> ssl.
@@ -93,7 +93,7 @@ listen(Opts) ->
 			{reuseaddr, true}, {nodelay, true}])).
 
 -spec accept(ssl:sslsocket(), timeout())
-	-> {ok, ssl:sslsocket()} | {error, closed | timeout | atom()}.
+		-> {ok, ssl:sslsocket()} | {error, closed | timeout | atom()}.
 accept(LSocket, Timeout) ->
 	ssl:transport_accept(LSocket, Timeout).
 
@@ -118,7 +118,7 @@ accept_ack(CSocket, Timeout) ->
 %% @todo Probably filter Opts?
 -spec connect(inet:ip_address() | inet:hostname(),
 	inet:port_number(), any())
-	-> {ok, inet:socket()} | {error, atom()}.
+		-> {ok, inet:socket()} | {error, atom()}.
 connect(Host, Port, Opts) when is_integer(Port) ->
 	ssl:connect(Host, Port,
 		Opts ++ [binary, {active, false}, {packet, raw}]).
@@ -126,14 +126,14 @@ connect(Host, Port, Opts) when is_integer(Port) ->
 %% @todo Probably filter Opts?
 -spec connect(inet:ip_address() | inet:hostname(),
 	inet:port_number(), any(), timeout())
-	-> {ok, inet:socket()} | {error, atom()}.
+		-> {ok, inet:socket()} | {error, atom()}.
 connect(Host, Port, Opts, Timeout) when is_integer(Port) ->
 	ssl:connect(Host, Port,
 		Opts ++ [binary, {active, false}, {packet, raw}],
 		Timeout).
 
 -spec recv(ssl:sslsocket(), non_neg_integer(), timeout())
-	-> {ok, any()} | {error, closed | atom()}.
+		-> {ok, any()} | {error, closed | atom()}.
 recv(Socket, Length, Timeout) ->
 	ssl:recv(Socket, Length, Timeout).
 
@@ -142,13 +142,13 @@ send(Socket, Packet) ->
 	ssl:send(Socket, Packet).
 
 -spec sendfile(ssl:sslsocket(), file:name_all() | file:fd())
-	-> {ok, non_neg_integer()} | {error, atom()}.
+		-> {ok, non_neg_integer()} | {error, atom()}.
 sendfile(Socket, Filename) ->
 	sendfile(Socket, Filename, 0, 0, []).
 
 -spec sendfile(ssl:sslsocket(), file:name_all() | file:fd(),
-		non_neg_integer(), non_neg_integer())
-	-> {ok, non_neg_integer()} | {error, atom()}.
+	non_neg_integer(), non_neg_integer())
+		-> {ok, non_neg_integer()} | {error, atom()}.
 sendfile(Socket, File, Offset, Bytes) ->
 	sendfile(Socket, File, Offset, Bytes, []).
 
@@ -156,8 +156,8 @@ sendfile(Socket, File, Offset, Bytes) ->
 %% through SSL will be much slower in comparison. Note that unlike
 %% file:sendfile/5 this function accepts either a file or a file name.
 -spec sendfile(ssl:sslsocket(), file:name_all() | file:fd(),
-		non_neg_integer(), non_neg_integer(), ranch_transport:sendfile_opts())
-	-> {ok, non_neg_integer()} | {error, atom()}.
+	non_neg_integer(), non_neg_integer(), ranch_transport:sendfile_opts())
+		-> {ok, non_neg_integer()} | {error, atom()}.
 sendfile(Socket, File, Offset, Bytes, Opts) ->
 	ranch_transport:sendfile(?MODULE, Socket, File, Offset, Bytes, Opts).
 
@@ -167,22 +167,22 @@ setopts(Socket, Opts) ->
 	ssl:setopts(Socket, Opts).
 
 -spec controlling_process(ssl:sslsocket(), pid())
-	-> ok | {error, closed | not_owner | atom()}.
+		-> ok | {error, closed | not_owner | atom()}.
 controlling_process(Socket, Pid) ->
 	ssl:controlling_process(Socket, Pid).
 
 -spec peername(ssl:sslsocket())
-	-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
+		-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
 peername(Socket) ->
 	ssl:peername(Socket).
 
 -spec sockname(ssl:sslsocket())
-	-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
+		-> {ok, {inet:ip_address(), inet:port_number()}} | {error, atom()}.
 sockname(Socket) ->
 	ssl:sockname(Socket).
 
 -spec shutdown(ssl:sslsocket(), read | write | read_write)
-	-> ok | {error, atom()}.
+		-> ok | {error, atom()}.
 shutdown(Socket, How) ->
 	ssl:shutdown(Socket, How).
 
@@ -204,7 +204,7 @@ unbroken_cipher_suites() ->
 		Version when Version =:= "5.3"; Version =:= "5.3.1" ->
 			lists:filter(fun(Suite) ->
 				string:left(atom_to_list(element(1, Suite)), 4) =/= "ecdh"
-			end, ssl:cipher_suites());
+			             end, ssl:cipher_suites());
 		_ ->
 			ssl:cipher_suites()
 	end.

@@ -32,11 +32,11 @@
 
 	%% Media type.
 	content_types_p = [] ::
-		[{binary() | {binary(), binary(), [{binary(), binary()}] | '*'},
-			atom()}],
+	[{binary() | {binary(), binary(), [{binary(), binary()}] | '*'},
+		atom()}],
 	content_type_a :: undefined
-		| {binary() | {binary(), binary(), [{binary(), binary()}] | '*'},
-			atom()},
+	| {binary() | {binary(), binary(), [{binary(), binary()}] | '*'},
+		atom()},
 
 	%% Language.
 	languages_p = [] :: [binary()],
@@ -56,15 +56,15 @@
 }).
 
 -spec upgrade(Req, Env, module(), any())
-	-> {ok, Req, Env} when Req::cowboy_req:req(), Env::cowboy_middleware:env().
+		-> {ok, Req, Env} when Req :: cowboy_req:req(), Env :: cowboy_middleware:env().
 upgrade(Req, Env, Handler, HandlerOpts) ->
 	Method = cowboy_req:get(method, Req),
 	case erlang:function_exported(Handler, rest_init, 2) of
 		true ->
 			try Handler:rest_init(Req, HandlerOpts) of
 				{ok, Req2, HandlerState} ->
-					service_available(Req2, #state{env=Env, method=Method,
-						handler=Handler, handler_state=HandlerState})
+					service_available(Req2, #state{env = Env, method = Method,
+						handler = Handler, handler_state = HandlerState})
 			catch Class:Reason ->
 				Stacktrace = erlang:get_stacktrace(),
 				cowboy_req:maybe_reply(Stacktrace, Req),
@@ -77,27 +77,27 @@ upgrade(Req, Env, Handler, HandlerOpts) ->
 				])
 			end;
 		false ->
-			service_available(Req, #state{env=Env, method=Method,
-				handler=Handler})
+			service_available(Req, #state{env = Env, method = Method,
+				handler = Handler})
 	end.
 
 service_available(Req, State) ->
 	expect(Req, State, service_available, true, fun known_methods/2, 503).
 
 %% known_methods/2 should return a list of binary methods.
-known_methods(Req, State=#state{method=Method}) ->
+known_methods(Req, State = #state{method = Method}) ->
 	case call(Req, State, known_methods) of
 		no_call when Method =:= <<"HEAD">>; Method =:= <<"GET">>;
-				Method =:= <<"POST">>; Method =:= <<"PUT">>;
-				Method =:= <<"PATCH">>; Method =:= <<"DELETE">>;
-				Method =:= <<"OPTIONS">> ->
+			Method =:= <<"POST">>; Method =:= <<"PUT">>;
+			Method =:= <<"PATCH">>; Method =:= <<"DELETE">>;
+			Method =:= <<"OPTIONS">> ->
 			next(Req, State, fun uri_too_long/2);
 		no_call ->
 			next(Req, State, 501);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{List, Req2, HandlerState} ->
-			State2 = State#state{handler_state=HandlerState},
+			State2 = State#state{handler_state = HandlerState},
 			case lists:member(Method, List) of
 				true -> next(Req2, State2, fun uri_too_long/2);
 				false -> next(Req2, State2, 501)
@@ -108,24 +108,24 @@ uri_too_long(Req, State) ->
 	expect(Req, State, uri_too_long, false, fun allowed_methods/2, 414).
 
 %% allowed_methods/2 should return a list of binary methods.
-allowed_methods(Req, State=#state{method=Method}) ->
+allowed_methods(Req, State = #state{method = Method}) ->
 	case call(Req, State, allowed_methods) of
 		no_call when Method =:= <<"HEAD">>; Method =:= <<"GET">> ->
 			next(Req, State, fun malformed_request/2);
 		no_call when Method =:= <<"OPTIONS">> ->
-			next(Req, State#state{allowed_methods=
-				[<<"HEAD">>, <<"GET">>, <<"OPTIONS">>]},
+			next(Req, State#state{allowed_methods =
+			[<<"HEAD">>, <<"GET">>, <<"OPTIONS">>]},
 				fun malformed_request/2);
 		no_call ->
 			method_not_allowed(Req, State,
 				[<<"HEAD">>, <<"GET">>, <<"OPTIONS">>]);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{List, Req2, HandlerState} ->
-			State2 = State#state{handler_state=HandlerState},
+			State2 = State#state{handler_state = HandlerState},
 			case lists:member(Method, List) of
 				true when Method =:= <<"OPTIONS">> ->
-					next(Req2, State2#state{allowed_methods=List},
+					next(Req2, State2#state{allowed_methods = List},
 						fun malformed_request/2);
 				true ->
 					next(Req2, State2, fun malformed_request/2);
@@ -138,7 +138,7 @@ method_not_allowed(Req, State, []) ->
 	Req2 = cowboy_req:set_resp_header(<<"allow">>, <<>>, Req),
 	respond(Req2, State, 405);
 method_not_allowed(Req, State, Methods) ->
-	<< ", ", Allow/binary >> = << << ", ", M/binary >> || M <- Methods >>,
+	<<", ", Allow/binary>> = <<<<", ", M/binary>> || M <- Methods>>,
 	Req2 = cowboy_req:set_resp_header(<<"allow">>, Allow, Req),
 	respond(Req2, State, 405).
 
@@ -151,13 +151,13 @@ is_authorized(Req, State) ->
 		no_call ->
 			forbidden(Req, State);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{true, Req2, HandlerState} ->
-			forbidden(Req2, State#state{handler_state=HandlerState});
+			forbidden(Req2, State#state{handler_state = HandlerState});
 		{{false, AuthHead}, Req2, HandlerState} ->
 			Req3 = cowboy_req:set_resp_header(
 				<<"www-authenticate">>, AuthHead, Req2),
-			respond(Req3, State#state{handler_state=HandlerState}, 401)
+			respond(Req3, State#state{handler_state = HandlerState}, 401)
 	end.
 
 forbidden(Req, State) ->
@@ -176,20 +176,20 @@ valid_entity_length(Req, State) ->
 
 %% If you need to add additional headers to the response at this point,
 %% you should do it directly in the options/2 call using set_resp_headers.
-options(Req, State=#state{allowed_methods=Methods, method= <<"OPTIONS">>}) ->
+options(Req, State = #state{allowed_methods = Methods, method = <<"OPTIONS">>}) ->
 	case call(Req, State, options) of
 		no_call when Methods =:= [] ->
 			Req2 = cowboy_req:set_resp_header(<<"allow">>, <<>>, Req),
 			respond(Req2, State, 200);
 		no_call ->
-			<< ", ", Allow/binary >>
-				= << << ", ", M/binary >> || M <- Methods >>,
+			<<", ", Allow/binary>>
+				= <<<<", ", M/binary>> || M <- Methods>>,
 			Req2 = cowboy_req:set_resp_header(<<"allow">>, Allow, Req),
 			respond(Req2, State, 200);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{ok, Req2, HandlerState} ->
-			respond(Req2, State#state{handler_state=HandlerState}, 200)
+			respond(Req2, State#state{handler_state = HandlerState}, 200)
 	end;
 options(Req, State) ->
 	content_types_provided(Req, State).
@@ -214,26 +214,26 @@ content_types_provided(Req, State) ->
 	case call(Req, State, content_types_provided) of
 		no_call ->
 			State2 = State#state{
-				content_types_p=[{{<<"text">>, <<"html">>, '*'}, to_html}]},
+				content_types_p = [{{<<"text">>, <<"html">>, '*'}, to_html}]},
 			case cowboy_req:parse_header(<<"accept">>, Req) of
 				{error, badarg} ->
 					respond(Req, State2, 400);
 				{ok, undefined, Req2} ->
 					languages_provided(
 						cowboy_req:set_meta(media_type, {<<"text">>, <<"html">>, []}, Req2),
-						State2#state{content_type_a={{<<"text">>, <<"html">>, []}, to_html}});
+						State2#state{content_type_a = {{<<"text">>, <<"html">>, []}, to_html}});
 				{ok, Accept, Req2} ->
 					Accept2 = prioritize_accept(Accept),
 					choose_media_type(Req2, State2, Accept2)
 			end;
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{[], Req2, HandlerState} ->
-			not_acceptable(Req2, State#state{handler_state=HandlerState});
+			not_acceptable(Req2, State#state{handler_state = HandlerState});
 		{CTP, Req2, HandlerState} ->
 			CTP2 = [normalize_content_types(P) || P <- CTP],
 			State2 = State#state{
-				handler_state=HandlerState, content_types_p=CTP2},
+				handler_state = HandlerState, content_types_p = CTP2},
 			case cowboy_req:parse_header(<<"accept">>, Req2) of
 				{error, badarg} ->
 					respond(Req2, State2, 400);
@@ -241,7 +241,7 @@ content_types_provided(Req, State) ->
 					{PMT, _Fun} = HeadCTP = hd(CTP2),
 					languages_provided(
 						cowboy_req:set_meta(media_type, PMT, Req3),
-						State2#state{content_type_a=HeadCTP});
+						State2#state{content_type_a = HeadCTP});
 				{ok, Accept, Req3} ->
 					Accept2 = prioritize_accept(Accept),
 					choose_media_type(Req3, State2, Accept2)
@@ -249,19 +249,19 @@ content_types_provided(Req, State) ->
 	end.
 
 normalize_content_types({ContentType, Callback})
-		when is_binary(ContentType) ->
+	when is_binary(ContentType) ->
 	{cowboy_http:content_type(ContentType), Callback};
 normalize_content_types(Normalized) ->
 	Normalized.
 
 prioritize_accept(Accept) ->
 	lists:sort(
-		fun ({MediaTypeA, Quality, _AcceptParamsA},
-			 {MediaTypeB, Quality, _AcceptParamsB}) ->
-				%% Same quality, check precedence in more details.
-				prioritize_mediatype(MediaTypeA, MediaTypeB);
+		fun({MediaTypeA, Quality, _AcceptParamsA},
+			{MediaTypeB, Quality, _AcceptParamsB}) ->
+			%% Same quality, check precedence in more details.
+			prioritize_mediatype(MediaTypeA, MediaTypeB);
 			({_MediaTypeA, QualityA, _AcceptParamsA},
-			 {_MediaTypeB, QualityB, _AcceptParamsB}) ->
+				{_MediaTypeB, QualityB, _AcceptParamsB}) ->
 				%% Just compare the quality.
 				QualityA > QualityB
 		end, Accept).
@@ -286,36 +286,36 @@ prioritize_mediatype({TypeA, SubTypeA, ParamsA}, {TypeB, SubTypeB, ParamsB}) ->
 %% Ignoring the rare AcceptParams. Not sure what should be done about them.
 choose_media_type(Req, State, []) ->
 	not_acceptable(Req, State);
-choose_media_type(Req, State=#state{content_types_p=CTP},
-		[MediaType|Tail]) ->
+choose_media_type(Req, State = #state{content_types_p = CTP},
+	[MediaType | Tail]) ->
 	match_media_type(Req, State, Tail, CTP, MediaType).
 
 match_media_type(Req, State, Accept, [], _MediaType) ->
 	choose_media_type(Req, State, Accept);
 match_media_type(Req, State, Accept, CTP,
-		MediaType = {{<<"*">>, <<"*">>, _Params_A}, _QA, _APA}) ->
+	MediaType = {{<<"*">>, <<"*">>, _Params_A}, _QA, _APA}) ->
 	match_media_type_params(Req, State, Accept, CTP, MediaType);
 match_media_type(Req, State, Accept,
-			CTP = [{{Type, SubType_P, _PP}, _Fun}|_Tail],
-			MediaType = {{Type, SubType_A, _PA}, _QA, _APA})
-		when SubType_P =:= SubType_A; SubType_A =:= <<"*">> ->
+	CTP = [{{Type, SubType_P, _PP}, _Fun} | _Tail],
+	MediaType = {{Type, SubType_A, _PA}, _QA, _APA})
+	when SubType_P =:= SubType_A; SubType_A =:= <<"*">> ->
 	match_media_type_params(Req, State, Accept, CTP, MediaType);
-match_media_type(Req, State, Accept, [_Any|Tail], MediaType) ->
+match_media_type(Req, State, Accept, [_Any | Tail], MediaType) ->
 	match_media_type(Req, State, Accept, Tail, MediaType).
 
 match_media_type_params(Req, State, _Accept,
-		[Provided = {{TP, STP, '*'}, _Fun}|_Tail],
-		{{_TA, _STA, Params_A}, _QA, _APA}) ->
+	[Provided = {{TP, STP, '*'}, _Fun} | _Tail],
+	{{_TA, _STA, Params_A}, _QA, _APA}) ->
 	PMT = {TP, STP, Params_A},
 	languages_provided(cowboy_req:set_meta(media_type, PMT, Req),
-		State#state{content_type_a=Provided});
+		State#state{content_type_a = Provided});
 match_media_type_params(Req, State, Accept,
-		[Provided = {PMT = {_TP, _STP, Params_P}, _Fun}|Tail],
-		MediaType = {{_TA, _STA, Params_A}, _QA, _APA}) ->
+	[Provided = {PMT = {_TP, _STP, Params_P}, _Fun} | Tail],
+	MediaType = {{_TA, _STA, Params_A}, _QA, _APA}) ->
 	case lists:sort(Params_P) =:= lists:sort(Params_A) of
 		true ->
 			languages_provided(cowboy_req:set_meta(media_type, PMT, Req),
-				State#state{content_type_a=Provided});
+				State#state{content_type_a = Provided});
 		false ->
 			match_media_type(Req, State, Accept, Tail, MediaType)
 	end.
@@ -330,16 +330,16 @@ languages_provided(Req, State) ->
 		no_call ->
 			charsets_provided(Req, State);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{[], Req2, HandlerState} ->
-			not_acceptable(Req2, State#state{handler_state=HandlerState});
+			not_acceptable(Req2, State#state{handler_state = HandlerState});
 		{LP, Req2, HandlerState} ->
-			State2 = State#state{handler_state=HandlerState, languages_p=LP},
+			State2 = State#state{handler_state = HandlerState, languages_p = LP},
 			{ok, AcceptLanguage, Req3} =
 				cowboy_req:parse_header(<<"accept-language">>, Req2),
 			case AcceptLanguage of
 				undefined ->
-					set_language(Req3, State2#state{language_a=hd(LP)});
+					set_language(Req3, State2#state{language_a = hd(LP)});
 				AcceptLanguage ->
 					AcceptLanguage2 = prioritize_languages(AcceptLanguage),
 					choose_language(Req3, State2, AcceptLanguage2)
@@ -356,32 +356,32 @@ languages_provided(Req, State) ->
 %% at the end of the list.
 prioritize_languages(AcceptLanguages) ->
 	lists:sort(
-		fun ({_TagA, QualityA}, {_TagB, QualityB}) ->
+		fun({_TagA, QualityA}, {_TagB, QualityB}) ->
 			QualityA > QualityB
 		end, AcceptLanguages).
 
 choose_language(Req, State, []) ->
 	not_acceptable(Req, State);
-choose_language(Req, State=#state{languages_p=LP}, [Language|Tail]) ->
+choose_language(Req, State = #state{languages_p = LP}, [Language | Tail]) ->
 	match_language(Req, State, Tail, LP, Language).
 
 match_language(Req, State, Accept, [], _Language) ->
 	choose_language(Req, State, Accept);
-match_language(Req, State, _Accept, [Provided|_Tail], {'*', _Quality}) ->
-	set_language(Req, State#state{language_a=Provided});
-match_language(Req, State, _Accept, [Provided|_Tail], {Provided, _Quality}) ->
-	set_language(Req, State#state{language_a=Provided});
-match_language(Req, State, Accept, [Provided|Tail],
-		Language = {Tag, _Quality}) ->
+match_language(Req, State, _Accept, [Provided | _Tail], {'*', _Quality}) ->
+	set_language(Req, State#state{language_a = Provided});
+match_language(Req, State, _Accept, [Provided | _Tail], {Provided, _Quality}) ->
+	set_language(Req, State#state{language_a = Provided});
+match_language(Req, State, Accept, [Provided | Tail],
+	Language = {Tag, _Quality}) ->
 	Length = byte_size(Tag),
 	case Provided of
-		<< Tag:Length/binary, $-, _Any/bits >> ->
-			set_language(Req, State#state{language_a=Provided});
+		<<Tag:Length/binary, $-, _Any/bits>> ->
+			set_language(Req, State#state{language_a = Provided});
 		_Any ->
 			match_language(Req, State, Accept, Tail, Language)
 	end.
 
-set_language(Req, State=#state{language_a=Language}) ->
+set_language(Req, State = #state{language_a = Language}) ->
 	Req2 = cowboy_req:set_resp_header(<<"content-language">>, Language, Req),
 	charsets_provided(cowboy_req:set_meta(language, Language, Req2), State).
 
@@ -392,16 +392,16 @@ charsets_provided(Req, State) ->
 		no_call ->
 			set_content_type(Req, State);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{[], Req2, HandlerState} ->
-			not_acceptable(Req2, State#state{handler_state=HandlerState});
+			not_acceptable(Req2, State#state{handler_state = HandlerState});
 		{CP, Req2, HandlerState} ->
-			State2 = State#state{handler_state=HandlerState, charsets_p=CP},
+			State2 = State#state{handler_state = HandlerState, charsets_p = CP},
 			{ok, AcceptCharset, Req3} =
 				cowboy_req:parse_header(<<"accept-charset">>, Req2),
 			case AcceptCharset of
 				undefined ->
-					set_content_type(Req3, State2#state{charset_a=hd(CP)});
+					set_content_type(Req3, State2#state{charset_a = hd(CP)});
 				AcceptCharset ->
 					AcceptCharset2 = prioritize_charsets(AcceptCharset),
 					choose_charset(Req3, State2, AcceptCharset2)
@@ -416,7 +416,7 @@ charsets_provided(Req, State) ->
 %% a quality value of 1 if not explicitly mentioned.
 prioritize_charsets(AcceptCharsets) ->
 	AcceptCharsets2 = lists:sort(
-		fun ({_CharsetA, QualityA}, {_CharsetB, QualityB}) ->
+		fun({_CharsetA, QualityA}, {_CharsetB, QualityB}) ->
 			QualityA > QualityB
 		end, AcceptCharsets),
 	case lists:keymember(<<"*">>, 1, AcceptCharsets2) of
@@ -424,31 +424,31 @@ prioritize_charsets(AcceptCharsets) ->
 		false ->
 			case lists:keymember(<<"iso-8859-1">>, 1, AcceptCharsets2) of
 				true -> AcceptCharsets2;
-				false -> [{<<"iso-8859-1">>, 1000}|AcceptCharsets2]
+				false -> [{<<"iso-8859-1">>, 1000} | AcceptCharsets2]
 			end
 	end.
 
 choose_charset(Req, State, []) ->
 	not_acceptable(Req, State);
-choose_charset(Req, State=#state{charsets_p=CP}, [Charset|Tail]) ->
+choose_charset(Req, State = #state{charsets_p = CP}, [Charset | Tail]) ->
 	match_charset(Req, State, Tail, CP, Charset).
 
 match_charset(Req, State, Accept, [], _Charset) ->
 	choose_charset(Req, State, Accept);
-match_charset(Req, State, _Accept, [Provided|_], {Provided, _}) ->
-	set_content_type(Req, State#state{charset_a=Provided});
-match_charset(Req, State, Accept, [_|Tail], Charset) ->
+match_charset(Req, State, _Accept, [Provided | _], {Provided, _}) ->
+	set_content_type(Req, State#state{charset_a = Provided});
+match_charset(Req, State, Accept, [_ | Tail], Charset) ->
 	match_charset(Req, State, Accept, Tail, Charset).
 
-set_content_type(Req, State=#state{
-		content_type_a={{Type, SubType, Params}, _Fun},
-		charset_a=Charset}) ->
+set_content_type(Req, State = #state{
+	content_type_a = {{Type, SubType, Params}, _Fun},
+	charset_a = Charset}) ->
 	ParamsBin = set_content_type_build_params(Params, []),
 	ContentType = [Type, <<"/">>, SubType, ParamsBin],
 	ContentType2 = case Charset of
-		undefined -> ContentType;
-		Charset -> [ContentType, <<"; charset=">>, Charset]
-	end,
+		               undefined -> ContentType;
+		               Charset -> [ContentType, <<"; charset=">>, Charset]
+	               end,
 	Req2 = cowboy_req:set_resp_header(<<"content-type">>, ContentType2, Req),
 	encodings_provided(cowboy_req:set_meta(charset, Charset, Req2), State).
 
@@ -458,8 +458,8 @@ set_content_type_build_params([], []) ->
 	<<>>;
 set_content_type_build_params([], Acc) ->
 	lists:reverse(Acc);
-set_content_type_build_params([{Attr, Value}|Tail], Acc) ->
-	set_content_type_build_params(Tail, [[Attr, <<"=">>, Value], <<";">>|Acc]).
+set_content_type_build_params([{Attr, Value} | Tail], Acc) ->
+	set_content_type_build_params(Tail, [[Attr, <<"=">>, Value], <<";">> | Acc]).
 
 %% @todo Match for identity as we provide nothing else for now.
 %% @todo Don't forget to set the Content-Encoding header when we reply a body
@@ -477,31 +477,31 @@ not_acceptable(Req, State) ->
 %%
 %% @todo Do Accept-Encoding too when we handle it.
 %% @todo Does the order matter?
-variances(Req, State=#state{content_types_p=CTP,
-		languages_p=LP, charsets_p=CP}) ->
+variances(Req, State = #state{content_types_p = CTP,
+	languages_p = LP, charsets_p = CP}) ->
 	Variances = case CTP of
-		[] -> [];
-		[_] -> [];
-		[_|_] -> [<<"accept">>]
-	end,
+		            [] -> [];
+		            [_] -> [];
+		            [_ | _] -> [<<"accept">>]
+	            end,
 	Variances2 = case LP of
-		[] -> Variances;
-		[_] -> Variances;
-		[_|_] -> [<<"accept-language">>|Variances]
-	end,
+		             [] -> Variances;
+		             [_] -> Variances;
+		             [_ | _] -> [<<"accept-language">> | Variances]
+	             end,
 	Variances3 = case CP of
-		[] -> Variances2;
-		[_] -> Variances2;
-		[_|_] -> [<<"accept-charset">>|Variances2]
-	end,
+		             [] -> Variances2;
+		             [_] -> Variances2;
+		             [_ | _] -> [<<"accept-charset">> | Variances2]
+	             end,
 	try variances(Req, State, Variances3) of
 		{Variances4, Req2, State2} ->
 			case [[<<", ">>, V] || V <- Variances4] of
 				[] ->
 					resource_exists(Req2, State2);
-				[[<<", ">>, H]|Variances5] ->
+				[[<<", ">>, H] | Variances5] ->
 					Req3 = cowboy_req:set_resp_header(
-						<<"vary">>, [H|Variances5], Req2),
+						<<"vary">>, [H | Variances5], Req2),
 					resource_exists(Req3, State2)
 			end
 	catch Class:Reason ->
@@ -514,7 +514,7 @@ variances(Req, State, Variances) ->
 			{Variances, Req, State};
 		{HandlerVariances, Req2, HandlerState} ->
 			{Variances ++ HandlerVariances, Req2,
-				State#state{handler_state=HandlerState}}
+				State#state{handler_state = HandlerState}}
 	end.
 
 resource_exists(Req, State) ->
@@ -522,7 +522,7 @@ resource_exists(Req, State) ->
 		fun if_match_exists/2, fun if_match_must_not_exist/2).
 
 if_match_exists(Req, State) ->
-	State2 = State#state{exists=true},
+	State2 = State#state{exists = true},
 	case cowboy_req:parse_header(<<"if-match">>, Req) of
 		{ok, undefined, Req2} ->
 			if_unmodified_since_exists(Req2, State2);
@@ -602,8 +602,8 @@ if_none_match(Req, State, EtagsList) ->
 		error_terminate(Req, State, Class, Reason, generate_etag)
 	end.
 
-precondition_is_head_get(Req, State=#state{method=Method})
-		when Method =:= <<"HEAD">>; Method =:= <<"GET">> ->
+precondition_is_head_get(Req, State = #state{method = Method})
+	when Method =:= <<"HEAD">>; Method =:= <<"GET">> ->
 	not_modified(Req, State);
 precondition_is_head_get(Req, State) ->
 	precondition_failed(Req, State).
@@ -654,7 +654,7 @@ not_modified(Req, State) ->
 precondition_failed(Req, State) ->
 	respond(Req, State, 412).
 
-is_put_to_missing_resource(Req, State=#state{method= <<"PUT">>}) ->
+is_put_to_missing_resource(Req, State = #state{method = <<"PUT">>}) ->
 	moved_permanently(Req, State, fun is_conflict/2);
 is_put_to_missing_resource(Req, State) ->
 	previously_existed(Req, State).
@@ -666,19 +666,19 @@ moved_permanently(Req, State, OnFalse) ->
 		{{true, Location}, Req2, HandlerState} ->
 			Req3 = cowboy_req:set_resp_header(
 				<<"location">>, Location, Req2),
-			respond(Req3, State#state{handler_state=HandlerState}, 301);
+			respond(Req3, State#state{handler_state = HandlerState}, 301);
 		{false, Req2, HandlerState} ->
-			OnFalse(Req2, State#state{handler_state=HandlerState});
+			OnFalse(Req2, State#state{handler_state = HandlerState});
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		no_call ->
 			OnFalse(Req, State)
 	end.
 
 previously_existed(Req, State) ->
 	expect(Req, State, previously_existed, false,
-		fun (R, S) -> is_post_to_missing_resource(R, S, 404) end,
-		fun (R, S) -> moved_permanently(R, S, fun moved_temporarily/2) end).
+		fun(R, S) -> is_post_to_missing_resource(R, S, 404) end,
+		fun(R, S) -> moved_permanently(R, S, fun moved_temporarily/2) end).
 
 %% moved_temporarily/2 should return either false or {true, Location}
 %% with Location the full new URI of the resource.
@@ -687,16 +687,16 @@ moved_temporarily(Req, State) ->
 		{{true, Location}, Req2, HandlerState} ->
 			Req3 = cowboy_req:set_resp_header(
 				<<"location">>, Location, Req2),
-			respond(Req3, State#state{handler_state=HandlerState}, 307);
+			respond(Req3, State#state{handler_state = HandlerState}, 307);
 		{false, Req2, HandlerState} ->
-			is_post_to_missing_resource(Req2, State#state{handler_state=HandlerState}, 410);
+			is_post_to_missing_resource(Req2, State#state{handler_state = HandlerState}, 410);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		no_call ->
 			is_post_to_missing_resource(Req, State, 410)
 	end.
 
-is_post_to_missing_resource(Req, State=#state{method= <<"POST">>}, OnFalse) ->
+is_post_to_missing_resource(Req, State = #state{method = <<"POST">>}, OnFalse) ->
 	allow_missing_post(Req, State, OnFalse);
 is_post_to_missing_resource(Req, State, OnFalse) ->
 	respond(Req, State, OnFalse).
@@ -704,15 +704,15 @@ is_post_to_missing_resource(Req, State, OnFalse) ->
 allow_missing_post(Req, State, OnFalse) ->
 	expect(Req, State, allow_missing_post, true, fun accept_resource/2, OnFalse).
 
-method(Req, State=#state{method= <<"DELETE">>}) ->
+method(Req, State = #state{method = <<"DELETE">>}) ->
 	delete_resource(Req, State);
-method(Req, State=#state{method= <<"PUT">>}) ->
+method(Req, State = #state{method = <<"PUT">>}) ->
 	is_conflict(Req, State);
-method(Req, State=#state{method=Method})
-		when Method =:= <<"POST">>; Method =:= <<"PATCH">> ->
+method(Req, State = #state{method = Method})
+	when Method =:= <<"POST">>; Method =:= <<"PATCH">> ->
 	accept_resource(Req, State);
-method(Req, State=#state{method=Method})
-		when Method =:= <<"GET">>; Method =:= <<"HEAD">> ->
+method(Req, State = #state{method = Method})
+	when Method =:= <<"GET">>; Method =:= <<"HEAD">> ->
 	set_resp_body_etag(Req, State);
 method(Req, State) ->
 	multiple_choices(Req, State).
@@ -741,10 +741,10 @@ accept_resource(Req, State) ->
 		no_call ->
 			respond(Req, State, 415);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{CTA, Req2, HandlerState} ->
 			CTA2 = [normalize_content_types(P) || P <- CTA],
-			State2 = State#state{handler_state=HandlerState},
+			State2 = State#state{handler_state = HandlerState},
 			case cowboy_req:parse_header(<<"content-type">>, Req2) of
 				{ok, ContentType, Req3} ->
 					choose_content_type(Req3, State2, ContentType, CTA2);
@@ -759,42 +759,42 @@ accept_resource(Req, State) ->
 %% list of content types, otherwise it'll shadow the ones following.
 choose_content_type(Req, State, _ContentType, []) ->
 	respond(Req, State, 415);
-choose_content_type(Req, State, ContentType, [{Accepted, Fun}|_Tail])
-		when Accepted =:= '*'; Accepted =:= ContentType ->
+choose_content_type(Req, State, ContentType, [{Accepted, Fun} | _Tail])
+	when Accepted =:= '*'; Accepted =:= ContentType ->
 	process_content_type(Req, State, Fun);
 %% The special parameter '*' will always match any kind of content type
 %% parameters.
 %% Note that because it will always match, it should be the last of the
 %% list for specific content type, otherwise it'll shadow the ones following.
 choose_content_type(Req, State, {Type, SubType, Param},
-		[{{Type, SubType, AcceptedParam}, Fun}|_Tail])
-		when AcceptedParam =:= '*'; AcceptedParam =:= Param ->
+	[{{Type, SubType, AcceptedParam}, Fun} | _Tail])
+	when AcceptedParam =:= '*'; AcceptedParam =:= Param ->
 	process_content_type(Req, State, Fun);
-choose_content_type(Req, State, ContentType, [_Any|Tail]) ->
+choose_content_type(Req, State, ContentType, [_Any | Tail]) ->
 	choose_content_type(Req, State, ContentType, Tail).
 
-process_content_type(Req, State=#state{method=Method, exists=Exists}, Fun) ->
+process_content_type(Req, State = #state{method = Method, exists = Exists}, Fun) ->
 	try case call(Req, State, Fun) of
-		{halt, Req2, HandlerState2} ->
-			terminate(Req2, State#state{handler_state=HandlerState2});
-		{true, Req2, HandlerState2} when Exists ->
-			State2 = State#state{handler_state=HandlerState2},
-			next(Req2, State2, fun has_resp_body/2);
-		{true, Req2, HandlerState2} ->
-			State2 = State#state{handler_state=HandlerState2},
-			next(Req2, State2, fun maybe_created/2);
-		{false, Req2, HandlerState2} ->
-			State2 = State#state{handler_state=HandlerState2},
-			respond(Req2, State2, 400);
-		{{true, ResURL}, Req2, HandlerState2} when Method =:= <<"POST">> ->
-			State2 = State#state{handler_state=HandlerState2},
-			Req3 = cowboy_req:set_resp_header(
-				<<"location">>, ResURL, Req2),
-			if
-				Exists -> respond(Req3, State2, 303);
-				true -> respond(Req3, State2, 201)
-			end
-	end catch Class:Reason = {case_clause, no_call} ->
+		    {halt, Req2, HandlerState2} ->
+			    terminate(Req2, State#state{handler_state = HandlerState2});
+		    {true, Req2, HandlerState2} when Exists ->
+			    State2 = State#state{handler_state = HandlerState2},
+			    next(Req2, State2, fun has_resp_body/2);
+		    {true, Req2, HandlerState2} ->
+			    State2 = State#state{handler_state = HandlerState2},
+			    next(Req2, State2, fun maybe_created/2);
+		    {false, Req2, HandlerState2} ->
+			    State2 = State#state{handler_state = HandlerState2},
+			    respond(Req2, State2, 400);
+		    {{true, ResURL}, Req2, HandlerState2} when Method =:= <<"POST">> ->
+			    State2 = State#state{handler_state = HandlerState2},
+			    Req3 = cowboy_req:set_resp_header(
+				    <<"location">>, ResURL, Req2),
+			    if
+				    Exists -> respond(Req3, State2, 303);
+				    true -> respond(Req3, State2, 201)
+			    end
+	    end catch Class:Reason = {case_clause, no_call} ->
 		error_terminate(Req, State, Class, Reason, Fun)
 	end.
 
@@ -802,7 +802,7 @@ process_content_type(Req, State=#state{method=Method, exists=Exists}, Fun) ->
 %% Otherwise, if a location header has been set then the resource has been
 %% created at a new URL. If not, send a 200 or 204 as expected from a
 %% POST or PATCH request.
-maybe_created(Req, State=#state{method= <<"PUT">>}) ->
+maybe_created(Req, State = #state{method = <<"PUT">>}) ->
 	respond(Req, State, 201);
 maybe_created(Req, State) ->
 	case cowboy_req:has_resp_header(<<"location">>, Req) of
@@ -854,24 +854,24 @@ set_resp_body_expires(Req, State) ->
 %% Set the response headers and call the callback found using
 %% content_types_provided/2 to obtain the request body and add
 %% it to the response.
-set_resp_body(Req, State=#state{content_type_a={_, Callback}}) ->
+set_resp_body(Req, State = #state{content_type_a = {_, Callback}}) ->
 	try case call(Req, State, Callback) of
-		{halt, Req2, HandlerState2} ->
-			terminate(Req2, State#state{handler_state=HandlerState2});
-		{Body, Req2, HandlerState2} ->
-			State2 = State#state{handler_state=HandlerState2},
-			Req3 = case Body of
-				{stream, StreamFun} ->
-					cowboy_req:set_resp_body_fun(StreamFun, Req2);
-				{stream, Len, StreamFun} ->
-					cowboy_req:set_resp_body_fun(Len, StreamFun, Req2);
-				{chunked, StreamFun} ->
-					cowboy_req:set_resp_body_fun(chunked, StreamFun, Req2);
-				_Contents ->
-					cowboy_req:set_resp_body(Body, Req2)
-			end,
-			multiple_choices(Req3, State2)
-	end catch Class:Reason = {case_clause, no_call} ->
+		    {halt, Req2, HandlerState2} ->
+			    terminate(Req2, State#state{handler_state = HandlerState2});
+		    {Body, Req2, HandlerState2} ->
+			    State2 = State#state{handler_state = HandlerState2},
+			    Req3 = case Body of
+				           {stream, StreamFun} ->
+					           cowboy_req:set_resp_body_fun(StreamFun, Req2);
+				           {stream, Len, StreamFun} ->
+					           cowboy_req:set_resp_body_fun(Len, StreamFun, Req2);
+				           {chunked, StreamFun} ->
+					           cowboy_req:set_resp_body_fun(chunked, StreamFun, Req2);
+				           _Contents ->
+					           cowboy_req:set_resp_body(Body, Req2)
+			           end,
+			    multiple_choices(Req3, State2)
+	    end catch Class:Reason = {case_clause, no_call} ->
 		error_terminate(Req, State, Class, Reason, Callback)
 	end.
 
@@ -892,8 +892,8 @@ set_resp_etag(Req, State) ->
 	end.
 
 -spec encode_etag({strong | weak, binary()}) -> iolist().
-encode_etag({strong, Etag}) -> [$",Etag,$"];
-encode_etag({weak, Etag}) -> ["W/\"",Etag,$"].
+encode_etag({strong, Etag}) -> [$", Etag, $"];
+encode_etag({weak, Etag}) -> ["W/\"", Etag, $"].
 
 set_resp_expires(Req, State) ->
 	{Expires, Req2, State2} = expires(Req, State),
@@ -913,45 +913,45 @@ set_resp_expires(Req, State) ->
 
 %% Info retrieval. No logic.
 
-generate_etag(Req, State=#state{etag=no_call}) ->
+generate_etag(Req, State = #state{etag = no_call}) ->
 	{undefined, Req, State};
-generate_etag(Req, State=#state{etag=undefined}) ->
+generate_etag(Req, State = #state{etag = undefined}) ->
 	case unsafe_call(Req, State, generate_etag) of
 		no_call ->
-			{undefined, Req, State#state{etag=no_call}};
+			{undefined, Req, State#state{etag = no_call}};
 		{Etag, Req2, HandlerState} when is_binary(Etag) ->
 			[Etag2] = cowboy_http:entity_tag_match(Etag),
-			{Etag2, Req2, State#state{handler_state=HandlerState, etag=Etag2}};
+			{Etag2, Req2, State#state{handler_state = HandlerState, etag = Etag2}};
 		{Etag, Req2, HandlerState} ->
-			{Etag, Req2, State#state{handler_state=HandlerState, etag=Etag}}
+			{Etag, Req2, State#state{handler_state = HandlerState, etag = Etag}}
 	end;
-generate_etag(Req, State=#state{etag=Etag}) ->
+generate_etag(Req, State = #state{etag = Etag}) ->
 	{Etag, Req, State}.
 
-last_modified(Req, State=#state{last_modified=no_call}) ->
+last_modified(Req, State = #state{last_modified = no_call}) ->
 	{undefined, Req, State};
-last_modified(Req, State=#state{last_modified=undefined}) ->
+last_modified(Req, State = #state{last_modified = undefined}) ->
 	case unsafe_call(Req, State, last_modified) of
 		no_call ->
-			{undefined, Req, State#state{last_modified=no_call}};
+			{undefined, Req, State#state{last_modified = no_call}};
 		{LastModified, Req2, HandlerState} ->
-			{LastModified, Req2, State#state{handler_state=HandlerState,
-				last_modified=LastModified}}
+			{LastModified, Req2, State#state{handler_state = HandlerState,
+				last_modified = LastModified}}
 	end;
-last_modified(Req, State=#state{last_modified=LastModified}) ->
+last_modified(Req, State = #state{last_modified = LastModified}) ->
 	{LastModified, Req, State}.
 
-expires(Req, State=#state{expires=no_call}) ->
+expires(Req, State = #state{expires = no_call}) ->
 	{undefined, Req, State};
-expires(Req, State=#state{expires=undefined}) ->
+expires(Req, State = #state{expires = undefined}) ->
 	case unsafe_call(Req, State, expires) of
 		no_call ->
-			{undefined, Req, State#state{expires=no_call}};
+			{undefined, Req, State#state{expires = no_call}};
 		{Expires, Req2, HandlerState} ->
-			{Expires, Req2, State#state{handler_state=HandlerState,
-				expires=Expires}}
+			{Expires, Req2, State#state{handler_state = HandlerState,
+				expires = Expires}}
 	end;
-expires(Req, State=#state{expires=Expires}) ->
+expires(Req, State = #state{expires = Expires}) ->
 	{Expires, Req, State}.
 
 %% REST primitives.
@@ -961,15 +961,15 @@ expect(Req, State, Callback, Expected, OnTrue, OnFalse) ->
 		no_call ->
 			next(Req, State, OnTrue);
 		{halt, Req2, HandlerState} ->
-			terminate(Req2, State#state{handler_state=HandlerState});
+			terminate(Req2, State#state{handler_state = HandlerState});
 		{Expected, Req2, HandlerState} ->
-			next(Req2, State#state{handler_state=HandlerState}, OnTrue);
+			next(Req2, State#state{handler_state = HandlerState}, OnTrue);
 		{_Unexpected, Req2, HandlerState} ->
-			next(Req2, State#state{handler_state=HandlerState}, OnFalse)
+			next(Req2, State#state{handler_state = HandlerState}, OnFalse)
 	end.
 
-call(Req, State=#state{handler=Handler, handler_state=HandlerState},
-		Callback) ->
+call(Req, State = #state{handler = Handler, handler_state = HandlerState},
+	Callback) ->
 	case erlang:function_exported(Handler, Callback, 2) of
 		true ->
 			try
@@ -981,8 +981,8 @@ call(Req, State=#state{handler=Handler, handler_state=HandlerState},
 			no_call
 	end.
 
-unsafe_call(Req, #state{handler=Handler, handler_state=HandlerState},
-		Callback) ->
+unsafe_call(Req, #state{handler = Handler, handler_state = HandlerState},
+	Callback) ->
 	case erlang:function_exported(Handler, Callback, 2) of
 		true -> Handler:Callback(Req, HandlerState);
 		false -> no_call
@@ -997,12 +997,12 @@ respond(Req, State, StatusCode) ->
 	{ok, Req2} = cowboy_req:reply(StatusCode, Req),
 	terminate(Req2, State).
 
-terminate(Req, State=#state{env=Env}) ->
+terminate(Req, State = #state{env = Env}) ->
 	rest_terminate(Req, State),
-	{ok, Req, [{result, ok}|Env]}.
+	{ok, Req, [{result, ok} | Env]}.
 
-error_terminate(Req, State=#state{handler=Handler, handler_state=HandlerState},
-		Class, Reason, Callback) ->
+error_terminate(Req, State = #state{handler = Handler, handler_state = HandlerState},
+	Class, Reason, Callback) ->
 	Stacktrace = erlang:get_stacktrace(),
 	rest_terminate(Req, State),
 	cowboy_req:maybe_reply(Stacktrace, Req),
@@ -1014,7 +1014,7 @@ error_terminate(Req, State=#state{handler=Handler, handler_state=HandlerState},
 		{state, HandlerState}
 	]).
 
-rest_terminate(Req, #state{handler=Handler, handler_state=HandlerState}) ->
+rest_terminate(Req, #state{handler = Handler, handler_state = HandlerState}) ->
 	case erlang:function_exported(Handler, rest_terminate, 2) of
 		true -> ok = Handler:rest_terminate(
 			cowboy_req:lock(Req), HandlerState);

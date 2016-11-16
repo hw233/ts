@@ -23,7 +23,7 @@ initConfig() ->
 	MapID = mapState:getMapId(),
 	Fun = fun(E) ->
 		E =:= MapID
-	end,
+	      end,
 	case lists:any(Fun, MapIDList) of
 		false ->
 			skip;
@@ -44,17 +44,17 @@ countBeginTime(MapID) ->
 					true ->
 						case Time - RefreshTime =< ?GoblinTotalTime of
 							true ->
-								?LOG_OUT("MapID[~p] BeginTime[~p] had Pass[~p]", [MapID,BeginTime, Time - RefreshTime]),
+								?LOG_OUT("MapID[~p] BeginTime[~p] had Pass[~p]", [MapID, BeginTime, Time - RefreshTime]),
 								erlang:send(self(), {goblinBegin, Time - RefreshTime});
 							_ ->
-								?LOG_OUT("[1]MapID[~p] BeginTime[~p] [~p]second begin spawn", [MapID,BeginTime, RefreshTime + ?One_Day_Second - Time]),
+								?LOG_OUT("[1]MapID[~p] BeginTime[~p] [~p]second begin spawn", [MapID, BeginTime, RefreshTime + ?One_Day_Second - Time]),
 								erlang:send_after((RefreshTime + ?One_Day_Second - Time) * 1000, self(), {goblinBegin, 0})
 						end;
 					_ ->
-						?LOG_OUT("[2]MapID[~p] BeginTime[~p] [~p]second begin spawn", [MapID,BeginTime, RefreshTime - Time]),
+						?LOG_OUT("[2]MapID[~p] BeginTime[~p] [~p]second begin spawn", [MapID, BeginTime, RefreshTime - Time]),
 						erlang:send_after((RefreshTime - Time + 1) * 1000, self(), {goblinBegin, 0})
 				end
-			end,
+			      end,
 			lists:foreach(Fun, TimeList);
 %% 			erlang:send_after(60000, self(), goblinBegin);
 		_ ->
@@ -67,50 +67,50 @@ spawnGoblin() ->
 	?LOG_OUT("spawn goblin MapID[~p]", [MapID]),
 	case variant:getGlobalBitVariant(?Setting_GlobalBitVarReadOnly_StealBtn) of
 		true ->
-            MonsterEts = mapState:getMapMonsterEts(),
-            PlayerEts = mapState:getMapPlayerEts(),
-            PetEts = mapState:getMapPetEts(),
-            case getCfg:getCfgPStack(cfg_goblin, MapID) of
-                #goblinCfg{monsterid = MonsterID, refreshpos = RefreshPos} ->
-                    %%预防之前的怪没成功删除，先删除掉
-                    gameMapLogic:destoryAllMonsterByID(MonsterID),
-                    MapID = mapState:getMapId(),
-                    case getCfg:getCfgPStack(cfg_monster, MonsterID) of
-                        #monsterCfg{level = Level} ->
-                            Fun =
-                                fun({PosX, PosY}) ->
-                                    Arg = #recSpawnMonster{
-                                        id = MonsterID,
-                                        mapID = MapID,
-                                        mapPid = self(),
-                                        x = PosX,
-                                        y = PosY,
-                                        level = Level,
-                                        camp = 0,
-                                        guildID = 0,
-                                        playerEts = PlayerEts,
-                                        monsterEts = MonsterEts,
-                                        petEts = PetEts,
-                                        playerAreaEts = mapState:getMapPlayerAreaEts(),
-                                        monsterAreaEts = mapState:getMapMonsterAreaEts(),
-                                        petAreaEts = mapState:getMapPetAreaEts(),
-                                        groupID = 0
-                                    },
-                                    monsterInterface:spawnMonster(Arg)
-                                end,
-                            lists:foreach(Fun, RefreshPos);
-                        _ ->
-                            skip
-                    end;
-                _ ->
-                    skip
-            end;
-        _ ->
-            skip
-    end.
+			MonsterEts = mapState:getMapMonsterEts(),
+			PlayerEts = mapState:getMapPlayerEts(),
+			PetEts = mapState:getMapPetEts(),
+			case getCfg:getCfgPStack(cfg_goblin, MapID) of
+				#goblinCfg{monsterid = MonsterID, refreshpos = RefreshPos} ->
+					%%预防之前的怪没成功删除，先删除掉
+					gameMapLogic:destoryAllMonsterByID(MonsterID),
+					MapID = mapState:getMapId(),
+					case getCfg:getCfgPStack(cfg_monster, MonsterID) of
+						#monsterCfg{level = Level} ->
+							Fun =
+								fun({PosX, PosY}) ->
+									Arg = #recSpawnMonster{
+										id = MonsterID,
+										mapID = MapID,
+										mapPid = self(),
+										x = PosX,
+										y = PosY,
+										level = Level,
+										camp = 0,
+										guildID = 0,
+										playerEts = PlayerEts,
+										monsterEts = MonsterEts,
+										petEts = PetEts,
+										playerAreaEts = mapState:getMapPlayerAreaEts(),
+										monsterAreaEts = mapState:getMapMonsterAreaEts(),
+										petAreaEts = mapState:getMapPetAreaEts(),
+										groupID = 0
+									},
+									monsterInterface:spawnMonster(Arg)
+								end,
+							lists:foreach(Fun, RefreshPos);
+						_ ->
+							skip
+					end;
+				_ ->
+					skip
+			end;
+		_ ->
+			skip
+	end.
 
 %%刷新boss
-spawnBoss()->
+spawnBoss() ->
 	MapID = mapState:getMapId(),
 	?LOG_OUT("spawn goblin Boss MapID[~p]", [MapID]),
 	case variant:getGlobalBitVariant(?Setting_GlobalBitVarReadOnly_StealBtn) of
@@ -123,33 +123,33 @@ spawnBoss()->
 					%%预防之前的怪没成功删除，先删除掉
 					gameMapLogic:destoryAllMonsterByID(MonsterID),
 					MapID = mapState:getMapId(),
-                    case getCfg:getCfgPStack(cfg_monster, MonsterID) of
-                        #monsterCfg{level = Level} ->
-                            Fun =
-                                fun({PosX, PosY}) ->
-                                    Arg = #recSpawnMonster{
-                                        id = MonsterID,
-                                        mapID = MapID,
-                                        mapPid = self(),
-                                        x = PosX,
-                                        y = PosY,
-                                        level = Level,
-                                        camp = 0,
-                                        guildID = 0,
-                                        playerEts = PlayerEts,
-                                        monsterEts = MonsterEts,
-                                        petEts = PetEts,
-                                        playerAreaEts = mapState:getMapPlayerAreaEts(),
-                                        monsterAreaEts = mapState:getMapMonsterAreaEts(),
-                                        petAreaEts = mapState:getMapPetAreaEts(),
-                                        groupID = 0
-                                    },
-                                    monsterInterface:spawnMonster(Arg)
-                                end,
+					case getCfg:getCfgPStack(cfg_monster, MonsterID) of
+						#monsterCfg{level = Level} ->
+							Fun =
+								fun({PosX, PosY}) ->
+									Arg = #recSpawnMonster{
+										id = MonsterID,
+										mapID = MapID,
+										mapPid = self(),
+										x = PosX,
+										y = PosY,
+										level = Level,
+										camp = 0,
+										guildID = 0,
+										playerEts = PlayerEts,
+										monsterEts = MonsterEts,
+										petEts = PetEts,
+										playerAreaEts = mapState:getMapPlayerAreaEts(),
+										monsterAreaEts = mapState:getMapMonsterAreaEts(),
+										petAreaEts = mapState:getMapPetAreaEts(),
+										groupID = 0
+									},
+									monsterInterface:spawnMonster(Arg)
+								end,
 
-                            lists:foreach(Fun, RefreshPos);
-                        _ ->
-                            skip
+							lists:foreach(Fun, RefreshPos);
+						_ ->
+							skip
 					end;
 				_ ->
 					skip
@@ -181,13 +181,13 @@ goblinBeKilled(MonsterID) ->
 					%%此时还没删除当前这个怪，所以要-1
 					LeftNum = gameMapLogic:getMonsterNumByID(MID),
 					Fun1 = fun(#recMapObject{pid = PlayerPid}) ->
-						psMgr:sendMsg2PS(PlayerPid, goblinKilled, LeftNum-1)
-					end,
+						psMgr:sendMsg2PS(PlayerPid, goblinKilled, LeftNum - 1)
+					       end,
 					gameMapLogic:doFun4AllPlayer(Fun1);
 				MonsterID =:= BID ->
 					Fun2 = fun(#recMapObject{pid = PlayerPid}) ->
 						psMgr:sendMsg2PS(PlayerPid, goblinBossKilled)
-					end,
+					       end,
 					gameMapLogic:doFun4AllPlayer(Fun2);
 				true ->
 					skip

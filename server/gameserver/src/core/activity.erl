@@ -15,13 +15,13 @@
 
 %% API
 -export([
-	queryActivitySwitch/1,		%% 查询活动是否开启或者关闭
-	setActivitySwitch/2,		%% 设置活动开启或者关闭
-	isActivityValid/1			%% 活动是否有效，包括配置有效与开关开启
+	queryActivitySwitch/1,        %% 查询活动是否开启或者关闭
+	setActivitySwitch/2,        %% 设置活动开启或者关闭
+	isActivityValid/1            %% 活动是否有效，包括配置有效与开关开启
 ]).
 
 -export([
-	yunyingControlActivitySwitch/2	%% 运营控制活动进程
+	yunyingControlActivitySwitch/2    %% 运营控制活动进程
 ]).
 
 %%运营活动类的配置与玩家参与数据
@@ -33,7 +33,7 @@
 ]).
 
 %% 查询活动开关，true开启，false关闭
--spec queryActivitySwitch(ActivityID::activityType()) -> boolean().
+-spec queryActivitySwitch(ActivityID :: activityType()) -> boolean().
 queryActivitySwitch(ActivityID) when ActivityID >= ?ActivityType_Start andalso ActivityID =< ?ActivityType_End ->
 	case queryActivitySwitchMsg(?ActivitySwitchList, ActivityID) of
 		{ActivityID, SwitchNumber, BitNumber} ->
@@ -49,7 +49,7 @@ queryActivitySwitch(_) ->
 	false.
 
 %% 设置活动开启或者关闭
--spec setActivitySwitch(ActivityID::activityType(), Open::boolean()) -> boolean().
+-spec setActivitySwitch(ActivityID :: activityType(), Open :: boolean()) -> boolean().
 setActivitySwitch(ActivityID, true) when ActivityID >= ?ActivityType_Start andalso ActivityID =< ?ActivityType_End ->
 	%% 设置开启，对应位置0
 	case queryActivitySwitchMsg(?ActivitySwitchList, ActivityID) of
@@ -72,27 +72,27 @@ setActivitySwitch(ActivityID, false) when ActivityID >= ?ActivityType_Start anda
 		_ ->
 			false
 	end;
-setActivitySwitch(_,_) ->
+setActivitySwitch(_, _) ->
 	false.
 
 %% 活动是否有效
--spec isActivityValid(ActivityID::activityType()) -> boolean().
+-spec isActivityValid(ActivityID :: activityType()) -> boolean().
 isActivityValid(ActivityID) when ActivityID >= ?ActivityType_Start andalso ActivityID =< ?ActivityType_End ->
 	IsConfigValid =
-	case getCfg:getCfgByArgs(cfg_activity, ActivityID) of
-		#activityCfg{cycletype = ACType} ->
-			if
-				?ActivityCycle_Close =:= ACType ->
-					%% 活动关闭
-					false;
-				?ActivityCycle_Forever =:= ACType ->
-					true;
-				true ->
-					true
-			end;
-		_ ->
-			false
-	end,
+		case getCfg:getCfgByArgs(cfg_activity, ActivityID) of
+			#activityCfg{cycletype = ACType} ->
+				if
+					?ActivityCycle_Close =:= ACType ->
+						%% 活动关闭
+						false;
+					?ActivityCycle_Forever =:= ACType ->
+						true;
+					true ->
+						true
+				end;
+			_ ->
+				false
+		end,
 	case IsConfigValid of
 		true ->
 			%% 配置有效，查询开关是否开启
@@ -103,11 +103,11 @@ isActivityValid(ActivityID) when ActivityID >= ?ActivityType_Start andalso Activ
 isActivityValid(_) ->
 	false.
 
--spec queryActivitySwitchMsg([{Switch::integer(), [{Number::integer(),ACID::integer()},...]},...], ActivityID::integer()) ->
-	{ActivityID::integer(), SwitchNumber::integer(), BitNumber::integer()} | false.
+-spec queryActivitySwitchMsg([{Switch :: integer(), [{Number :: integer(), ACID :: integer()}, ...]}, ...], ActivityID :: integer()) ->
+	{ActivityID :: integer(), SwitchNumber :: integer(), BitNumber :: integer()} | false.
 queryActivitySwitchMsg([], _) ->
 	false;
-queryActivitySwitchMsg([{Switch, [{_Number, _ACID}|_] = List}|T], ActivityID) ->
+queryActivitySwitchMsg([{Switch, [{_Number, _ACID} | _] = List} | T], ActivityID) ->
 	case ActivityID >= ?ActivityType_Start andalso ActivityID =< ?ActivityType_End of
 		true ->
 			case lists:keyfind(ActivityID, 2, List) of
@@ -121,7 +121,7 @@ queryActivitySwitchMsg([{Switch, [{_Number, _ACID}|_] = List}|T], ActivityID) ->
 	end.
 
 %% 运营控制活动进程接口
--spec yunyingControlActivitySwitch(ActivityID::activityType(), Open::boolean()) -> boolean().
+-spec yunyingControlActivitySwitch(ActivityID :: activityType(), Open :: boolean()) -> boolean().
 yunyingControlActivitySwitch(ActivityID, Open) when ActivityID >= ?ActivityType_Start andalso ActivityID =< ?ActivityType_End ->
 	if
 		ActivityID =:= ?ActivityType_GiveIPad ->
@@ -131,14 +131,14 @@ yunyingControlActivitySwitch(ActivityID, Open) when ActivityID >= ?ActivityType_
 	end.
 
 %%获取指定运营活动类型的运营活动配置
--spec getOperateActCfgByType(Type) -> [] | [#rec_operate_activity{},...] when Type::?OperateActType_Min .. ?OperateActType_Max.
+-spec getOperateActCfgByType(Type) -> [] | [#rec_operate_activity{}, ...] when Type :: ?OperateActType_Min .. ?OperateActType_Max.
 getOperateActCfgByType(Type) ->
 	operateActivityLogic:getAc(Type).
 
 %%获取指定角色ID在指定运营活动中的参与数据
--spec getOperateActData(RoleID,ActID) -> [] | #rec_operate_data{} when RoleID::uint(),ActID::uint().
-getOperateActData(RoleID,ActID) ->
-	operateActivityLogic:getAcData(RoleID,ActID).
+-spec getOperateActData(RoleID, ActID) -> [] | #rec_operate_data{} when RoleID :: uint(), ActID :: uint().
+getOperateActData(RoleID, ActID) ->
+	operateActivityLogic:getAcData(RoleID, ActID).
 
 %%执行活动
 -spec operateActEvent(list(), #recOperateActivityArg{}) -> ok.
@@ -146,7 +146,7 @@ operateActEvent(AcList, AcArg) ->
 	operateActivityLogic:execute(AcList, AcArg).
 
 %%向运营活动进程发送事件
--spec castOperateActEvent(AcList::list(), #recOperateActivityArg{}) -> ok.
+-spec castOperateActEvent(AcList :: list(), #recOperateActivityArg{}) -> ok.
 castOperateActEvent([], _) ->
 	ok;
 castOperateActEvent(AcList, #recOperateActivityArg{} = ActArg) ->

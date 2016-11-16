@@ -3,10 +3,10 @@
 -define(cfg_userFeedbackType, 1).
 
 -record(userFeedbackTypeCfg, {
-        iD,
+	iD,
 
-        desc
+	desc
 
- }).
+}).
 
 -endif.

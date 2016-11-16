@@ -3,24 +3,24 @@
 -define(cfg_removeSkillAffix, 1).
 
 -record(removeSkillAffixCfg, {
-        %%: ID
-        id,
+	%%: ID
+	id,
 
-        %%: 1,骑士
-        %%: 2,法师
-        %%: 3,刺客
-        %%: 4,魔女
-        class,
+	%%: 1,骑士
+	%%: 2,法师
+	%%: 3,刺客
+	%%: 4,魔女
+	class,
 
-        %%: buffid
-        buff,
+	%%: buffid
+	buff,
 
-        %%: 载体id
-        carrier,
+	%%: 载体id
+	carrier,
 
-        %%: 宠物id
-        pet
+	%%: 宠物id
+	pet
 
- }).
+}).
 
 -endif.

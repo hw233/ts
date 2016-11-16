@@ -5,7 +5,7 @@
 -behaviour(application).
 -include("gsInc.hrl").
 %% API.
--export([start/2,start/0]).
+-export([start/2, start/0]).
 -export([stop/1]).
 
 %% API.

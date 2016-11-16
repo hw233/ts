@@ -28,25 +28,25 @@
 %% others. Note that using this form isn't required, as header names
 %% are case insensitive, and it is only provided for use with eventual
 %% badly implemented clients.
--spec capitalize_token(B) -> B when B::binary().
+-spec capitalize_token(B) -> B when B :: binary().
 capitalize_token(B) ->
 	capitalize_token(B, true, <<>>).
 capitalize_token(<<>>, _, Acc) ->
 	Acc;
-capitalize_token(<< $-, Rest/bits >>, _, Acc) ->
-	capitalize_token(Rest, true, << Acc/binary, $- >>);
-capitalize_token(<< C, Rest/bits >>, true, Acc) ->
-	capitalize_token(Rest, false, << Acc/binary, (char_to_upper(C)) >>);
-capitalize_token(<< C, Rest/bits >>, false, Acc) ->
-	capitalize_token(Rest, false, << Acc/binary, (char_to_lower(C)) >>).
+capitalize_token(<<$-, Rest/bits>>, _, Acc) ->
+	capitalize_token(Rest, true, <<Acc/binary, $->>);
+capitalize_token(<<C, Rest/bits>>, true, Acc) ->
+	capitalize_token(Rest, false, <<Acc/binary, (char_to_upper(C))>>);
+capitalize_token(<<C, Rest/bits>>, false, Acc) ->
+	capitalize_token(Rest, false, <<Acc/binary, (char_to_lower(C))>>).
 
--spec to_lower(B) -> B when B::binary().
+-spec to_lower(B) -> B when B :: binary().
 to_lower(B) ->
-	<< << (char_to_lower(C)) >> || << C >> <= B >>.
+	<<<<(char_to_lower(C))>> || <<C>> <= B>>.
 
--spec to_upper(B) -> B when B::binary().
+-spec to_upper(B) -> B when B :: binary().
 to_upper(B) ->
-	<< << (char_to_upper(C)) >> || << C >> <= B >>.
+	<<<<(char_to_upper(C))>> || <<C>> <= B>>.
 
 -spec char_to_lower(char()) -> char().
 char_to_lower($A) -> $a;

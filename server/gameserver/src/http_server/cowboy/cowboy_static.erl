@@ -27,12 +27,12 @@
 
 -type extra_etag() :: {etag, module(), function()} | {etag, false}.
 -type extra_mimetypes() :: {mimetypes, module(), function()}
-	| {mimetypes, binary() | {binary(), binary(), [{binary(), binary()}]}}.
+| {mimetypes, binary() | {binary(), binary(), [{binary(), binary()}]}}.
 -type extra() :: [extra_etag() | extra_mimetypes()].
 -type opts() :: {file | dir, string() | binary()}
-	| {file | dir, string() | binary(), extra()}
-	| {priv_file | priv_dir, atom(), string() | binary()}
-	| {priv_file | priv_dir, atom(), string() | binary(), extra()}.
+| {file | dir, string() | binary(), extra()}
+| {priv_file | priv_dir, atom(), string() | binary()}
+| {priv_file | priv_dir, atom(), string() | binary(), extra()}.
 -export_type([opts/0]).
 
 -include_lib("kernel/include/file.hrl").
@@ -48,12 +48,12 @@ init(_, _, _) ->
 %% requested file is inside the configured directory.
 
 -spec rest_init(Req, opts())
-	-> {ok, Req, error | state()}
-	when Req::cowboy_req:req().
+		-> {ok, Req, error | state()}
+	when Req :: cowboy_req:req().
 rest_init(Req, {Name, Path}) ->
 	rest_init_opts(Req, {Name, Path, []});
 rest_init(Req, {Name, App, Path})
-		when Name =:= priv_file; Name =:= priv_dir ->
+	when Name =:= priv_file; Name =:= priv_dir ->
 	rest_init_opts(Req, {Name, App, Path, []});
 rest_init(Req, Opts) ->
 	rest_init_opts(Req, Opts).
@@ -75,7 +75,7 @@ priv_path(App, Path) ->
 		PrivDir when is_list(Path) ->
 			PrivDir ++ "/" ++ Path;
 		PrivDir when is_binary(Path) ->
-			<< (list_to_binary(PrivDir))/binary, $/, Path/binary >>
+			<<(list_to_binary(PrivDir))/binary, $/, Path/binary>>
 	end.
 
 absname(Path) when is_list(Path) ->
@@ -88,10 +88,10 @@ rest_init_dir(Req, Path, Extra) when is_list(Path) ->
 rest_init_dir(Req, Path, Extra) ->
 	Dir = fullpath(filename:absname(Path)),
 	{PathInfo, Req2} = cowboy_req:path_info(Req),
-	Filepath = filename:join([Dir|PathInfo]),
+	Filepath = filename:join([Dir | PathInfo]),
 	Len = byte_size(Dir),
 	case fullpath(Filepath) of
-		<< Dir:Len/binary, $/, _/binary >> ->
+		<<Dir:Len/binary, $/, _/binary>> ->
 			rest_init_info(Req2, Filepath, Extra);
 		_ ->
 			{ok, Req2, error}
@@ -101,14 +101,14 @@ fullpath(Path) ->
 	fullpath(filename:split(Path), []).
 fullpath([], Acc) ->
 	filename:join(lists:reverse(Acc));
-fullpath([<<".">>|Tail], Acc) ->
+fullpath([<<".">> | Tail], Acc) ->
 	fullpath(Tail, Acc);
-fullpath([<<"..">>|Tail], Acc=[_]) ->
+fullpath([<<"..">> | Tail], Acc = [_]) ->
 	fullpath(Tail, Acc);
-fullpath([<<"..">>|Tail], [_|Acc]) ->
+fullpath([<<"..">> | Tail], [_ | Acc]) ->
 	fullpath(Tail, Acc);
-fullpath([Segment|Tail], Acc) ->
-	fullpath(Tail, [Segment|Acc]).
+fullpath([Segment | Tail], Acc) ->
+	fullpath(Tail, [Segment | Acc]).
 
 rest_init_info(Req, Path, Extra) ->
 	Info = file:read_file_info(Path, [{time, universal}]),
@@ -141,9 +141,9 @@ good_path_check_test_() ->
 	],
 	[{P, fun() ->
 		case fullpath(P) of
-			<< "/home/cowboy/", _/binary >> -> ok
+			<<"/home/cowboy/", _/binary>> -> ok
 		end
-	end} || P <- Tests].
+	     end} || P <- Tests].
 
 bad_path_check_test_() ->
 	Tests = [
@@ -152,57 +152,57 @@ bad_path_check_test_() ->
 	],
 	[{P, fun() ->
 		error = case fullpath(P) of
-			<< "/home/cowboy/", _/binary >> -> ok;
-			_ -> error
-		end
-	end} || P <- Tests].
+			        <<"/home/cowboy/", _/binary>> -> ok;
+			        _ -> error
+		        end
+	     end} || P <- Tests].
 
 good_path_win32_check_test_() ->
 	Tests = case os:type() of
-		{unix, _} ->
-			[];
-		{win32, _} ->
-			[
-				<<"c:/home/cowboy/file">>,
-				<<"c:/home/cowboy/file/">>,
-				<<"c:/home/cowboy/./file">>,
-				<<"c:/home/cowboy/././././././file">>,
-				<<"c:/home/cowboy/abc/../file">>,
-				<<"c:/home/cowboy/abc/../file">>,
-				<<"c:/home/cowboy/abc/./.././file">>
-			]
-	end,
+		        {unix, _} ->
+			        [];
+		        {win32, _} ->
+			        [
+				        <<"c:/home/cowboy/file">>,
+				        <<"c:/home/cowboy/file/">>,
+				        <<"c:/home/cowboy/./file">>,
+				        <<"c:/home/cowboy/././././././file">>,
+				        <<"c:/home/cowboy/abc/../file">>,
+				        <<"c:/home/cowboy/abc/../file">>,
+				        <<"c:/home/cowboy/abc/./.././file">>
+			        ]
+	        end,
 	[{P, fun() ->
 		case fullpath(P) of
-			<< "c:/home/cowboy/", _/binary >> -> ok
+			<<"c:/home/cowboy/", _/binary>> -> ok
 		end
-	end} || P <- Tests].
+	     end} || P <- Tests].
 
 bad_path_win32_check_test_() ->
 	Tests = case os:type() of
-		{unix, _} ->
-			[];
-		{win32, _} ->
-			[
-				<<"c:/home/cowboy/../../secretfile.bat">>,
-				<<"c:/home/cowboy/c:/secretfile.bat">>,
-				<<"c:/home/cowboy/..\\..\\secretfile.bat">>,
-				<<"c:/home/cowboy/c:\\secretfile.bat">>
-			]
-	end,
+		        {unix, _} ->
+			        [];
+		        {win32, _} ->
+			        [
+				        <<"c:/home/cowboy/../../secretfile.bat">>,
+				        <<"c:/home/cowboy/c:/secretfile.bat">>,
+				        <<"c:/home/cowboy/..\\..\\secretfile.bat">>,
+				        <<"c:/home/cowboy/c:\\secretfile.bat">>
+			        ]
+	        end,
 	[{P, fun() ->
 		error = case fullpath(P) of
-			<< "c:/home/cowboy/", _/binary >> -> ok;
-			_ -> error
-		end
-	end} || P <- Tests].
+			        <<"c:/home/cowboy/", _/binary>> -> ok;
+			        _ -> error
+		        end
+	     end} || P <- Tests].
 -endif.
 
 %% Reject requests that tried to access a file outside
 %% the target directory.
 
 -spec malformed_request(Req, State)
-	-> {boolean(), Req, State}.
+		-> {boolean(), Req, State}.
 malformed_request(Req, State) ->
 	{State =:= error, Req, State}.
 
@@ -210,14 +210,14 @@ malformed_request(Req, State) ->
 %% files with no read flag are forbidden.
 
 -spec forbidden(Req, State)
-	-> {boolean(), Req, State}
-	when State::state().
-forbidden(Req, State={_, {ok, #file_info{type=directory}}, _}) ->
+		-> {boolean(), Req, State}
+	when State :: state().
+forbidden(Req, State = {_, {ok, #file_info{type = directory}}, _}) ->
 	{true, Req, State};
-forbidden(Req, State={_, {error, eacces}, _}) ->
+forbidden(Req, State = {_, {error, eacces}, _}) ->
 	{true, Req, State};
-forbidden(Req, State={_, {ok, #file_info{access=Access}}, _})
-		when Access =:= write; Access =:= none ->
+forbidden(Req, State = {_, {ok, #file_info{access = Access}}, _})
+	when Access =:= write; Access =:= none ->
 	{true, Req, State};
 forbidden(Req, State) ->
 	{false, Req, State}.
@@ -225,9 +225,9 @@ forbidden(Req, State) ->
 %% Detect the mimetype of the file.
 
 -spec content_types_provided(Req, State)
-	-> {[{binary(), get_file}], Req, State}
-	when State::state().
-content_types_provided(Req, State={Path, _, Extra}) ->
+		-> {[{binary(), get_file}], Req, State}
+	when State :: state().
+content_types_provided(Req, State = {Path, _, Extra}) ->
 	case lists:keyfind(mimetypes, 1, Extra) of
 		false ->
 			{[{cow_mimetypes:web(Path), get_file}], Req, State};
@@ -240,9 +240,9 @@ content_types_provided(Req, State={Path, _, Extra}) ->
 %% Assume the resource doesn't exist if it's not a regular file.
 
 -spec resource_exists(Req, State)
-	-> {boolean(), Req, State}
-	when State::state().
-resource_exists(Req, State={_, {ok, #file_info{type=regular}}, _}) ->
+		-> {boolean(), Req, State}
+	when State :: state().
+resource_exists(Req, State = {_, {ok, #file_info{type = regular}}, _}) ->
 	{true, Req, State};
 resource_exists(Req, State) ->
 	{false, Req, State}.
@@ -250,10 +250,10 @@ resource_exists(Req, State) ->
 %% Generate an etag for the file.
 
 -spec generate_etag(Req, State)
-	-> {{strong | weak, binary()}, Req, State}
-	when State::state().
-generate_etag(Req, State={Path, {ok, #file_info{size=Size, mtime=Mtime}},
-		Extra}) ->
+		-> {{strong | weak, binary()}, Req, State}
+	when State :: state().
+generate_etag(Req, State = {Path, {ok, #file_info{size = Size, mtime = Mtime}},
+	Extra}) ->
 	case lists:keyfind(etag, 1, Extra) of
 		false ->
 			{generate_default_etag(Size, Mtime), Req, State};
@@ -269,23 +269,23 @@ generate_default_etag(Size, Mtime) ->
 %% Return the time of last modification of the file.
 
 -spec last_modified(Req, State)
-	-> {calendar:datetime(), Req, State}
-	when State::state().
-last_modified(Req, State={_, {ok, #file_info{mtime=Modified}}, _}) ->
+		-> {calendar:datetime(), Req, State}
+	when State :: state().
+last_modified(Req, State = {_, {ok, #file_info{mtime = Modified}}, _}) ->
 	{Modified, Req, State}.
 
 %% Stream the file.
 %% @todo Export cowboy_req:resp_body_fun()?
 
 -spec get_file(Req, State)
-	-> {{stream, non_neg_integer(), fun()}, Req, State}
-	when State::state().
-get_file(Req, State={Path, {ok, #file_info{size=Size}}, _}) ->
-	Sendfile = fun (Socket, Transport) ->
+		-> {{stream, non_neg_integer(), fun()}, Req, State}
+	when State :: state().
+get_file(Req, State = {Path, {ok, #file_info{size = Size}}, _}) ->
+	Sendfile = fun(Socket, Transport) ->
 		case Transport:sendfile(Socket, Path) of
 			{ok, _} -> ok;
 			{error, closed} -> ok;
 			{error, etimedout} -> ok
 		end
-	end,
+	           end,
 	{{stream, Size, Sendfile}, Req, State}.

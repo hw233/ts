@@ -3,30 +3,30 @@
 -define(cfg_wildboss, 1).
 
 -record(wildbossCfg, {
-        %%: 地图ID
-        mapID,
+	%%: 地图ID
+	mapID,
 
-        %%: BOSS的怪物id
-        bossID,
+	%%: BOSS的怪物id
+	bossID,
 
-        %%: BOSS的坐标
-        pos,
+	%%: BOSS的坐标
+	pos,
 
-        %%: 奖励的掉落包
-        rewardID,
+	%%: 奖励的掉落包
+	rewardID,
 
-        %%: 刷新间隔时间，单位秒
-        refreshTime,
+	%%: 刷新间隔时间，单位秒
+	refreshTime,
 
-        item,
+	item,
 
-        %%: 半身像
-        bust,
+	%%: 半身像
+	bust,
 
-        %%: 刘展:
-        %%: 客户端显示排序
-        sequence
+	%%: 刘展:
+	%%: 客户端显示排序
+	sequence
 
- }).
+}).
 
 -endif.

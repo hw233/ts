@@ -19,29 +19,29 @@
 %% API functions
 %% ====================================================================
 -export([start_link/2]).
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3,handle_exception/3]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3, handle_exception/3]).
 
 
-start_link(Name,Index) ->
+start_link(Name, Index) ->
 	RealName = erlang:atom_to_list(Name) ++ erlang:integer_to_list(Index),
-	myGenServer:start_link({local,list_to_atom(RealName)},
-						   ?MODULE, [], [{timeout,?Start_Link_TimeOut_ms}]).
+	myGenServer:start_link({local, list_to_atom(RealName)},
+		?MODULE, [], [{timeout, ?Start_Link_TimeOut_ms}]).
 
 init([]) ->
 	erlang:process_flag(trap_exit, true),
 	erlang:process_flag(priority, high),
-	?LOG_OUT("~p init OK",[?MODULE]),
-	{ok,{}}.
+	?LOG_OUT("~p init OK", [?MODULE]),
+	{ok, {}}.
 %%请勿调用此处call代码，请直接调用mapMgrState
 handle_call({getLineInfo, {MapPid}}, _From, State) ->
 	RecMapInfo = mapMgrState:getMapInfo(MapPid),
 	{reply, {ok, RecMapInfo}, State};
 %%请勿调用此处call代码，请直接调用mapMgrState
 handle_call({getLineList, {MapID}}, _Form, State) ->
-	 List = mapMgrState:getMapInfoByMapID(MapID),
+	List = mapMgrState:getMapInfoByMapID(MapID),
 	{reply, {ok, List}, State};
 
-handle_call(Req, _From,State) ->
+handle_call(Req, _From, State) ->
 	?ERROR_OUT("[~p] unhandle call ~p", [?MODULE, Req]),
 	{reply, ok, State}.
 
@@ -161,7 +161,7 @@ handle_info({destoryMap_goonCopyMap, _Pid, {MapID, MapPid, RolePID, RoleID} = Da
 			Info = mapMgrState:getRoleCopyMap(RoleID, MapID),
 			?LOG_OUT("destoryMap_goonCopyMap:~p,~p,~p", [Data, Rec, Info]);
 		Error ->
-			?ERROR_OUT("destoryMap_goonCopyMap:mapid=~p,mappid=~p,error=~p", [MapID, MapPid,Error])
+			?ERROR_OUT("destoryMap_goonCopyMap:mapid=~p,mappid=~p,error=~p", [MapID, MapPid, Error])
 	end,
 	destoryMap(MapID, MapPid),
 	psMgr:sendMsg2PS(MapPid, goonCopyMap, MapID),
@@ -180,17 +180,17 @@ handle_info({leaderCreateGuildCopyMap, PidFrom, {MapID, RoleID, GuildID}}, State
 			MaxOverTime = NowTime + AllTime,
 
 			Code =
-			case myEts:lookUpEts(recGuildMemory, GuildID) of
-				[#recGuildMemory{isOpen = IsOpen}] ->
-					case IsOpen of
-						true ->
-							?ErrorCode_GuildCopy_Already_Active;
-						_->
-							?ErrorCode_GuildCopy_Open
-					end;
-				_ ->
-					?ErrorCode_GuildCopy_Open
-			end,
+				case myEts:lookUpEts(recGuildMemory, GuildID) of
+					[#recGuildMemory{isOpen = IsOpen}] ->
+						case IsOpen of
+							true ->
+								?ErrorCode_GuildCopy_Already_Active;
+							_ ->
+								?ErrorCode_GuildCopy_Open
+						end;
+					_ ->
+						?ErrorCode_GuildCopy_Open
+				end,
 
 			case Code of
 				?ErrorCode_GuildCopy_Open ->
@@ -210,12 +210,12 @@ handle_info({leaderCreateGuildCopyMap, PidFrom, {MapID, RoleID, GuildID}}, State
 
 	{noreply, State};
 
-handle_info({guildCopyMapOver, PidFrom, {MapID,GuildID}}, State) ->
+handle_info({guildCopyMapOver, PidFrom, {MapID, GuildID}}, State) ->
 	NowTime = time:getSyncTime1970FromDBS(),
 	case myEts:lookUpEts(recGuildMemory, GuildID) of
 		[#recGuildMemory{ownerID = OwnerID}] ->
 			myEts:updateEts(recGuildMemory, GuildID,
-				[{#recGuildMemory.guildCopyMaxOverTime, 0}, {#recGuildMemory.isOpen, false},{#recGuildMemory.ownerID, 0}]),
+				[{#recGuildMemory.guildCopyMaxOverTime, 0}, {#recGuildMemory.isOpen, false}, {#recGuildMemory.ownerID, 0}]),
 
 			?LOG_OUT("guildCopyMapOver,mapid=~p, from=~p, owner=~p, guildid=~p, time=~p",
 				[MapID, PidFrom, OwnerID, GuildID, NowTime]);
@@ -226,26 +226,26 @@ handle_info({guildCopyMapOver, PidFrom, {MapID,GuildID}}, State) ->
 
 	{noreply, State};
 
-handle_info(Info,State) ->
-	?ERROR_OUT("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
-	{noreply,State}.
+handle_info(Info, State) ->
+	?ERROR_OUT("unhandle info:[~p] in [~p] [~p,~p]", [Info, node(), ?MODULE, self()]),
+	{noreply, State}.
 
 terminate(_Reason, _State) ->
-  	ok.
+	ok.
 
 code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
+	{ok, State}.
 
-handle_exception(Type,Why,State) ->
+handle_exception(Type, Why, State) ->
 	myGenServer:default_handle_excetion(Type, Why, State).
-	
+
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
 %%
 -spec getOwnerID(#recRequsetEnterMap{}) -> uint().
-getOwnerID(#recRequsetEnterMap{roleID = RoleID, guildID = GuildID, teamID = TeamID} = Request ) ->
+getOwnerID(#recRequsetEnterMap{roleID = RoleID, guildID = GuildID, teamID = TeamID} = Request) ->
 	if
 		GuildID > 0 ->
 			Request#recRequsetEnterMap.teamLeaderRoleID;
@@ -263,7 +263,7 @@ onRequestEnterMap(#recRequsetEnterMap{roleID = RoleID,
 	oldMapPID = OldMapPID,
 	teamID = TeamID
 } = Request) ->
- 	?LOG_OUT("RoleID:~p onRequestEnterMap TMap:~p SMap:~p SMapPid:~p", [RoleID,TargetMapID,OldMapID,OldMapPID]),
+	?LOG_OUT("RoleID:~p onRequestEnterMap TMap:~p SMap:~p SMapPid:~p", [RoleID, TargetMapID, OldMapID, OldMapPID]),
 	case playerScene:getMapType(TargetMapID) of
 		?MapTypeNormal ->
 			%% 普通地图不用设置进度
@@ -280,7 +280,7 @@ onRequestEnterMap(#recRequsetEnterMap{roleID = RoleID,
 				_ -> checkAndLeaveMap(Request)
 			end;
 		?MapTypeCopyMap ->
-			?LOG_OUT("RoleID:~p onRequestEnterMap enter rec=~p",[RoleID, Request]),
+			?LOG_OUT("RoleID:~p onRequestEnterMap enter rec=~p", [RoleID, Request]),
 
 			%% 副本地图，需要判断进度
 			CanEnter =
@@ -297,7 +297,7 @@ onRequestEnterMap(#recRequsetEnterMap{roleID = RoleID,
 								MaxNum = getMaxNumber(TargetMapID),
 								%%如果是军团副本或者单人副本不发消息
 								case MapSubType =:= ?MapSubTypeGuild orelse MaxNum =< 1 of
-									true->
+									true ->
 										skip;
 									_ ->
 										%% 是组队进入副本，发消息给队长，副本创建成功
@@ -322,21 +322,21 @@ onRequestEnterMap(#recRequsetEnterMap{roleID = RoleID,
 						enteredMemberIDList = EnterList,
 						alreadyEnteredMemberIDList = AlreadyEnterList
 					} = mapMgrState:getCopyMap(MapPid),
-					NewMapInfo = case lists:member(RoleID,EnterList) of
-									 false ->
-										 %% 添加进入记录
-										 NewAlreadyEnterList = lists:umerge(AlreadyEnterList, [RoleID]),
+					NewMapInfo = case lists:member(RoleID, EnterList) of
+						             false ->
+							             %% 添加进入记录
+							             NewAlreadyEnterList = lists:umerge(AlreadyEnterList, [RoleID]),
 
-										 %% 记录新成员
-										 NMapInfo = MapInfo#recCopyMapInfo{
-											 enteredMemberIDList = [RoleID | EnterList],
-											 alreadyEnteredMemberIDList = NewAlreadyEnterList
-										 },
-										 mapMgrState:setCopyMap(MapPid, NMapInfo),
-										 NMapInfo;
-									 _ ->
-										 MapInfo
-								 end,
+							             %% 记录新成员
+							             NMapInfo = MapInfo#recCopyMapInfo{
+								             enteredMemberIDList = [RoleID | EnterList],
+								             alreadyEnteredMemberIDList = NewAlreadyEnterList
+							             },
+							             mapMgrState:setCopyMap(MapPid, NMapInfo),
+							             NMapInfo;
+						             _ ->
+							             MapInfo
+					             end,
 					?LOG_OUT("onRequestEnterMap new mapID:~p MapPid:~p,ownerRoleID:~p,isWaitDestory:~p,enteredIDList:~w",
 						[
 							NewMapInfo#recCopyMapInfo.mapID,
@@ -354,11 +354,11 @@ onRequestEnterMap(#recRequsetEnterMap{roleID = RoleID,
 	end,
 	ok.
 
-checkAndLeaveMap(#recRequsetEnterMap{roleID = RoleID,isRequireLeaveMap = IsRequireLeaveMap,oldMapID = OldMapID,oldMapPID = OldMapPID} = Request) ->
+checkAndLeaveMap(#recRequsetEnterMap{roleID = RoleID, isRequireLeaveMap = IsRequireLeaveMap, oldMapID = OldMapID, oldMapPID = OldMapPID} = Request) ->
 	case IsRequireLeaveMap andalso misc:is_process_alive(OldMapPID) of
 		true ->
 			%% 原来存在地图
-			?LOG_OUT("Role:~p Leave OldMapID:~p Pid:~p",[RoleID,OldMapID,OldMapPID]),
+			?LOG_OUT("Role:~p Leave OldMapID:~p Pid:~p", [RoleID, OldMapID, OldMapPID]),
 			psMgr:sendMsg2PS(OldMapPID, leaveMap, Request);
 		_ ->
 			%% 原来的地图不存在
@@ -443,16 +443,16 @@ leaveMapAck({true, #recRequsetEnterMap{roleID = RoleID, targetMapID = MapID, tar
 				_ ->
 					%% 进入普通地图，分配一条地图线
 					MPID = allocMapLine(MapID, RoleID, true),
-					checkAndSendLeaveMapAck(MPID,Request)
+					checkAndSendLeaveMapAck(MPID, Request)
 			end;
 		?MapTypeActivity ->
 			TargetPID = case Request#recRequsetEnterMap.targetMapPID of
-							undefined ->
+				            undefined ->
 %% 								?ERROR_OUT("activity not found:~p", [Request]),
-								allocMapLine(MapID, RoleID, false);
-							PID ->
-								PID
-						end,
+					            allocMapLine(MapID, RoleID, false);
+				            PID ->
+					            PID
+			            end,
 			checkAndSendLeaveMapAck(TargetPID, Request);
 		?MapTypeCopyMap ->
 			leaveCopyMap(Request)
@@ -463,19 +463,19 @@ leaveMapAck({_, #recRequsetEnterMap{rolePID = PID}} = Result) ->
 	psMgr:sendMsg2PS(PID, requestEnterMapAck, Result),
 	ok.
 
-checkAndSendLeaveMapAck(MPID,#recRequsetEnterMap{roleID = RoleID, rolePID = PID,targetMapID = MapID} = Request) ->
+checkAndSendLeaveMapAck(MPID, #recRequsetEnterMap{roleID = RoleID, rolePID = PID, targetMapID = MapID} = Request) ->
 	%% 这里判定是否是PID，如果是PID则一定存活
 	case erlang:is_pid(MPID) of
 		false ->
-			psMgr:sendMsg2PS(PID, requestEnterMapAck, {?EnterMapErrorCode_CRITIAL,Request}),
-			?WARN_OUT("RoleID [~p],leaveMapAck create new mapPid failed:~p,~p",[RoleID,MPID,Request]);
+			psMgr:sendMsg2PS(PID, requestEnterMapAck, {?EnterMapErrorCode_CRITIAL, Request}),
+			?WARN_OUT("RoleID [~p],leaveMapAck create new mapPid failed:~p,~p", [RoleID, MPID, Request]);
 		_ ->
-			?LOG_OUT("RoleID [~p],leaveMapAck OK,TMap:~p,~p,SMap:~p,~p",[RoleID,MapID,MPID,Request#recRequsetEnterMap.oldMapID,Request#recRequsetEnterMap.oldMapPID]),
+			?LOG_OUT("RoleID [~p],leaveMapAck OK,TMap:~p,~p,SMap:~p,~p", [RoleID, MapID, MPID, Request#recRequsetEnterMap.oldMapID, Request#recRequsetEnterMap.oldMapPID]),
 			psMgr:sendMsg2PS(PID, requestEnterMapAck, {true, Request#recRequsetEnterMap{targetMapPID = MPID}})
 	end,
 	ok.
 
-leaveCopyMap(#recRequsetEnterMap{roleID = RoleID, rolePID = PID,targetMapID = MapID} = Request) ->
+leaveCopyMap(#recRequsetEnterMap{roleID = RoleID, rolePID = PID, targetMapID = MapID} = Request) ->
 
 	OwnerID = getOwnerID(Request),
 	#recCopyMapSelfInfo{mapPID = MapPID} = mapMgrState:getRoleCopyMap(OwnerID, MapID),
@@ -485,19 +485,19 @@ leaveCopyMap(#recRequsetEnterMap{roleID = RoleID, rolePID = PID,targetMapID = Ma
 			%%原来的副本地图进程已经处于等待销毁的状态了，则要看是否进的是队长，是队长则给他创建一个新的副本地图进程，
 			%%因为他已经离开原来的普通地图进程了
 			NewPid = createSelfCopyMap(Request),
-			?LOG_OUT("CopyMapPid:~p is wait destory,create new map Pid:~p",[MapPID,NewPid]),
-			checkAndSendLeaveMapAck(NewPid,Request);
+			?LOG_OUT("CopyMapPid:~p is wait destory,create new map Pid:~p", [MapPID, NewPid]),
+			checkAndSendLeaveMapAck(NewPid, Request);
 		_ ->
 			case misc:is_process_alive(MapPID) of
 				true ->
 					%%如果原来的副本地图进程有效则用原来的地图进程
-					checkAndSendLeaveMapAck(MapPID,Request);
+					checkAndSendLeaveMapAck(MapPID, Request);
 				_ when OwnerID =:= RoleID ->
 					%%原来的副本地图进程已经无效了，则要看是否进的是队长，是队长则给他创建一个新的副本地图进程，
 					%%因为他已经离开原来的普通地图进程了
 					NewPid1 = createSelfCopyMap(Request),
-					?LOG_OUT("CopyMapPid:~p is dead,create new map Pid:~p",[MapPID,NewPid1]),
-					checkAndSendLeaveMapAck(NewPid1,Request);
+					?LOG_OUT("CopyMapPid:~p is dead,create new map Pid:~p", [MapPID, NewPid1]),
+					checkAndSendLeaveMapAck(NewPid1, Request);
 				_ ->
 					%%原来的副本地图进程已经无效了，但队员不能创建副本，所以需要他返回原来的普通地图进程，各家呆到起。
 					psMgr:sendMsg2PS(PID, requestEnterMapAck, {?EnterMapErrorCode_TeamMemberEnterWaitDestoryCopyMap, Request})
@@ -506,8 +506,8 @@ leaveCopyMap(#recRequsetEnterMap{roleID = RoleID, rolePID = PID,targetMapID = Ma
 	ok.
 
 %% 玩家进入地图成功了
--spec playerEnterMapSuccess(RoleID::uint(), RolePID::pid(), MapID::uint(), MapPid::pid(), Num::uint()) -> ok.
-playerEnterMapSuccess(RoleID, RolePID, MapID, MapPid,Num) ->
+-spec playerEnterMapSuccess(RoleID :: uint(), RolePID :: pid(), MapID :: uint(), MapPid :: pid(), Num :: uint()) -> ok.
+playerEnterMapSuccess(RoleID, RolePID, MapID, MapPid, Num) ->
 	case playerScene:getMapType(MapID) of
 		?MapTypeCopyMap ->
 			case mapMgrState:addPlayerEnterMapTimes(RoleID, MapID, MapPid) =:= 1 of
@@ -523,12 +523,12 @@ playerEnterMapSuccess(RoleID, RolePID, MapID, MapPid,Num) ->
 
 	%% 设置地图的人数
 	#recMapInfo{willEnterRoleIDList = List} = MapInfo = mapMgrState:getMapInfo(MapPid),
-	L = lists:delete(RoleID,List),
-	mapMgrState:setMapInfo(MapPid, MapInfo#recMapInfo{totalPlayerNum = Num,willEnterRoleIDList = L}),
+	L = lists:delete(RoleID, List),
+	mapMgrState:setMapInfo(MapPid, MapInfo#recMapInfo{totalPlayerNum = Num, willEnterRoleIDList = L}),
 	ok.
 
 %% 玩家普通方式离开地图
--spec playerLeaveMapNormal(RoleID::uint(), MapID::uint(), MapPid::pid(), PlayerNum::uint()) -> ok.
+-spec playerLeaveMapNormal(RoleID :: uint(), MapID :: uint(), MapPid :: pid(), PlayerNum :: uint()) -> ok.
 playerLeaveMapNormal(RoleID, MapID, MapPid, PlayerNum) ->
 	case playerScene:getMapType(MapID) of
 		?MapTypeCopyMap ->
@@ -558,18 +558,18 @@ playerLeaveMapNormal(RoleID, MapID, MapPid, PlayerNum) ->
 			skip
 	end,
 	%% 更新地图的人数
-	MapInfo2  = mapMgrState:getMapInfo(MapPid),
+	MapInfo2 = mapMgrState:getMapInfo(MapPid),
 	mapMgrState:setMapInfo(MapPid, MapInfo2#recMapInfo{totalPlayerNum = PlayerNum}),
 	ok.
 
 %% 队伍队长发生改变，如果队长拥有的副本中只要有人，则均要改变副本的归属权
--spec changeTeamLeader(OldLeaderID::uint(), NewLeaderID::uint()) -> ok.
+-spec changeTeamLeader(OldLeaderID :: uint(), NewLeaderID :: uint()) -> ok.
 changeTeamLeader(OldLeaderID, NewLeaderID) when OldLeaderID =:= NewLeaderID ->
 	?ERROR_OUT("changeTeamLeader:OldLeaderID =:= NewLeaderID [~p]", [OldLeaderID]),
 	ok;
 changeTeamLeader(OldLeaderID, NewLeaderID) when
 	erlang:is_integer(OldLeaderID) andalso OldLeaderID > 0 andalso
-	erlang:is_integer(NewLeaderID) andalso NewLeaderID > 0 ->
+		erlang:is_integer(NewLeaderID) andalso NewLeaderID > 0 ->
 	OCopyMapList = mapMgrState:getRoleCopyMapList(OldLeaderID),
 	NCopyMapList = mapMgrState:getRoleCopyMapList(NewLeaderID),
 
@@ -584,7 +584,7 @@ changeTeamLeader(OldLeaderID, NewLeaderID) when
 			skip;
 		_ ->
 			NList = lists:map(Fun, NCopyMapList),
-			?LOG_OUT("changeTeamLeader:old={~p,~p},new={~p,~p}", [OldLeaderID,OList,NewLeaderID,NList]),
+			?LOG_OUT("changeTeamLeader:old={~p,~p},new={~p,~p}", [OldLeaderID, OList, NewLeaderID, NList]),
 
 			%% 提取OList里mapid在NList出现的列表
 			FunTQ =
@@ -608,14 +608,14 @@ changeTeamLeader(OldLeaderID, NewLeaderID) when
 							end
 					end
 				end,
-			{ORL, NNotRL} = lists:foldl(FunTQ, {[],[]}, OList),
+			{ORL, NNotRL} = lists:foldl(FunTQ, {[], []}, OList),
 			case length(ORL) > 0 of
 				false ->
 					skip;
 				_ ->
-					?LOG_OUT("changeTeamLeader:have repeat copymap,old={~p,~p},new{~p,~p}",[OldLeaderID, ORL,NewLeaderID,NNotRL]),
+					?LOG_OUT("changeTeamLeader:have repeat copymap,old={~p,~p},new{~p,~p}", [OldLeaderID, ORL, NewLeaderID, NNotRL]),
 					%% 先处理同副本id，不同副本pid的情况，NewLeaderID的相同副本全部重置
-					[resetCopyMap(NewLeaderID, NMapID) || {NMapID,_} <- NNotRL],
+					[resetCopyMap(NewLeaderID, NMapID) || {NMapID, _} <- NNotRL],
 
 					%% 再把OldLeaderID重复的副本全部移交权限给NewLeaderID
 					%% 注意，军团多人副本为特殊副本，队长不允许移交
@@ -647,11 +647,11 @@ changeTeamLeader(OldLeaderID, NewLeaderID) when
 	end,
 	ok;
 changeTeamLeader(OldLeaderID, NewLeaderID) ->
-	?ERROR_OUT("changeTeamLeader failed:~p,~p", [OldLeaderID,NewLeaderID]),
+	?ERROR_OUT("changeTeamLeader failed:~p,~p", [OldLeaderID, NewLeaderID]),
 	ok.
 
 %% 重置副本
--spec resetCopyMap(RoleID::uint(), CopyMapID::uint()) -> {true, CopyMapID} | {false, CopyMapID, ?ErrorCode_CopyMapResetFailed} when CopyMapID::uint().
+-spec resetCopyMap(RoleID :: uint(), CopyMapID :: uint()) -> {true, CopyMapID} | {false, CopyMapID, ?ErrorCode_CopyMapResetFailed} when CopyMapID :: uint().
 resetCopyMap(RoleID, CopyMapID) ->
 	case mapMgrState:getRoleCopyMap(RoleID, CopyMapID) of
 		#recCopyMapSelfInfo{mapID = MapID, mapPID = MapPid} when MapID =:= CopyMapID ->
@@ -662,7 +662,7 @@ resetCopyMap(RoleID, CopyMapID) ->
 	end.
 
 %% 准备销毁地图
--spec prepareDestory(MapID::uint(), MapPid::pid()) -> ok.
+-spec prepareDestory(MapID :: uint(), MapPid :: pid()) -> ok.
 prepareDestory(MapID, MapPid) ->
 	?LOG_OUT("MapMgr prepareDestory:~p,~p", [MapID, MapPid]),
 
@@ -671,17 +671,17 @@ prepareDestory(MapID, MapPid) ->
 		#mapsettingCfg{type = ?MapTypeCopyMap} ->
 
 			MapInfo = mapMgrState:getCopyMap(MapPid),
-			mapMgrState:getRoleCopyMap(MapInfo#recCopyMapInfo.ownerRoleID,MapInfo#recCopyMapInfo.mapID),
+			mapMgrState:getRoleCopyMap(MapInfo#recCopyMapInfo.ownerRoleID, MapInfo#recCopyMapInfo.mapID),
 
 			mapMgrState:setCopyMap(MapPid, MapInfo#recCopyMapInfo{isWaitDestory = true});
 		_ ->
 			MapInfo = mapMgrState:getMapInfo(MapPid),
-			mapMgrState:setMapInfo(MapPid,MapInfo#recMapInfo{isWaitDestory = true})
+			mapMgrState:setMapInfo(MapPid, MapInfo#recMapInfo{isWaitDestory = true})
 	end,
 	ok.
 
 %% 销毁地图
--spec destoryMap(MapID::uint(), MapPid::pid()) -> ok.
+-spec destoryMap(MapID :: uint(), MapPid :: pid()) -> ok.
 destoryMap(MapID, MapPid) ->
 	?LOG_OUT("MapMgr want to destoryMap:~p,~p", [MapID, MapPid]),
 	mapMgrState:deleteMapInfo(MapPid),
@@ -711,10 +711,10 @@ destoryMap(MapID, MapPid) ->
 			skip
 	end,
 
-	psMgr:sendMsg2PS(?PsNameOperateActivity,destoryMap,{MapID,MapPid}),
+	psMgr:sendMsg2PS(?PsNameOperateActivity, destoryMap, {MapID, MapPid}),
 	case MapID of
 		?CrosHdBattleMapID ->
-			psMgr:sendMsg2PS(?PsNameCrosHd,destoryMap,{MapPid});
+			psMgr:sendMsg2PS(?PsNameCrosHd, destoryMap, {MapPid});
 		_ ->
 			skip
 	end,
@@ -731,14 +731,14 @@ canEnterCopyMap(#recRequsetEnterMap{roleID = RoleID, targetMapID = CopyMapID, te
 				#recCopyMapSelfInfo{mapPID = MapPid} ->
 					case mapMgrState:getCopyMap(MapPid) of
 						#recCopyMapInfo{isWaitDestory = false, enteredMemberIDList = EnterList} ->
-							AllowMaxNum =  getMaxNumber(CopyMapID),
+							AllowMaxNum = getMaxNumber(CopyMapID),
 							Len = length(EnterList),
 							case AllowMaxNum > Len of
 								true ->
 									?LOG_OUT("~p enterCopyMap: owner:~p, MapPid:~p, mapID:~p", [RoleID, OwnerID, MapPid, CopyMapID]),
 									ok;
 								_ ->
-									?ERROR_OUT("CopyMapPid:~p Is MaxPlayerNum:~p,AllowMaxNum:~p, EnterList:~p",[MapPid,Len,AllowMaxNum,EnterList]),
+									?ERROR_OUT("CopyMapPid:~p Is MaxPlayerNum:~p,AllowMaxNum:~p, EnterList:~p", [MapPid, Len, AllowMaxNum, EnterList]),
 									?EnterMapErrorCode_CopyMapMaxNum
 							end;
 						_ ->
@@ -763,7 +763,7 @@ canEnterCopyMap(#recRequsetEnterMap{roleID = RoleID, targetMapID = CopyMapID, te
 	end.
 
 %% 是否存在副本进度，如果有需要，则创建一个副本进度
--spec hasRoleExistCopyMap(#recRequsetEnterMap{}) -> ok | ErrorCode when ErrorCode::uint().
+-spec hasRoleExistCopyMap(#recRequsetEnterMap{}) -> ok | ErrorCode when ErrorCode :: uint().
 hasRoleExistCopyMap(#recRequsetEnterMap{teamID = 0, roleID = RoleID, guildID = 0, targetMapID = CopyMapID} = Request) ->
 	%% 个人进入副本，都能进，要么进已有的自己的，要么新建一个进入
 	case mapMgrState:getRoleCopyMap(RoleID, CopyMapID) of
@@ -802,7 +802,7 @@ hasRoleExistCopyMap(#recRequsetEnterMap{teamID = _TeamID, roleID = RoleID, targe
 	end.
 
 %% 创建一个副本，并记录自己的进度
--spec createSelfCopyMap(Request::#recRequsetEnterMap{}) -> pid() | error.
+-spec createSelfCopyMap(Request :: #recRequsetEnterMap{}) -> pid() | error.
 createSelfCopyMap(#recRequsetEnterMap{roleID = RoleID, targetMapID = CopyMapID, roleLevel = RoleLevel, teamID = TeamID, guildID = GuildID}) ->
 	%% 保存副本拥有者
 	MapPid = createMapLine(CopyMapID, RoleID),
@@ -815,9 +815,9 @@ createSelfCopyMap(#recRequsetEnterMap{roleID = RoleID, targetMapID = CopyMapID, 
 			},
 			mapMgrState:setRoleCopyMap(RoleID, CopyMapID, R),
 
-			psMgr:sendMsg2PS(MapPid,createRoleLevelAndGuildID,{RoleLevel, TeamID, GuildID}),%把地图创建者等级和军团ID发给地图线PID
+			psMgr:sendMsg2PS(MapPid, createRoleLevelAndGuildID, {RoleLevel, TeamID, GuildID}),%把地图创建者等级和军团ID发给地图线PID
 
-			?LOG_OUT("RoleID:~p createSelfCopyMap:~p,~p", [RoleID,CopyMapID,MapPid]),
+			?LOG_OUT("RoleID:~p createSelfCopyMap:~p,~p", [RoleID, CopyMapID, MapPid]),
 			#mapsettingCfg{finish_time = WT} = getCfg:getCfgByArgs(cfg_mapsetting, CopyMapID),
 
 			%% 保存地图数据
@@ -826,8 +826,8 @@ createSelfCopyMap(#recRequsetEnterMap{roleID = RoleID, targetMapID = CopyMapID, 
 				isWaitDestory = false,
 				enteredMemberIDList = [],
 				alreadyEnteredMemberIDList = [],
-				destoryTime =timeOtp:getUTCNowSec1970()+WT*60
-				},
+				destoryTime = timeOtp:getUTCNowSec1970() + WT * 60
+			},
 
 			mapMgrState:setCopyMap(MapPid, MapInfo),
 			MapPid;
@@ -837,8 +837,8 @@ createSelfCopyMap(#recRequsetEnterMap{roleID = RoleID, targetMapID = CopyMapID, 
 	end.
 
 %分配线路
--spec allocMapLine(MapID, RoleID,IsCheckRecycle) -> MapPid | error when
-	MapID::uint(),RoleID::uint(),MapPid::pid(),IsCheckRecycle::boolean().
+-spec allocMapLine(MapID, RoleID, IsCheckRecycle) -> MapPid | error when
+	MapID :: uint(), RoleID :: uint(), MapPid :: pid(), IsCheckRecycle :: boolean().
 allocMapLine(MapID, RoleID, IsCheckRecycle) ->
 	MaxPlayerNum = getMaxNumber(MapID),
 	case MaxPlayerNum > 0 of
@@ -855,12 +855,12 @@ allocMapLine(MapID, RoleID, IsCheckRecycle) ->
 						willEnterRoleIDList = WERList,
 						isReachMaxNum = IsReachMaxNum,
 						createTime = CreateTime
-					},{MapPid,N} = AccIn) ->
+					}, {MapPid, N} = AccIn) ->
 						Now = time:getUTCNowSec(),
 						%%这里检查是否达到过最大人数上限，以及是否是3天内创建的60 * 60 * 24 * 3 = 259200线路
-						case IsWaitDestory =:= false andalso (not IsCheckRecycle orelse (IsCheckRecycle andalso IsReachMaxNum =:= false andalso Now - CreateTime < ?ForbidEnterTime))  of
+						case IsWaitDestory =:= false andalso (not IsCheckRecycle orelse (IsCheckRecycle andalso IsReachMaxNum =:= false andalso Now - CreateTime < ?ForbidEnterTime)) of
 							true ->
-								?DEBUG_OUT("Pid[~p]IsCheckRecycle[~p]IsReachMaxNum[~p]Now - CreateTime[~p]",[Pid,IsCheckRecycle,IsReachMaxNum,Now - CreateTime]),
+								?DEBUG_OUT("Pid[~p]IsCheckRecycle[~p]IsReachMaxNum[~p]Now - CreateTime[~p]", [Pid, IsCheckRecycle, IsReachMaxNum, Now - CreateTime]),
 								WEPN = erlang:length(WERList),
 								%%Num为当前地图人数，N为之前查找到的地图的最大人数
 								case Num > N of
@@ -871,13 +871,13 @@ allocMapLine(MapID, RoleID, IsCheckRecycle) ->
 											true ->
 												AccIn;
 											false ->
-												{Pid,Num}
+												{Pid, Num}
 										end;
 									false ->
 										%%如果没有达到则记录下Pid与人数
 										case MapPid of
 											0 ->
-												{Pid,Num};
+												{Pid, Num};
 											_ ->
 												AccIn
 										end
@@ -886,29 +886,29 @@ allocMapLine(MapID, RoleID, IsCheckRecycle) ->
 								%%地图将要销毁或者不允许再进入
 								AccIn
 						end
-					end,
+					       end,
 					{MapPid, _} = lists:foldl(Func, {0, 0}, MapInfoList),
 					case lists:keyfind(MapPid, #recMapInfo.pid, MapInfoList) of
 						#recMapInfo{willEnterRoleIDList = WillEnterList, totalPlayerNum = TotalPlayerNum} = MapInfo ->
 							WEList = case lists:member(RoleID, WillEnterList) of
-										 true ->
-											 WillEnterList;
-										 _ ->
-											 [RoleID | WillEnterList]
-									 end,
+								         true ->
+									         WillEnterList;
+								         _ ->
+									         [RoleID | WillEnterList]
+							         end,
 							%%如果人数达到最大人数限制，则设置标志，此地图线不再让玩家进入，让此地图线的玩家慢慢离开了就销毁，以回收资源
 							NewMapInfo = case IsCheckRecycle andalso erlang:length(WEList) + TotalPlayerNum >= MaxPlayerNum of
-												 true ->
-													 ?DEBUG_OUT("MapPid[~p]IsCheckRecycle[~p]Length[~p]TotalPlayerNum[~p]", [MapPid, IsCheckRecycle, erlang:length(WEList), TotalPlayerNum]),
-														 MapInfo#recMapInfo{
-															 willEnterRoleIDList = WEList,
-															 isReachMaxNum = true
-														 };
-												 _ ->
-														 MapInfo#recMapInfo{
-															 willEnterRoleIDList = WEList
-														 }
-											 end,
+								             true ->
+									             ?DEBUG_OUT("MapPid[~p]IsCheckRecycle[~p]Length[~p]TotalPlayerNum[~p]", [MapPid, IsCheckRecycle, erlang:length(WEList), TotalPlayerNum]),
+									             MapInfo#recMapInfo{
+										             willEnterRoleIDList = WEList,
+										             isReachMaxNum = true
+									             };
+								             _ ->
+									             MapInfo#recMapInfo{
+										             willEnterRoleIDList = WEList
+									             }
+							             end,
 							mapMgrState:setMapInfo(MapPid, NewMapInfo);
 						_ ->
 							skip
@@ -929,7 +929,7 @@ allocMapLine(MapID, RoleID, IsCheckRecycle) ->
 
 %创建地图新线，不管该地图上的线是否承载已经满
 -spec createMapLine(MapID, RoleID) -> MapPid when
-	MapID::uint(),RoleID::uint(),MapPid::pid() | error.
+	MapID :: uint(), RoleID :: uint(), MapPid :: pid() | error.
 createMapLine(MapID, RoleID) when erlang:is_integer(MapID) ->
 	MapCfg = core:getMapCfg(MapID),
 	MaxLine = mapMgrState:getMapMaxLine(MapID),
@@ -943,8 +943,8 @@ createMapLine(MapID, RoleID) when erlang:is_integer(MapID) ->
 
 	Ret = gameMapSup:start_child(Args),
 	case Ret of
-		{ok,Pid0} ->
-			?LOG_OUT("~p CreateMap[~p] Pid:~p",[self(),MapID,Pid0]),
+		{ok, Pid0} ->
+			?LOG_OUT("~p CreateMap[~p] Pid:~p", [self(), MapID, Pid0]),
 			MapInfo = #recMapInfo{
 				id = MapID,
 				pid = Pid0,
@@ -953,20 +953,20 @@ createMapLine(MapID, RoleID) when erlang:is_integer(MapID) ->
 				isReachMaxNum = false,
 				createTime = time:getUTCNowSec()
 			},
-			mapMgrState:setMapMaxLine(MapID,Line),
+			mapMgrState:setMapMaxLine(MapID, Line),
 			mapMgrState:setMapInfo(Pid0, MapInfo),
-			Name = erlang:list_to_atom(lists:concat(["mapOtp",integer_to_list(MapID),"_",integer_to_list(Line)])),
+			Name = erlang:list_to_atom(lists:concat(["mapOtp", integer_to_list(MapID), "_", integer_to_list(Line)])),
 			try
-				ets:insert(?MapInfoEts,#recMapPidInfo{pid = Pid0,mapID = MapID}),
-				psMgr:sendMsg2PS(?PsNameOperateActivity,createNewMap,{MapID,Pid0}),
-				erlang:register(Name,Pid0)
+				ets:insert(?MapInfoEts, #recMapPidInfo{pid = Pid0, mapID = MapID}),
+				psMgr:sendMsg2PS(?PsNameOperateActivity, createNewMap, {MapID, Pid0}),
+				erlang:register(Name, Pid0)
 			catch
 				_:_ ->
-					?ERROR_OUT("MapPid:~p register Name:~p failed",[Pid0,Name])
+					?ERROR_OUT("MapPid:~p register Name:~p failed", [Pid0, Name])
 			end,
 			Pid0;
 		_ ->
-			?ERROR_OUT("Create Map[~p] Line:~p Failed,Ret:~p",[MapID,Line,Ret]),
+			?ERROR_OUT("Create Map[~p] Line:~p Failed,Ret:~p", [MapID, Line, Ret]),
 			error
 	end.
 

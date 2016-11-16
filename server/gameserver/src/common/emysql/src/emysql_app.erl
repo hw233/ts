@@ -25,54 +25,54 @@
 -module(emysql_app).
 -behaviour(application).
 
--export([ start/2
-        , stop/1
-        , default_timeout/0
-        , lock_timeout/0
-        , pools/0
-        , conn_test_period/0
-        , retry_when_closed/0
-        ]).
+-export([start/2
+	, stop/1
+	, default_timeout/0
+	, lock_timeout/0
+	, pools/0
+	, conn_test_period/0
+	, retry_when_closed/0
+]).
 
 -include("emysql.hrl").
 
 start(_Type, _StartArgs) ->
-    emysql_sup:start_link().
+	emysql_sup:start_link().
 
 stop(_State) ->
-    ok = lists:foreach(fun(Pool) -> emysql_pool_mgr:remove_pool(Pool) end,
-                       emysql_pool_mgr:pools()).
+	ok = lists:foreach(fun(Pool) -> emysql_pool_mgr:remove_pool(Pool) end,
+		emysql_pool_mgr:pools()).
 
 default_timeout() ->
-    case application:get_env(emysql, default_timeout) of
-        undefined -> ?TIMEOUT;
-        {ok, Timeout} -> Timeout
-    end.
+	case application:get_env(emysql, default_timeout) of
+		undefined -> ?TIMEOUT;
+		{ok, Timeout} -> Timeout
+	end.
 
 lock_timeout() ->
-    case application:get_env(emysql, lock_timeout) of
-        undefined -> ?LOCK_TIMEOUT;
-        {ok, Timeout} -> Timeout
-    end.
+	case application:get_env(emysql, lock_timeout) of
+		undefined -> ?LOCK_TIMEOUT;
+		{ok, Timeout} -> Timeout
+	end.
 
 pools() ->
-    case application:get_env(emysql, pools) of
-        {ok, Pools} when is_list(Pools) ->
-            Pools;
-        _ ->
-            []
-    end.
+	case application:get_env(emysql, pools) of
+		{ok, Pools} when is_list(Pools) ->
+			Pools;
+		_ ->
+			[]
+	end.
 
 conn_test_period() ->
-    case application:get_env(emysql, conn_test_period) of
-        undefined -> ?CONN_TEST_PERIOD;
-        {ok, Period} -> Period
-    end.
+	case application:get_env(emysql, conn_test_period) of
+		undefined -> ?CONN_TEST_PERIOD;
+		{ok, Period} -> Period
+	end.
 
 retry_when_closed() ->
-    case application:get_env(emysql, retry_when_closed) of
-        undefined ->
-            false;
-        {ok, Val} ->
-            Val
-    end.
+	case application:get_env(emysql, retry_when_closed) of
+		undefined ->
+			false;
+		{ok, Val} ->
+			Val
+	end.

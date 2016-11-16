@@ -13,10 +13,10 @@
 %% API
 -compile(export_all).
 
-setPlayerStatus(Status)->
+setPlayerStatus(Status) ->
 	put('PlayerStatus', Status).
 
-getPlayerStatus()->
+getPlayerStatus() ->
 	case get('PlayerStatus') of
 		undefined ->
 			?PS_SERVER_UNDEFINED;
@@ -24,6 +24,6 @@ getPlayerStatus()->
 			V
 	end.
 
-isPlayerStatus(Status)->
+isPlayerStatus(Status) ->
 	V = getPlayerStatus(),
 	V =:= Status.

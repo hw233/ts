@@ -4,18 +4,18 @@
 -include("cfg_treasure_event.hrl").
 -include("logger.hrl").
 
-getRow(1)->
-    #treasure_eventCfg {
-    id = 1,
-    event = [{1800,1}]
-    };
-getRow(_)->[].
+getRow(1) ->
+	#treasure_eventCfg{
+		id = 1,
+		event = [{1800, 1}]
+	};
+getRow(_) -> [].
 
-getKeyList()->[
-    {1}
-    ].
+getKeyList() -> [
+	{1}
+].
 
-get1KeyList()->[
-    1
-    ].
+get1KeyList() -> [
+	1
+].
 

@@ -66,13 +66,13 @@ init([]) ->
 %%		_ ->
 %%			initNormalServer()
 %%	end.
-	
+
 
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
 
-initNormalServer()->
+initNormalServer() ->
 	try
 
 		%%玩家管理进程
@@ -87,35 +87,35 @@ initNormalServer()->
 
 		%地图监督进程
 		GameMapSup = {
-			gameMapSup,                         			    	% Id       = internal id
-			{gameMapSup, start_link, []},							% StartFun = {M, F, A}
-			permanent,                               				% Restart  = permanent | transient | temporary
-			2000,                                    				% Shutdown = brutal_kill | int() >= 0 | infinity
-			supervisor,                                  			% Type     = worker | supervisor
-			[gameMapSup]                           				% Modules  = [Module] | dynamic
+			gameMapSup,                                            % Id       = internal id
+			{gameMapSup, start_link, []},                            % StartFun = {M, F, A}
+			permanent,                                            % Restart  = permanent | transient | temporary
+			2000,                                                    % Shutdown = brutal_kill | int() >= 0 | infinity
+			supervisor,                                            % Type     = worker | supervisor
+			[gameMapSup]                                        % Modules  = [Module] | dynamic
 		},
 
 		%普通地图管理器
 		NormalMapMgr = {
-			?PSNameNormalMapMgr,                         			% Id       = internal id
-			{gameMapMgrOtp, start_link, [?PSNameNormalMapMgr]},	    % StartFun = {M, F, A}
-			permanent,                               				% Restart  = permanent | transient | temporary
-			2000,                                    				% Shutdown = brutal_kill | int() >= 0 | infinity
-			worker,                                  				% Type     = worker | supervisor
-			[gameMapMgrOtp]                           			    % Modules  = [Module] | dynamic
+			?PSNameNormalMapMgr,                                    % Id       = internal id
+			{gameMapMgrOtp, start_link, [?PSNameNormalMapMgr]},        % StartFun = {M, F, A}
+			permanent,                                            % Restart  = permanent | transient | temporary
+			2000,                                                    % Shutdown = brutal_kill | int() >= 0 | infinity
+			worker,                                                % Type     = worker | supervisor
+			[gameMapMgrOtp]                                        % Modules  = [Module] | dynamic
 		},
 
 		%%副本地图管理器
 		CopyMapMgr = {
-			?PSNameCopyMapMgr,                         				% Id       = internal id
-			{gameMapMgrOtp, start_link, [?PSNameCopyMapMgr]},	    % StartFun = {M, F, A}
-			permanent,                               				% Restart  = permanent | transient | temporary
-			2000,                                    				% Shutdown = brutal_kill | int() >= 0 | infinity
-			worker,                                  				% Type     = worker | supervisor
-			[gameMapMgrOtp]                           			    % Modules  = [Module] | dynamic
+			?PSNameCopyMapMgr,                                        % Id       = internal id
+			{gameMapMgrOtp, start_link, [?PSNameCopyMapMgr]},        % StartFun = {M, F, A}
+			permanent,                                            % Restart  = permanent | transient | temporary
+			2000,                                                    % Shutdown = brutal_kill | int() >= 0 | infinity
+			worker,                                                % Type     = worker | supervisor
+			[gameMapMgrOtp]                                        % Modules  = [Module] | dynamic
 		},
 		%%
-		RubbishCleaner  = {
+		RubbishCleaner = {
 			rubbishCleanerOtp,
 			{rubbishCleanerOtp, start_link, []},
 			permanent,
@@ -135,11 +135,11 @@ initNormalServer()->
 
 		timer:sleep(1000),
 		Port = config:rpc_get_int("ListenToUserPort", 6789),
-		ClientOtpOption = #listenTcpOptions{port = Port,packetLen = 4, listenDelay = 0,isSendSessionKey = false},
+		ClientOtpOption = #listenTcpOptions{port = Port, packetLen = 4, listenDelay = 0, isSendSessionKey = false},
 		%%最后打开针对客户端网络的服务
 		NetServerSup = {
 			socketSup,
-			{socketSup, start_link, [playerOtpHandler,ClientOtpOption]},
+			{socketSup, start_link, [playerOtpHandler, ClientOtpOption]},
 			permanent,
 			infinity,
 			supervisor,
@@ -166,7 +166,7 @@ initNormalServer()->
 		}
 	catch
 		_:Why ->
-			?ERROR_OUT( "Exception Module:[~p] Why[~p] stack[~p]",
-				[?MODULE,Why, erlang:get_stacktrace()] ),
-			{stop,[Why,erlang:get_stacktrace()]}
+			?ERROR_OUT("Exception Module:[~p] Why[~p] stack[~p]",
+				[?MODULE, Why, erlang:get_stacktrace()]),
+			{stop, [Why, erlang:get_stacktrace()]}
 	end.

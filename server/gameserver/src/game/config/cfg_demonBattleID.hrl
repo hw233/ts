@@ -3,15 +3,15 @@
 -define(cfg_demonBattleID, 1).
 
 -record(demonBattleIDCfg, {
-        %%: 组ID
-        iD,
+	%%: 组ID
+	iD,
 
-        %%: 怪物ID
-        monster,
+	%%: 怪物ID
+	monster,
 
-        %%: BossID
-        boss
+	%%: BossID
+	boss
 
- }).
+}).
 
 -endif.

@@ -16,17 +16,17 @@
 %% 启动应用
 start() ->
 	try
-	    case application:start(gameserver) of
-	        ok ->
-	            ok;
-	        Msg ->
-	            io:format( "appliction gameserver start failed Why[~p]~n stack[~p]",
-						[Msg, erlang:get_stacktrace()] )
-	    end
+		case application:start(gameserver) of
+			ok ->
+				ok;
+			Msg ->
+				io:format("appliction gameserver start failed Why[~p]~n stack[~p]",
+					[Msg, erlang:get_stacktrace()])
+		end
 	catch
 		_:Why ->
-			io:format( "Exception Why[~p]~n stack[~p]",
-						[Why, erlang:get_stacktrace()] )
+			io:format("Exception Why[~p]~n stack[~p]",
+				[Why, erlang:get_stacktrace()])
 	end.
 
 %% 关闭应用
@@ -46,9 +46,9 @@ stop() ->
 					io:format("game server stop ok~n"),
 					ok;
 				Msg ->
-					io:format("Stop: ~p~n",[{failure, Msg}])
+					io:format("Stop: ~p~n", [{failure, Msg}])
 			end,
-			erlang:halt(0,[{flush,false}]);
+			erlang:halt(0, [{flush, false}]);
 		_ ->
 			io:format("gameServer recv stop!~n")
 	end.
@@ -60,9 +60,9 @@ stop_real() ->
 			io:format("game server stop ok~n"),
 			ok;
 		Msg ->
-			io:format("Stop: ~p~n",[{failure, Msg}])
+			io:format("Stop: ~p~n", [{failure, Msg}])
 	end,
-	erlang:halt(0,[{flush,false}]).
+	erlang:halt(0, [{flush, false}]).
 
 %% 踢人
 kickplayer() ->
@@ -95,11 +95,11 @@ stop2() ->
 					skip
 			end,
 			%%20次，每次10秒，如果还没有T完人，则退出
-			{H,M,S} = erlang:time(),
+			{H, M, S} = erlang:time(),
 			Count = 20,
 			Sec = 10,
-			io:format("~n[~.2.0w:~.2.0w:~.2.0w] will wait[~p] seconds to kick player~n",[H,M,S,Count * Sec]),
-			waitClearPlayer(Count,Sec)
+			io:format("~n[~.2.0w:~.2.0w:~.2.0w] will wait[~p] seconds to kick player~n", [H, M, S, Count * Sec]),
+			waitClearPlayer(Count, Sec)
 	end,
 
 	case application:stop(gameserver) of
@@ -107,28 +107,28 @@ stop2() ->
 			io:format("game server stop ok~n"),
 			ok;
 		Msg ->
-			io:format("Stop: ~p~n",[{failure, Msg}])
+			io:format("Stop: ~p~n", [{failure, Msg}])
 	end,
-	erlang:halt(0,[{flush,false}]).
+	erlang:halt(0, [{flush, false}]).
 
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
-waitClearPlayer(0,_Sec) ->
+waitClearPlayer(0, _Sec) ->
 	Num = ets:info(ets_rec_OnlinePlayer, size),
-	{H,M,S} = erlang:time(),
-	io:format("[~.2.0w:~.2.0w:~.2.0w] wait too long time to kick player,exit: current player num:~p~n",[H,M,S,Num]),
+	{H, M, S} = erlang:time(),
+	io:format("[~.2.0w:~.2.0w:~.2.0w] wait too long time to kick player,exit: current player num:~p~n", [H, M, S, Num]),
 	ok;
-waitClearPlayer(Count,Sec) ->
+waitClearPlayer(Count, Sec) ->
 	timer:sleep(1000 * Sec),
 	Num = ets:info(ets_rec_OnlinePlayer, size),
-	{H,M,S} = erlang:time(),
+	{H, M, S} = erlang:time(),
 	case erlang:is_integer(Num) andalso Num > 0 of
 		true ->
-			io:format("[~.2.0w:~.2.0w:~.2.0w] wait to kick player,current player num:~p~n",[H,M,S,Num]),
-			waitClearPlayer(Count - 1,Sec);
+			io:format("[~.2.0w:~.2.0w:~.2.0w] wait to kick player,current player num:~p~n", [H, M, S, Num]),
+			waitClearPlayer(Count - 1, Sec);
 		_ ->
-			io:format("[~.2.0w:~.2.0w:~.2.0w] wait to kick player,cleared all~n",[H,M,S])
+			io:format("[~.2.0w:~.2.0w:~.2.0w] wait to kick player,cleared all~n", [H, M, S])
 	end.

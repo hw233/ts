@@ -3,13 +3,13 @@
 -define(cfg_fightbossActivity, 1).
 
 -record(fightbossActivityCfg, {
-        %%: 地图id
-        %%: 可后台设置
-        mapid,
+	%%: 地图id
+	%%: 可后台设置
+	mapid,
 
-        %%: 刷新坐标
-        coordinate
+	%%: 刷新坐标
+	coordinate
 
- }).
+}).
 
 -endif.

@@ -34,22 +34,22 @@
 %% @doc Parse the status line.
 
 -spec parse_status_line(binary()) -> {version(), status(), binary(), binary()}.
-parse_status_line(<< "HTTP/1.1 200 OK\r\n", Rest/bits >>) ->
+parse_status_line(<<"HTTP/1.1 200 OK\r\n", Rest/bits>>) ->
 	{'HTTP/1.1', 200, <<"OK">>, Rest};
-parse_status_line(<< "HTTP/1.1 404 Not Found\r\n", Rest/bits >>) ->
+parse_status_line(<<"HTTP/1.1 404 Not Found\r\n", Rest/bits>>) ->
 	{'HTTP/1.1', 404, <<"Not Found">>, Rest};
-parse_status_line(<< "HTTP/1.1 500 Internal Server Error\r\n", Rest/bits >>) ->
+parse_status_line(<<"HTTP/1.1 500 Internal Server Error\r\n", Rest/bits>>) ->
 	{'HTTP/1.1', 500, <<"Internal Server Error">>, Rest};
-parse_status_line(<< "HTTP/1.1 ", Status/bits >>) ->
+parse_status_line(<<"HTTP/1.1 ", Status/bits>>) ->
 	parse_status_line(Status, 'HTTP/1.1');
-parse_status_line(<< "HTTP/1.0 ", Status/bits >>) ->
+parse_status_line(<<"HTTP/1.0 ", Status/bits>>) ->
 	parse_status_line(Status, 'HTTP/1.0').
 
-parse_status_line(<< H, T, U, " ", Rest/bits >>, Version)
-		when $0 =< H, H =< $9, $0 =< T, T =< $9, $0 =< U, U =< $9 ->
+parse_status_line(<<H, T, U, " ", Rest/bits>>, Version)
+	when $0 =< H, H =< $9, $0 =< T, T =< $9, $0 =< U, U =< $9 ->
 	Status = (H - $0) * 100 + (T - $0) * 10 + (U - $0),
 	{Pos, _} = binary:match(Rest, <<"\r">>),
-	<< StatusStr:Pos/binary, "\r\n", Rest2/bits >> = Rest,
+	<<StatusStr:Pos/binary, "\r\n", Rest2/bits>> = Rest,
 	{Version, Status, StatusStr, Rest2}.
 
 -ifdef(TEST).
@@ -113,12 +113,12 @@ horse_parse_status_line_other() ->
 parse_headers(Data) ->
 	parse_header(Data, []).
 
-parse_header(<< $\r, $\n, Rest/bits >>, Acc) ->
+parse_header(<<$\r, $\n, Rest/bits>>, Acc) ->
 	{lists:reverse(Acc), Rest};
 parse_header(Data, Acc) ->
 	parse_hd_name(Data, Acc, <<>>).
 
-parse_hd_name(<< C, Rest/bits >>, Acc, SoFar) ->
+parse_hd_name(<<C, Rest/bits>>, Acc, SoFar) ->
 	case C of
 		$: -> parse_hd_before_value(Rest, Acc, SoFar);
 		$\s -> parse_hd_name_ws(Rest, Acc, SoFar);
@@ -126,29 +126,29 @@ parse_hd_name(<< C, Rest/bits >>, Acc, SoFar) ->
 		?INLINE_LOWERCASE(parse_hd_name, Rest, Acc, SoFar)
 	end.
 
-parse_hd_name_ws(<< C, Rest/bits >>, Acc, Name) ->
+parse_hd_name_ws(<<C, Rest/bits>>, Acc, Name) ->
 	case C of
 		$: -> parse_hd_before_value(Rest, Acc, Name);
 		$\s -> parse_hd_name_ws(Rest, Acc, Name);
 		$\t -> parse_hd_name_ws(Rest, Acc, Name)
 	end.
 
-parse_hd_before_value(<< $\s, Rest/bits >>, Acc, Name) ->
+parse_hd_before_value(<<$\s, Rest/bits>>, Acc, Name) ->
 	parse_hd_before_value(Rest, Acc, Name);
-parse_hd_before_value(<< $\t, Rest/bits >>, Acc, Name) ->
+parse_hd_before_value(<<$\t, Rest/bits>>, Acc, Name) ->
 	parse_hd_before_value(Rest, Acc, Name);
 parse_hd_before_value(Data, Acc, Name) ->
 	parse_hd_value(Data, Acc, Name, <<>>).
 
-parse_hd_value(<< $\r, Rest/bits >>, Acc, Name, SoFar) ->
+parse_hd_value(<<$\r, Rest/bits>>, Acc, Name, SoFar) ->
 	case Rest of
-		<< $\n, C, Rest2/bits >> when C =:= $\s; C =:= $\t ->
-			parse_hd_value(Rest2, Acc, Name, << SoFar/binary, C >>);
-		<< $\n, Rest2/bits >> ->
-			parse_header(Rest2, [{Name, SoFar}|Acc])
+		<<$\n, C, Rest2/bits>> when C =:= $\s; C =:= $\t ->
+			parse_hd_value(Rest2, Acc, Name, <<SoFar/binary, C>>);
+		<<$\n, Rest2/bits>> ->
+			parse_header(Rest2, [{Name, SoFar} | Acc])
 	end;
-parse_hd_value(<< C, Rest/bits >>, Acc, Name, SoFar) ->
-	parse_hd_value(Rest, Acc, Name, << SoFar/binary, C >>).
+parse_hd_value(<<C, Rest/bits>>, Acc, Name, SoFar) ->
+	parse_hd_value(Rest, Acc, Name, <<SoFar/binary, C>>).
 
 -ifdef(TEST).
 parse_headers_test_() ->
@@ -156,12 +156,12 @@ parse_headers_test_() ->
 		{<<"\r\nRest">>,
 			{[], <<"Rest">>}},
 		{<<"Server: Erlang/R17\r\n"
-			"Date: Sun, 23 Feb 2014 09:30:39 GMT\r\n"
-			"Multiline-Header: why hello!\r\n"
-				" I didn't see you all the way over there!\r\n"
-			"Content-Length: 12\r\n"
-			"Content-Type: text/plain\r\n"
-			"\r\nRest">>,
+		"Date: Sun, 23 Feb 2014 09:30:39 GMT\r\n"
+		"Multiline-Header: why hello!\r\n"
+		" I didn't see you all the way over there!\r\n"
+		"Content-Length: 12\r\n"
+		"Content-Type: text/plain\r\n"
+		"\r\nRest">>,
 			{[{<<"server">>, <<"Erlang/R17">>},
 				{<<"date">>, <<"Sun, 23 Feb 2014 09:30:39 GMT">>},
 				{<<"multiline-header">>,
@@ -191,12 +191,12 @@ parse_headers_error_test_() ->
 horse_parse_headers() ->
 	horse:repeat(50000,
 		parse_headers(<<"Server: Erlang/R17\r\n"
-			"Date: Sun, 23 Feb 2014 09:30:39 GMT\r\n"
-			"Multiline-Header: why hello!\r\n"
-				" I didn't see you all the way over there!\r\n"
-			"Content-Length: 12\r\n"
-			"Content-Type: text/plain\r\n"
-			"\r\nRest">>)
+		"Date: Sun, 23 Feb 2014 09:30:39 GMT\r\n"
+		"Multiline-Header: why hello!\r\n"
+		" I didn't see you all the way over there!\r\n"
+		"Content-Length: 12\r\n"
+		"Content-Type: text/plain\r\n"
+		"\r\nRest">>)
 	).
 -endif.
 
@@ -209,16 +209,16 @@ horse_parse_headers() ->
 parse_fullhost(Fullhost) ->
 	parse_fullhost(Fullhost, false, <<>>).
 
-parse_fullhost(<< $[, Rest/bits >>, false, <<>>) ->
-	parse_fullhost(Rest, true, << $[ >>);
+parse_fullhost(<<$[, Rest/bits>>, false, <<>>) ->
+	parse_fullhost(Rest, true, <<$[>>);
 parse_fullhost(<<>>, false, Acc) ->
 	{Acc, undefined};
 %% @todo Optimize.
-parse_fullhost(<< $:, Rest/bits >>, false, Acc) ->
+parse_fullhost(<<$:, Rest/bits>>, false, Acc) ->
 	{Acc, list_to_integer(binary_to_list(Rest))};
-parse_fullhost(<< $], Rest/bits >>, true, Acc) ->
-	parse_fullhost(Rest, false, << Acc/binary, $] >>);
-parse_fullhost(<< C, Rest/bits >>, E, Acc) ->
+parse_fullhost(<<$], Rest/bits>>, true, Acc) ->
+	parse_fullhost(Rest, false, <<Acc/binary, $]>>);
+parse_fullhost(<<C, Rest/bits>>, E, Acc) ->
 	case C of
 		?INLINE_LOWERCASE(parse_fullhost, Rest, E, Acc)
 	end.
@@ -246,10 +246,10 @@ parse_fullpath(Fullpath) ->
 
 parse_fullpath(<<>>, Path) ->
 	{Path, <<>>};
-parse_fullpath(<< $?, Qs/binary >>, Path) ->
+parse_fullpath(<<$?, Qs/binary>>, Path) ->
 	{Path, Qs};
-parse_fullpath(<< C, Rest/binary >>, SoFar) ->
-	parse_fullpath(Rest, << SoFar/binary, C >>).
+parse_fullpath(<<C, Rest/binary>>, SoFar) ->
+	parse_fullpath(Rest, <<SoFar/binary, C>>).
 
 -ifdef(TEST).
 parse_fullpath_test() ->

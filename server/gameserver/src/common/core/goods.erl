@@ -33,32 +33,32 @@
 %% ====================================================================
 
 %%检测是否可以被丢弃
--spec canBeDiscard(OperateLimit) -> boolean() when OperateLimit::uint().
+-spec canBeDiscard(OperateLimit) -> boolean() when OperateLimit :: uint().
 canBeDiscard(OperateLimit) ->
 	(OperateLimit band ?Item_Operate_NotDelete) =:= 0.
 
 %%检测是否可以被使用
--spec canBeUse(OperateLimit) -> boolean() when OperateLimit::uint().
+-spec canBeUse(OperateLimit) -> boolean() when OperateLimit :: uint().
 canBeUse(OperateLimit) ->
 	(OperateLimit band ?Item_Operate_NotUse) =:= 0.
 
 %%检测是否可以被存入仓库
--spec canBeStorage(OperateLimit) -> boolean() when OperateLimit::uint().
+-spec canBeStorage(OperateLimit) -> boolean() when OperateLimit :: uint().
 canBeStorage(OperateLimit) ->
 	(OperateLimit band ?Item_Operate_NotStore) =:= 0.
 
 %%检测是否可以被放入交易行
--spec canBeTrade(OperateLimit) -> boolean() when OperateLimit::uint().
+-spec canBeTrade(OperateLimit) -> boolean() when OperateLimit :: uint().
 canBeTrade(OperateLimit) ->
 	(OperateLimit band ?Item_Operate_NotDelete) =:= 0.
 
 %%检测是否可以被拆分
--spec canBeSplit(OperateLimit) -> boolean() when OperateLimit::uint().
+-spec canBeSplit(OperateLimit) -> boolean() when OperateLimit :: uint().
 canBeSplit(OperateLimit) ->
 	(OperateLimit band ?Item_Operate_NotSplit) =:= 0.
 
 %%增加装备消息
--spec makeEquipNetMessage(Equip) -> undefined | #pk_EquipItemInfo{} when Equip::#recSaveEquip{}.
+-spec makeEquipNetMessage(Equip) -> undefined | #pk_EquipItemInfo{} when Equip :: #recSaveEquip{}.
 makeEquipNetMessage(#recSaveEquip{
 	itemUID = UID,
 	itemID = ID,
@@ -98,7 +98,7 @@ makeEquipNetMessage(#recSaveEquip{
 		quality = Quality,
 		isBind = IsBind,
 		isLocked = IsLocked,
-		equipProps  = NewEquipPropList,
+		equipProps = NewEquipPropList,
 		expiredTime = ExpiredTime
 	}.
 
@@ -112,7 +112,7 @@ isGemItem(ItemID) ->
 
 
 -spec getGoodsCfg(GoodsID) -> #equipmentCfg{} | #itemCfg{} | [] when
-	GoodsID::uint().
+	GoodsID :: uint().
 getGoodsCfg(GoodsID) ->
 	if
 		GoodsID >= ?Item_RuneIDStart ->
@@ -124,7 +124,7 @@ getGoodsCfg(GoodsID) ->
 			%% 普通道具
 			getCfg:getCfgPStack(cfg_item, GoodsID);
 		true ->
-			?ERROR_OUT("Error GoodsID[~p] in ~p:getGoodsCfg",[GoodsID,?MODULE]),
+			?ERROR_OUT("Error GoodsID[~p] in ~p:getGoodsCfg", [GoodsID, ?MODULE]),
 			throw("Error in getGoodsCfg")
 	end.
 
@@ -184,10 +184,10 @@ getItemStaticMsg(ItemID) ->
 		Class =:= ?Item_Rune ->
 			%% 符文道具
 			case playerRune:getRuneConf(ItemID) of
-				#runeCfg{type = Type,  equipLevel = EquipLevel} ->
+				#runeCfg{type = Type, equipLevel = EquipLevel} ->
 					IType = case Type of
-								0 -> ?ItemTypePlayerRune;
-								1 -> ?ItemTypePlayerPetRune
+						        0 -> ?ItemTypePlayerRune;
+						        1 -> ?ItemTypePlayerPetRune
 					        end,
 					#tradeItemStaticRec{
 						itemID = ItemID,
@@ -311,29 +311,29 @@ makeEquipPropNetMessage(#rec_equip_enhance_info{
 	}
 ) ->
 	BaseProp = [
-		{BasePropKey1, BasePropValue1,?EquipPropCalcType_Add,?EquipPropTypeBase,0},
-		{BasePropKey2, BasePropValue2,?EquipPropCalcType_Add,?EquipPropTypeBase,0},
-		{BasePropKey3, BasePropValue3,?EquipPropCalcType_Add,?EquipPropTypeBase,0},
-		{BasePropKey4, BasePropValue4,?EquipPropCalcType_Add,?EquipPropTypeBase,0},
-		{BasePropKey5, BasePropValue5,?EquipPropCalcType_Add,?EquipPropTypeBase,0}
+		{BasePropKey1, BasePropValue1, ?EquipPropCalcType_Add, ?EquipPropTypeBase, 0},
+		{BasePropKey2, BasePropValue2, ?EquipPropCalcType_Add, ?EquipPropTypeBase, 0},
+		{BasePropKey3, BasePropValue3, ?EquipPropCalcType_Add, ?EquipPropTypeBase, 0},
+		{BasePropKey4, BasePropValue4, ?EquipPropCalcType_Add, ?EquipPropTypeBase, 0},
+		{BasePropKey5, BasePropValue5, ?EquipPropCalcType_Add, ?EquipPropTypeBase, 0}
 	],
 	ExtProp = [
-		{ExtPropKey1, ExtPropValue1, ExtCalcType1,ExtPropRecast1,ExtPropAffixe1},
-		{ExtPropKey2, ExtPropValue2, ExtCalcType2,ExtPropRecast2,ExtPropAffixe2},
-		{ExtPropKey3, ExtPropValue3, ExtCalcType3,ExtPropRecast3,ExtPropAffixe3},
-		{ExtPropKey4, ExtPropValue4, ExtCalcType4,ExtPropRecast4,ExtPropAffixe4},
-		{ExtPropKey5, ExtPropValue5, ExtCalcType5,ExtPropRecast5,ExtPropAffixe5},
-		{ExtPropKey6, ExtPropValue6, ExtCalcType6,ExtPropRecast6,ExtPropAffixe6}
+		{ExtPropKey1, ExtPropValue1, ExtCalcType1, ExtPropRecast1, ExtPropAffixe1},
+		{ExtPropKey2, ExtPropValue2, ExtCalcType2, ExtPropRecast2, ExtPropAffixe2},
+		{ExtPropKey3, ExtPropValue3, ExtCalcType3, ExtPropRecast3, ExtPropAffixe3},
+		{ExtPropKey4, ExtPropValue4, ExtCalcType4, ExtPropRecast4, ExtPropAffixe4},
+		{ExtPropKey5, ExtPropValue5, ExtCalcType5, ExtPropRecast5, ExtPropAffixe5},
+		{ExtPropKey6, ExtPropValue6, ExtCalcType6, ExtPropRecast6, ExtPropAffixe6}
 	],
 	Fun = fun({PropKey, PropValue, CalcType, PropRecast, PropAffixe}, EquipPropList) ->
 		ResultCalcType = case CalcType of
-							 ?EquipPropCalcType_Add ->
-								 false;
-							 ?EquipPropCalcType_Mul ->
-								 true;
-							 _ ->
-								 false
-						 end,
+			                 ?EquipPropCalcType_Add ->
+				                 false;
+			                 ?EquipPropCalcType_Mul ->
+				                 true;
+			                 _ ->
+				                 false
+		                 end,
 		EquipProp = #pk_EquipPropInfo{
 			propType = PropRecast,
 			propKey = PropKey,
@@ -342,7 +342,7 @@ makeEquipPropNetMessage(#rec_equip_enhance_info{
 			propValue = float(PropValue)
 		},
 		[EquipProp | EquipPropList]
-	end,
+	      end,
 	BasePropList = lists:foldl(Fun, [], BaseProp),
 	lists:foldl(Fun, BasePropList, ExtProp);
 makeEquipPropNetMessage(_, _) ->

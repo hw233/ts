@@ -3,12 +3,12 @@
 -define(cfg_eventSoundCfg, 1).
 
 -record(eventSoundCfgCfg, {
-        id,
+	id,
 
-        sound,
+	sound,
 
-        desc
+	desc
 
- }).
+}).
 
 -endif.

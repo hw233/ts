@@ -7,18 +7,18 @@
 -include("common.hrl").
 
 -define(NoLoad, 0). %%不加载
--define(OnLoad,	1).	%%加载
+-define(OnLoad, 1).    %%加载
 %% ====================================================================
 %% API functions
 %% ====================================================================
 -export([
 	addOfflineData/2,
 	delOfflineData/1
-	]).
+]).
 
 
 %%增加离线数据
--spec addOfflineData(RoleID::uint(), SysID::uint()) -> ok.
+-spec addOfflineData(RoleID :: uint(), SysID :: uint()) -> ok.
 addOfflineData(RoleID, SysID) ->
 	OffData = #rec_offline_data{
 		roleID = RoleID,
@@ -28,7 +28,7 @@ addOfflineData(RoleID, SysID) ->
 	saveOfflineData(OffData).
 
 %%删除离线数据
--spec delOfflineData(RoleID::uint()) -> ok.
+-spec delOfflineData(RoleID :: uint()) -> ok.
 delOfflineData(RoleID) ->
 	OffData = #rec_offline_data{
 		roleID = RoleID,

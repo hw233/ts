@@ -12,7 +12,7 @@
 -include("mapPrivate.hrl").
 
 %% 判断所处范围的方向
--define(GetDir(Left,Mid,Right,Condition,Dir1,Dir2),
+-define(GetDir(Left, Mid, Right, Condition, Dir1, Dir2),
 	Mid >= Left andalso Mid =< Right ->
 	case Condition of
 		true ->
@@ -29,7 +29,7 @@
 
 %% 获取怪物追击玩家的位置，形成包围圈
 -spec getMonsterAttackDir(MonsterCode, MonsterX, MonsterY, PlayerCode) -> uint() when
-	MonsterCode::uint(),MonsterX::float(),MonsterY::float(),PlayerCode::uint().
+	MonsterCode :: uint(), MonsterX :: float(), MonsterY :: float(), PlayerCode :: uint().
 getMonsterAttackDir(MonsterCode, MonsterX, MonsterY, PlayerCode) ->
 	Ets = mapState:getMapPlayerEts(),
 	case mapView:getMapObjectExcludeChangingMap(Ets, PlayerCode) of
@@ -62,33 +62,33 @@ getMonsterAttackDir(MonsterCode, MonsterX, MonsterY, PlayerCode) ->
 
 %% 初始化追击列表
 -spec initAttackList(PlayerEts, Obj) -> boolean() when
-	PlayerEts::etsTab(),Obj::#recMapObject{}.
+	PlayerEts :: etsTab(), Obj :: #recMapObject{}.
 initAttackList(PlayerEts, Obj) ->
 	L = lists:seq(1, 8),
 	Fun = fun(I) ->
 		#recMonsterAttackDir{dir = I, monsterCode = 0}
-	end,
+	      end,
 	AttackList = lists:map(Fun, L),
 	%% NewObj = Obj#recMapObject{moveDir = AttackList},
 	myEts:updateEts(PlayerEts, Obj#recMapObject.code, {#recMapObject.moveDir, AttackList}).
 
 %% 添加追击方向
 -spec addAttackDir(PlayerEts, Obj, Dir, MonsterCode) -> boolean() when
-	PlayerEts::etsTab(),Obj::#recMapObject{},Dir::uint(),MonsterCode::uint().
+	PlayerEts :: etsTab(), Obj :: #recMapObject{}, Dir :: uint(), MonsterCode :: uint().
 addAttackDir(PlayerEts, Obj, Dir, MonsterCode) ->
 	AttackList = lists:keyreplace(Dir, #recMonsterAttackDir.dir, Obj#recMapObject.moveDir,
 		#recMonsterAttackDir{dir = Dir, monsterCode = MonsterCode}),
 	myEts:updateEts(PlayerEts, Obj#recMapObject.code, {#recMapObject.moveDir, AttackList}).
 
 -spec delHate(PlayerCode, MonsterCode) -> ok when
-	PlayerCode::uint(),MonsterCode::uint().
+	PlayerCode :: uint(), MonsterCode :: uint().
 delHate(PlayerCode, MonsterCode) ->
 	delAttackDir(PlayerCode, MonsterCode),
 	ok.
 
 %% 移除追击方向
 -spec delAttackDir(PlayerCode, MonsterCode) -> ok when
-	PlayerCode::uint(),MonsterCode::uint().
+	PlayerCode :: uint(), MonsterCode :: uint().
 delAttackDir(PlayerCode, MonsterCode) ->
 	Ets = mapState:getMapPlayerEts(),
 	case ets:lookup(Ets, PlayerCode) of
@@ -110,7 +110,7 @@ delAttackDir(PlayerCode, MonsterCode) ->
 	ok.
 
 -spec getPos(#recMapObject{}, MonsterCode, MonsterX, MonsterY) -> uint() when
-	MonsterCode::uint(),MonsterX::float(),MonsterY::float().
+	MonsterCode :: uint(), MonsterX :: float(), MonsterY :: float().
 getPos(#recMapObject{x = X, y = Y, moveDir = MoveDir}, MonsterCode, MonsterX, MonsterY) ->
 	case lists:keyfind(MonsterCode, #recMonsterAttackDir.monsterCode, MoveDir) of
 		#recMonsterAttackDir{dir = Dir} ->
@@ -133,7 +133,7 @@ getPos(#recMapObject{x = X, y = Y, moveDir = MoveDir}, MonsterCode, MonsterX, Mo
 
 %% 获取次优方向，这里不再判断往哪边更靠近了
 -spec getSecondDir(DirList, D, Diff, Times) -> uint() when
-	DirList::list(),D::uint(),Diff::int(),Times::uint().
+	DirList :: list(), D :: uint(), Diff :: int(), Times :: uint().
 getSecondDir(DirList, D, Diff, Times) ->
 	case Times > 4 of
 		false ->
@@ -164,7 +164,7 @@ getSecondDir(DirList, D, Diff, Times) ->
 
 %% 获取最佳方向
 -spec getOptimalDir(MX, MY, PX, PY) -> uint() when
-	MX::float(),MY::float(),PX::float(),PY::float().
+	MX :: float(), MY :: float(), PX :: float(), PY :: float().
 getOptimalDir(MX, MY, PX, PY) ->
 	DX = MX - PX,
 	DY = MY - PY,
@@ -192,7 +192,7 @@ getOptimalDir(MX, MY, PX, PY) ->
 					end;
 				?GetDir(TAN675 * -1, DC, TAN225 * -1, DX < 0 orelse DY > 0, 4, 8);  % 西北，东南
 				true ->
-					?ERROR_OUT("getOptimalDir:~p,~p,~p,~p,~p",[?LINE,MX,MY,PX,PY]),
+					?ERROR_OUT("getOptimalDir:~p,~p,~p,~p,~p", [?LINE, MX, MY, PX, PY]),
 					0
 			end
 	end.

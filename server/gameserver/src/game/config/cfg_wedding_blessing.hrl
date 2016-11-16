@@ -3,11 +3,11 @@
 -define(cfg_wedding_blessing, 1).
 
 -record(wedding_blessingCfg, {
-        id,
+	id,
 
-        %%: 显示内容
-        content
+	%%: 显示内容
+	content
 
- }).
+}).
 
 -endif.

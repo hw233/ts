@@ -3,12 +3,12 @@
 -define(cfg_talentExp, 1).
 
 -record(talentExpCfg, {
-        %%: 玩家等级
-        level,
+	%%: 玩家等级
+	level,
 
-        %%: 升级到下一级所需经验
-        exp
+	%%: 升级到下一级所需经验
+	exp
 
- }).
+}).
 
 -endif.

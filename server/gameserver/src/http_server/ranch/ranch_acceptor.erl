@@ -18,7 +18,7 @@
 -export([loop/3]).
 
 -spec start_link(inet:socket(), module(), pid())
-	-> {ok, pid()}.
+		-> {ok, pid()}.
 start_link(LSocket, Transport, ConnsSup) ->
 	Pid = spawn_link(?MODULE, loop, [LSocket, Transport, ConnsSup]),
 	{ok, Pid}.
@@ -26,20 +26,20 @@ start_link(LSocket, Transport, ConnsSup) ->
 -spec loop(inet:socket(), module(), pid()) -> no_return().
 loop(LSocket, Transport, ConnsSup) ->
 	_ = case Transport:accept(LSocket, infinity) of
-		{ok, CSocket} ->
-			Transport:controlling_process(CSocket, ConnsSup),
-			%% This call will not return until process has been started
-			%% AND we are below the maximum number of connections.
-			ranch_conns_sup:start_protocol(ConnsSup, CSocket);
-		%% Reduce the accept rate if we run out of file descriptors.
-		%% We can't accept anymore anyway, so we might as well wait
-		%% a little for the situation to resolve itself.
-		{error, emfile} ->
-			receive after 100 -> ok end;
-		%% We want to crash if the listening socket got closed.
-		{error, Reason} when Reason =/= closed ->
-			ok
-	end,
+		    {ok, CSocket} ->
+			    Transport:controlling_process(CSocket, ConnsSup),
+			    %% This call will not return until process has been started
+			    %% AND we are below the maximum number of connections.
+			    ranch_conns_sup:start_protocol(ConnsSup, CSocket);
+		    %% Reduce the accept rate if we run out of file descriptors.
+		    %% We can't accept anymore anyway, so we might as well wait
+		    %% a little for the situation to resolve itself.
+		    {error, emfile} ->
+			    receive after 100 -> ok end;
+		    %% We want to crash if the listening socket got closed.
+		    {error, Reason} when Reason =/= closed ->
+			    ok
+	    end,
 	flush(),
 	?MODULE:loop(LSocket, Transport, ConnsSup).
 

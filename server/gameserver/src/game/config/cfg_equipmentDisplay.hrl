@@ -3,34 +3,34 @@
 -define(cfg_equipmentDisplay, 1).
 
 -record(equipmentDisplayCfg, {
-        id,
+	id,
 
-        name,
+	name,
 
-        occupation_ID,
+	occupation_ID,
 
-        weapon_id,
+	weapon_id,
 
-        deputy_ID,
+	deputy_ID,
 
-        breastplate_ID,
+	breastplate_ID,
 
-        shoes_ID,
+	shoes_ID,
 
-        ring_ID,
+	ring_ID,
 
-        necklace_ID,
+	necklace_ID,
 
-        helmet_ID,
+	helmet_ID,
 
-        pants_ID,
+	pants_ID,
 
-        level,
+	level,
 
-        %%: 作者:
-        %%: 文字说明，描述产出途径，文本信息
-        output_route
+	%%: 作者:
+	%%: 文字说明，描述产出途径，文本信息
+	output_route
 
- }).
+}).
 
 -endif.

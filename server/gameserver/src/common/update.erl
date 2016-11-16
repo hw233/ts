@@ -24,30 +24,30 @@
 %% API Functions
 %%
 
--spec  c() -> ok.
+-spec c() -> ok.
 c() ->
-    c(5).
+	c(5).
 c(S) when erlang:is_integer(S) ->
 	c:cd("../ebin"),
 	case file:list_dir(".") of
-		{ok, FileList} -> 
+		{ok, FileList} ->
 			Files = getNewFile(FileList, S * 60),
 			info("---------check modules---------~n~w~n=========updated modules=========", [Files]);
-		Why -> 
+		Why ->
 			info("Error Dir: ~w", [Why])
 	end,
-    ok;
-c(S) -> 
+	ok;
+c(S) ->
 	info("ERROR======> Badarg ~p ~n", [S]),
 	ok.
 
--spec  u() -> ok.
+-spec u() -> ok.
 u() ->
-    u(15).
+	u(15).
 u(S) when is_number(S) ->
-    case file:list_dir(".") of
-        {ok, FileList} -> 
-            Files = getNewFile(FileList, S * 60 + 3),
+	case file:list_dir(".") of
+		{ok, FileList} ->
+			Files = getNewFile(FileList, S * 60 + 3),
 			case Files of
 				[] ->
 					skip;
@@ -56,35 +56,35 @@ u(S) when is_number(S) ->
 					writeFile(Time),
 					load(Files)
 			end;
-        Any -> info("Error Dir: ~w", [Any])
-    end,
+		Any -> info("Error Dir: ~w", [Any])
+	end,
 	ok;
 
 u(Files) when is_list(Files) ->
 	writeLogHeader(),
-	load(Files); 
+	load(Files);
 
-u(_) -> 
+u(_) ->
 	info("ERROR======> Badarg", []),
-    ok.
+	ok.
 
 writeLogHeader() ->
 	Time = getTime(),
 	writeFile(Time),
 	ok.
 
-writeLogFile(FileName,Result) ->
-	{ok, #file_info{mtime = {{Y,M,D},{H,MM,S}}}} = file:read_file_info(FileName),
+writeLogFile(FileName, Result) ->
+	{ok, #file_info{mtime = {{Y, M, D}, {H, MM, S}}}} = file:read_file_info(FileName),
 	{ok, Binary} = file:read_file(FileName),
 	MD5String = md5:encrypt(Binary),
 
 	case Result of
 		true ->
-			Str = getStr("loaded: ~ts, ~ts, ~ts OK!", [FileName,  time_format1(Y, M, D, H, MM, S), MD5String]),
+			Str = getStr("loaded: ~ts, ~ts, ~ts OK!", [FileName, time_format1(Y, M, D, H, MM, S), MD5String]),
 			writeFile(Str),
 			info("loaded: ~ts OK!", [FileName]);
 		_ ->
-			Str = getStr("loaded: ~ts, ~ts, ~ts Failed:~p!", [FileName, time_format1(Y, M, D, H, MM, S), MD5String,Result]),
+			Str = getStr("loaded: ~ts, ~ts, ~ts Failed:~p!", [FileName, time_format1(Y, M, D, H, MM, S), MD5String, Result]),
 			writeFile(Str),
 			info("loaded: ~ts Failed!", [FileName])
 	end.
@@ -93,32 +93,32 @@ writeLogFile(FileName,Result) ->
 %% Local Functions
 %%
 
-getNewFile(Files, S) -> 
+getNewFile(Files, S) ->
 	getNewFile(Files, S, []).
 getNewFile([], _S, Result) -> Result;
 getNewFile([H | T], S, Result) ->
 	NewResult = case string:tokens(H, ".") of
-					[Left, Right] when Right =:= "beam" ->
-						case file:read_file_info(H) of
-							{ok, FileInfo} -> 
-								Now = calendar:local_time(),
-								{Days, Times} = calendar:time_difference(FileInfo#file_info.mtime, Now),	
-								Seconds = calendar:time_to_seconds(Times), 
-								case Days =:= 0 andalso Seconds < S of
-									true ->
-										FileName = list_to_atom(Left),
-										[FileName | Result];
-									false -> Result
-								end;
-							_ ->
-								Result
-						end;
-					_ ->
-						Result
-				end,
+		            [Left, Right] when Right =:= "beam" ->
+			            case file:read_file_info(H) of
+				            {ok, FileInfo} ->
+					            Now = calendar:local_time(),
+					            {Days, Times} = calendar:time_difference(FileInfo#file_info.mtime, Now),
+					            Seconds = calendar:time_to_seconds(Times),
+					            case Days =:= 0 andalso Seconds < S of
+						            true ->
+							            FileName = list_to_atom(Left),
+							            [FileName | Result];
+						            false -> Result
+					            end;
+				            _ ->
+					            Result
+			            end;
+		            _ ->
+			            Result
+	            end,
 	getNewFile(T, S, NewResult).
 
-load([]) -> 
+load([]) ->
 	writeFile("\n\n");
 load([Module | T]) ->
 	code:purge(Module),
@@ -131,16 +131,16 @@ load([Module | T]) ->
 					         What
 			         end,
 
-			writeLogFile(FileName,Result);
+			writeLogFile(FileName, Result);
 		error ->
-			Str = getStr("get_object_code ~p fail~n",[Module]),
+			Str = getStr("get_object_code ~p fail~n", [Module]),
 			writeFile(Str),
-			info("get_object_code ~p fail~n",[Module])
+			info("get_object_code ~p fail~n", [Module])
 	end,
-    load(T).
+	load(T).
 
 info(V, P) ->
-    io:format(V ++ "~n", P).
+	io:format(V ++ "~n", P).
 
 getTime() ->
 	io_lib:format("update time: ~s\t\n", [time_format(now())]).
@@ -149,17 +149,17 @@ getStr(V, P) ->
 	io_lib:format(V ++ "\t\n", P).
 
 writeFile(Str) ->
-	{{Y,M,_},{_,_,_}} = calendar:now_to_local_time(now()),
-	File = lists:concat([?UpdateLogFile, "update", "-",Y,"-",M]),
-	file:write_file(File, Str,[append]).
+	{{Y, M, _}, {_, _, _}} = calendar:now_to_local_time(now()),
+	File = lists:concat([?UpdateLogFile, "update", "-", Y, "-", M]),
+	file:write_file(File, Str, [append]).
 
 one_to_two(One) -> io_lib:format("~2..0B", [One]).
 
-time_format(Now) -> 
-	{{Y,M,D},{H,MM,S}} = calendar:now_to_local_time(Now),
+time_format(Now) ->
+	{{Y, M, D}, {H, MM, S}} = calendar:now_to_local_time(Now),
 	time_format1(Y, M, D, H, MM, S).
 time_format1(Y, M, D, H, MM, S) ->
-	lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", 
-						one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
+	lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ",
+		one_to_two(H), ":", one_to_two(MM), ":", one_to_two(S)]).
 
 

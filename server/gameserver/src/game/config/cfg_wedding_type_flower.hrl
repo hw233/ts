@@ -3,10 +3,10 @@
 -define(cfg_wedding_type_flower, 1).
 
 -record(wedding_type_flowerCfg, {
-        iD,
+	iD,
 
-        vFX_name
+	vFX_name
 
- }).
+}).
 
 -endif.

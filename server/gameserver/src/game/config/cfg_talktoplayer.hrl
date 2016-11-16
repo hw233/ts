@@ -3,10 +3,10 @@
 -define(cfg_talktoplayer, 1).
 
 -record(talktoplayerCfg, {
-        id,
+	id,
 
-        content
+	content
 
- }).
+}).
 
 -endif.

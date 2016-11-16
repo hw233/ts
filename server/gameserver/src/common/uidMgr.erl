@@ -11,17 +11,17 @@
 
 -include("common/common.hrl").
 
--define(UIDEts,uidEts).
+-define(UIDEts, uidEts).
 
 %%当前的UID版本号
--define(CurUIDVer,1).
+-define(CurUIDVer, 1).
 
 -define(UIDBit_Highest, 1).     % 最高位，默认为0，空位
 -define(UIDBit_UIDType, 6).     % 六位UID类型
 -define(UIDBit_DBID, 12).       % 12位DBID
 -define(UIDBit_GSID, 2).        % 2位GSID
--define(UIDBit_IDVer,2).        % 2位ID版本号
--define(UIDBit_ADBID,11).       % 11位账号库ID
+-define(UIDBit_IDVer, 2).        % 2位ID版本号
+-define(UIDBit_ADBID, 11).       % 11位账号库ID
 -define(UIDBit_IDRange, 30).    % 30位ID范围
 
 
@@ -48,16 +48,16 @@
 
 -record(recUID,
 {
-	type,			%% UID的类型
-	curUID,			%% 当前计数的UID
-	minUID,			%% UID的最小值
-	maxUID			%% UID的最大上限值
+	type,            %% UID的类型
+	curUID,            %% 当前计数的UID
+	minUID,            %% UID的最小值
+	maxUID            %% UID的最大上限值
 }).
 
 
 initMgr() ->
 	?LOG_OUT("~p init", [?MODULE]),
-	ets:new(?UIDEts, [public, named_table,{keypos, #recUID.type},{write_concurrency, true},{read_concurrency, true}]),
+	ets:new(?UIDEts, [public, named_table, {keypos, #recUID.type}, {write_concurrency, true}, {read_concurrency, true}]),
 	ok.
 
 initUIDFromDB(UIDList) ->
@@ -69,9 +69,9 @@ initUIDFromDB(UIDList) ->
 				myEts:updateEts(?UIDEts, Type, {#recUID.curUID, CurUID});
 			_ ->
 				%% 插入
-				ets:insert(?UIDEts, #recUID{type = Type,curUID = CurUID,minUID = MinUID,maxUID = MaxUID})
+				ets:insert(?UIDEts, #recUID{type = Type, curUID = CurUID, minUID = MinUID, maxUID = MaxUID})
 		end
-	end,
+	      end,
 	lists:foreach(Fun, UIDList),
 	ok.
 
@@ -114,13 +114,13 @@ makeRedEnvelopeUID() ->
 	makeUID(?UID_TYPE_Red).
 
 %%当达到最大UID值时，会自动从最小值再次开始
--spec makeUID(Type) -> uint() when Type::uid_type().
+-spec makeUID(Type) -> uint() when Type :: uid_type().
 makeUID(Type) ->
-	[#recUID{minUID = MinUID,maxUID = MaxUID}] = myEts:lookUpEts(?UIDEts,Type),
+	[#recUID{minUID = MinUID, maxUID = MaxUID}] = myEts:lookUpEts(?UIDEts, Type),
 	ets:update_counter(?UIDEts, Type, {#recUID.curUID, 1, MaxUID, MinUID}).
 
 %% 检查UID是否在指定范围
--spec checkUID(UIDType::uid_type(), UID::uint64()) -> boolean().
+-spec checkUID(UIDType :: uid_type(), UID :: uint64()) -> boolean().
 checkUID(UIDType, UID) when UIDType >= ?UID_TYPE_Start andalso UIDType =< ?UID_TYPE_End ->
 	Min = getMinUID(UIDType),
 	Max = getMaxUID(UIDType),
@@ -129,7 +129,7 @@ checkUID(_UIDType, _UID) ->
 	false.
 
 %% 检查UID是否在指定范围
--spec checkUID(UID::uint64()) -> boolean().
+-spec checkUID(UID :: uint64()) -> boolean().
 checkUID(UID) ->
 	Min = getMinUID(),
 	Max = getMaxUID(),
@@ -144,7 +144,7 @@ getMinUID(UIDType) ->
 	MinGSID = 0,
 	MinIDVer = ?CurUIDVer,
 	MinADBID = 0,
-	<<MinUID:64>> = <<0:?UIDBit_Highest,UIDType:?UIDBit_UIDType,MinDBID:?UIDBit_DBID,MinGSID:?UIDBit_GSID,MinIDVer:?UIDBit_IDVer,MinADBID:?UIDBit_ADBID,1:?UIDBit_IDRange>>,
+	<<MinUID:64>> = <<0:?UIDBit_Highest, UIDType:?UIDBit_UIDType, MinDBID:?UIDBit_DBID, MinGSID:?UIDBit_GSID, MinIDVer:?UIDBit_IDVer, MinADBID:?UIDBit_ADBID, 1:?UIDBit_IDRange>>,
 	MinUID.
 
 getMinUID() ->
@@ -153,7 +153,7 @@ getMinUID() ->
 	MinGSID = 0,
 	MinIDVer = ?CurUIDVer,
 	MinADBID = 0,
-	<<MinUID:64>> = <<0:?UIDBit_Highest,UIDType:?UIDBit_UIDType,MinDBID:?UIDBit_DBID,MinGSID:?UIDBit_GSID,MinIDVer:?UIDBit_IDVer,MinADBID:?UIDBit_ADBID,1:?UIDBit_IDRange>>,
+	<<MinUID:64>> = <<0:?UIDBit_Highest, UIDType:?UIDBit_UIDType, MinDBID:?UIDBit_DBID, MinGSID:?UIDBit_GSID, MinIDVer:?UIDBit_IDVer, MinADBID:?UIDBit_ADBID, 1:?UIDBit_IDRange>>,
 	MinUID.
 
 %% 获取最大的UID
@@ -162,7 +162,7 @@ getMaxUID(UIDType) ->
 	MaxGSID = (1 bsl ?UIDBit_GSID) - 1,
 	MaxIDVer = ?CurUIDVer,
 	MaxADBID = (1 bsl ?UIDBit_ADBID) - 1,
-	<<MaxUID:64>> = <<0:?UIDBit_Highest,UIDType:?UIDBit_UIDType,MaxDBID:?UIDBit_DBID,MaxGSID:?UIDBit_GSID,MaxIDVer:?UIDBit_IDVer,MaxADBID:?UIDBit_ADBID,1:?UIDBit_IDRange>>,
+	<<MaxUID:64>> = <<0:?UIDBit_Highest, UIDType:?UIDBit_UIDType, MaxDBID:?UIDBit_DBID, MaxGSID:?UIDBit_GSID, MaxIDVer:?UIDBit_IDVer, MaxADBID:?UIDBit_ADBID, 1:?UIDBit_IDRange>>,
 	MaxUID.
 
 getMaxUID() ->
@@ -171,7 +171,7 @@ getMaxUID() ->
 	MaxGSID = (1 bsl ?UIDBit_GSID) - 1,
 	MaxIDVer = ?CurUIDVer,
 	MaxADBID = (1 bsl ?UIDBit_ADBID) - 1,
-	<<MaxUID:64>> = <<0:?UIDBit_Highest,UIDType:?UIDBit_UIDType,MaxDBID:?UIDBit_DBID,MaxGSID:?UIDBit_GSID,MaxIDVer:?UIDBit_IDVer,MaxADBID:?UIDBit_ADBID,1:?UIDBit_IDRange>>,
+	<<MaxUID:64>> = <<0:?UIDBit_Highest, UIDType:?UIDBit_UIDType, MaxDBID:?UIDBit_DBID, MaxGSID:?UIDBit_GSID, MaxIDVer:?UIDBit_IDVer, MaxADBID:?UIDBit_ADBID, 1:?UIDBit_IDRange>>,
 	MaxUID.
 
 getUIDType(UID) ->

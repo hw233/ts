@@ -3,50 +3,50 @@
 -define(cfg_bloom, 1).
 
 -record(bloomCfg, {
-        id,
+	id,
 
-        content,
+	content,
 
-        name,
+	name,
 
-        down_sample,
+	down_sample,
 
-        blur_inter,
+	blur_inter,
 
-        blursize,
+	blursize,
 
-        threshhold,
+	threshhold,
 
-        intensity,
+	intensity,
 
-        down_sample2,
+	down_sample2,
 
-        blur_inter2,
+	blur_inter2,
 
-        blursize2,
+	blursize2,
 
-        threshhold2,
+	threshhold2,
 
-        intensity2,
+	intensity2,
 
-        %%: Light_Prode_Sampler_Day_RGB
-        lPS_Day_R,
+	%%: Light_Prode_Sampler_Day_RGB
+	lPS_Day_R,
 
-        %%: Light_Prode_Sampler_Day_RGB
-        lPS_Day_G,
+	%%: Light_Prode_Sampler_Day_RGB
+	lPS_Day_G,
 
-        %%: Light_Prode_Sampler_Day_RGB
-        lPS_Day_B,
+	%%: Light_Prode_Sampler_Day_RGB
+	lPS_Day_B,
 
-        %%: Light_Prode_Sampler_Night_RGB
-        lPS_Night_R,
+	%%: Light_Prode_Sampler_Night_RGB
+	lPS_Night_R,
 
-        %%: Light_Prode_Sampler_Night_RGB
-        lPS_Night_G,
+	%%: Light_Prode_Sampler_Night_RGB
+	lPS_Night_G,
 
-        %%: Light_Prode_Sampler_Night_RGB
-        lPS_Night_B
+	%%: Light_Prode_Sampler_Night_RGB
+	lPS_Night_B
 
- }).
+}).
 
 -endif.

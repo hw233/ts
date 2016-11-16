@@ -63,17 +63,17 @@ horse_parse_connection_keepalive_upgrade() ->
 %% The value has at least one digit, and may be followed by whitespace.
 
 -spec parse_content_length(binary()) -> non_neg_integer().
-parse_content_length(<< $0 >>) -> 0;
-parse_content_length(<< $0, R/bits >>) -> number(R, 0);
-parse_content_length(<< $1, R/bits >>) -> number(R, 1);
-parse_content_length(<< $2, R/bits >>) -> number(R, 2);
-parse_content_length(<< $3, R/bits >>) -> number(R, 3);
-parse_content_length(<< $4, R/bits >>) -> number(R, 4);
-parse_content_length(<< $5, R/bits >>) -> number(R, 5);
-parse_content_length(<< $6, R/bits >>) -> number(R, 6);
-parse_content_length(<< $7, R/bits >>) -> number(R, 7);
-parse_content_length(<< $8, R/bits >>) -> number(R, 8);
-parse_content_length(<< $9, R/bits >>) -> number(R, 9).
+parse_content_length(<<$0>>) -> 0;
+parse_content_length(<<$0, R/bits>>) -> number(R, 0);
+parse_content_length(<<$1, R/bits>>) -> number(R, 1);
+parse_content_length(<<$2, R/bits>>) -> number(R, 2);
+parse_content_length(<<$3, R/bits>>) -> number(R, 3);
+parse_content_length(<<$4, R/bits>>) -> number(R, 4);
+parse_content_length(<<$5, R/bits>>) -> number(R, 5);
+parse_content_length(<<$6, R/bits>>) -> number(R, 6);
+parse_content_length(<<$7, R/bits>>) -> number(R, 7);
+parse_content_length(<<$8, R/bits>>) -> number(R, 8);
+parse_content_length(<<$9, R/bits>>) -> number(R, 9).
 
 -ifdef(TEST).
 parse_content_length_test_() ->
@@ -151,44 +151,44 @@ horse_parse_transfer_encoding_custom() ->
 nonempty(L) when L =/= [] -> L.
 
 %% Parse a number optionally followed by whitespace.
-number(<< $0, R/bits >>, Acc) -> number(R, Acc * 10);
-number(<< $1, R/bits >>, Acc) -> number(R, Acc * 10 + 1);
-number(<< $2, R/bits >>, Acc) -> number(R, Acc * 10 + 2);
-number(<< $3, R/bits >>, Acc) -> number(R, Acc * 10 + 3);
-number(<< $4, R/bits >>, Acc) -> number(R, Acc * 10 + 4);
-number(<< $5, R/bits >>, Acc) -> number(R, Acc * 10 + 5);
-number(<< $6, R/bits >>, Acc) -> number(R, Acc * 10 + 6);
-number(<< $7, R/bits >>, Acc) -> number(R, Acc * 10 + 7);
-number(<< $8, R/bits >>, Acc) -> number(R, Acc * 10 + 8);
-number(<< $9, R/bits >>, Acc) -> number(R, Acc * 10 + 9);
-number(<< $\s, R/bits >>, Acc) -> ws_end(R), Acc;
-number(<< $\t, R/bits >>, Acc) -> ws_end(R), Acc;
+number(<<$0, R/bits>>, Acc) -> number(R, Acc * 10);
+number(<<$1, R/bits>>, Acc) -> number(R, Acc * 10 + 1);
+number(<<$2, R/bits>>, Acc) -> number(R, Acc * 10 + 2);
+number(<<$3, R/bits>>, Acc) -> number(R, Acc * 10 + 3);
+number(<<$4, R/bits>>, Acc) -> number(R, Acc * 10 + 4);
+number(<<$5, R/bits>>, Acc) -> number(R, Acc * 10 + 5);
+number(<<$6, R/bits>>, Acc) -> number(R, Acc * 10 + 6);
+number(<<$7, R/bits>>, Acc) -> number(R, Acc * 10 + 7);
+number(<<$8, R/bits>>, Acc) -> number(R, Acc * 10 + 8);
+number(<<$9, R/bits>>, Acc) -> number(R, Acc * 10 + 9);
+number(<<$\s, R/bits>>, Acc) -> ws_end(R), Acc;
+number(<<$\t, R/bits>>, Acc) -> ws_end(R), Acc;
 number(<<>>, Acc) -> Acc.
 
-ws_end(<< $\s, R/bits >>) -> ws_end(R);
-ws_end(<< $\t, R/bits >>) -> ws_end(R);
+ws_end(<<$\s, R/bits>>) -> ws_end(R);
+ws_end(<<$\t, R/bits>>) -> ws_end(R);
 ws_end(<<>>) -> ok.
 
 %% Parse a list of case insensitive tokens.
 token_ci_list(<<>>, Acc) -> lists:reverse(Acc);
-token_ci_list(<< $\s, R/bits >>, Acc) -> token_ci_list(R, Acc);
-token_ci_list(<< $\t, R/bits >>, Acc) -> token_ci_list(R, Acc);
-token_ci_list(<< $,, R/bits >>, Acc) -> token_ci_list(R, Acc);
-token_ci_list(<< C, R/bits >>, Acc) ->
+token_ci_list(<<$\s, R/bits>>, Acc) -> token_ci_list(R, Acc);
+token_ci_list(<<$\t, R/bits>>, Acc) -> token_ci_list(R, Acc);
+token_ci_list(<<$,, R/bits>>, Acc) -> token_ci_list(R, Acc);
+token_ci_list(<<C, R/bits>>, Acc) ->
 	case C of
 		?INLINE_LOWERCASE(token_ci_list, R, Acc, <<>>)
 	end.
 
-token_ci_list(<<>>, Acc, T) -> lists:reverse([T|Acc]);
-token_ci_list(<< $\s, R/bits >>, Acc, T) -> token_ci_list_sep(R, Acc, T);
-token_ci_list(<< $\t, R/bits >>, Acc, T) -> token_ci_list_sep(R, Acc, T);
-token_ci_list(<< $,, R/bits >>, Acc, T) -> token_ci_list(R, [T|Acc]);
-token_ci_list(<< C, R/bits >>, Acc, T) ->
+token_ci_list(<<>>, Acc, T) -> lists:reverse([T | Acc]);
+token_ci_list(<<$\s, R/bits>>, Acc, T) -> token_ci_list_sep(R, Acc, T);
+token_ci_list(<<$\t, R/bits>>, Acc, T) -> token_ci_list_sep(R, Acc, T);
+token_ci_list(<<$,, R/bits>>, Acc, T) -> token_ci_list(R, [T | Acc]);
+token_ci_list(<<C, R/bits>>, Acc, T) ->
 	case C of
 		?INLINE_LOWERCASE(token_ci_list, R, Acc, T)
 	end.
 
-token_ci_list_sep(<<>>, Acc, T) -> lists:reverse([T|Acc]);
-token_ci_list_sep(<< $\s, R/bits >>, Acc, T) -> token_ci_list_sep(R, Acc, T);
-token_ci_list_sep(<< $\t, R/bits >>, Acc, T) -> token_ci_list_sep(R, Acc, T);
-token_ci_list_sep(<< $,, R/bits >>, Acc, T) -> token_ci_list(R, [T|Acc]).
+token_ci_list_sep(<<>>, Acc, T) -> lists:reverse([T | Acc]);
+token_ci_list_sep(<<$\s, R/bits>>, Acc, T) -> token_ci_list_sep(R, Acc, T);
+token_ci_list_sep(<<$\t, R/bits>>, Acc, T) -> token_ci_list_sep(R, Acc, T);
+token_ci_list_sep(<<$,, R/bits>>, Acc, T) -> token_ci_list(R, [T | Acc]).

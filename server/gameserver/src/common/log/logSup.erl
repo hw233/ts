@@ -50,8 +50,8 @@ start_link() ->
 %%--------------------------------------------------------------------
 -spec(init(Args :: term()) ->
 	{ok, {SupFlags :: {RestartStrategy :: supervisor:strategy(),
-	                   MaxR :: non_neg_integer(), MaxT :: non_neg_integer()},
-	      [ChildSpec :: supervisor:child_spec()]
+		MaxR :: non_neg_integer(), MaxT :: non_neg_integer()},
+		[ChildSpec :: supervisor:child_spec()]
 	}} |
 	ignore |
 	{error, Reason :: term()}).
@@ -63,7 +63,7 @@ init([]) ->
 	SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
 	Title = case application:get_env(serverType) of
-		        {ok,Str} ->
+		        {ok, Str} ->
 			        Str;
 		        _ ->
 			        ""
@@ -71,18 +71,18 @@ init([]) ->
 
 	%% 日志进程
 	HdltLogger = {
-		hdlt_logger,                         				% Id       = internal id
-		{hdlt_logger, start_link, [Title]},		            % StartFun = {M, F, A}
-		permanent,                               			% Restart  = permanent | transient | temporary
-		2000,                                    			% Shutdown = brutal_kill | int() >= 0 | infinity
-		worker,                                  			% Type     = worker | supervisor
-		[hdlt_logger]                           			% Modules  = [Module] | dynamic
+		hdlt_logger,                                        % Id       = internal id
+		{hdlt_logger, start_link, [Title]},                    % StartFun = {M, F, A}
+		permanent,                                        % Restart  = permanent | transient | temporary
+		2000,                                                % Shutdown = brutal_kill | int() >= 0 | infinity
+		worker,                                            % Type     = worker | supervisor
+		[hdlt_logger]                                    % Modules  = [Module] | dynamic
 	},
 
 	{ok,
-	 {SupFlags,
-	  [HdltLogger]
-	 }
+		{SupFlags,
+			[HdltLogger]
+		}
 	}.
 
 %%%===================================================================

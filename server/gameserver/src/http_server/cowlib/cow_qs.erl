@@ -31,37 +31,37 @@
 parse_qs(B) ->
 	parse_qs_name(B, [], <<>>).
 
-parse_qs_name(<< $%, H, L, Rest/bits >>, Acc, Name) ->
+parse_qs_name(<<$%, H, L, Rest/bits>>, Acc, Name) ->
 	C = (unhex(H) bsl 4 bor unhex(L)),
-	parse_qs_name(Rest, Acc, << Name/bits, C >>);
-parse_qs_name(<< $+, Rest/bits >>, Acc, Name) ->
-	parse_qs_name(Rest, Acc, << Name/bits, " " >>);
-parse_qs_name(<< $=, Rest/bits >>, Acc, Name) when Name =/= <<>> ->
+	parse_qs_name(Rest, Acc, <<Name/bits, C>>);
+parse_qs_name(<<$+, Rest/bits>>, Acc, Name) ->
+	parse_qs_name(Rest, Acc, <<Name/bits, " ">>);
+parse_qs_name(<<$=, Rest/bits>>, Acc, Name) when Name =/= <<>> ->
 	parse_qs_value(Rest, Acc, Name, <<>>);
-parse_qs_name(<< $&, Rest/bits >>, Acc, Name) ->
+parse_qs_name(<<$&, Rest/bits>>, Acc, Name) ->
 	case Name of
 		<<>> -> parse_qs_name(Rest, Acc, <<>>);
-		_ -> parse_qs_name(Rest, [{Name, true}|Acc], <<>>)
+		_ -> parse_qs_name(Rest, [{Name, true} | Acc], <<>>)
 	end;
-parse_qs_name(<< C, Rest/bits >>, Acc, Name) when C =/= $%, C =/= $= ->
-	parse_qs_name(Rest, Acc, << Name/bits, C >>);
+parse_qs_name(<<C, Rest/bits>>, Acc, Name) when C =/= $%, C =/= $= ->
+	parse_qs_name(Rest, Acc, <<Name/bits, C>>);
 parse_qs_name(<<>>, Acc, Name) ->
 	case Name of
 		<<>> -> lists:reverse(Acc);
-		_ -> lists:reverse([{Name, true}|Acc])
+		_ -> lists:reverse([{Name, true} | Acc])
 	end.
 
-parse_qs_value(<< $%, H, L, Rest/bits >>, Acc, Name, Value) ->
+parse_qs_value(<<$%, H, L, Rest/bits>>, Acc, Name, Value) ->
 	C = (unhex(H) bsl 4 bor unhex(L)),
-	parse_qs_value(Rest, Acc, Name, << Value/bits, C >>);
-parse_qs_value(<< $+, Rest/bits >>, Acc, Name, Value) ->
-	parse_qs_value(Rest, Acc, Name, << Value/bits, " " >>);
-parse_qs_value(<< $&, Rest/bits >>, Acc, Name, Value) ->
-	parse_qs_name(Rest, [{Name, Value}|Acc], <<>>);
-parse_qs_value(<< C, Rest/bits >>, Acc, Name, Value) when C =/= $% ->
-	parse_qs_value(Rest, Acc, Name, << Value/bits, C >>);
+	parse_qs_value(Rest, Acc, Name, <<Value/bits, C>>);
+parse_qs_value(<<$+, Rest/bits>>, Acc, Name, Value) ->
+	parse_qs_value(Rest, Acc, Name, <<Value/bits, " ">>);
+parse_qs_value(<<$&, Rest/bits>>, Acc, Name, Value) ->
+	parse_qs_name(Rest, [{Name, Value} | Acc], <<>>);
+parse_qs_value(<<C, Rest/bits>>, Acc, Name, Value) when C =/= $% ->
+	parse_qs_value(Rest, Acc, Name, <<Value/bits, C>>);
 parse_qs_value(<<>>, Acc, Name, Value) ->
-	lists:reverse([{Name, Value}|Acc]).
+	lists:reverse([{Name, Value} | Acc]).
 
 -ifdef(TEST).
 parse_qs_test_() ->
@@ -95,11 +95,11 @@ parse_qs_test_() ->
 	],
 	[{Qs, fun() ->
 		E = try parse_qs(Qs) of
-			R -> R
-		catch _:_ ->
+			    R -> R
+		    catch _:_ ->
 			error
-		end
-	end} || {Qs, E} <- Tests].
+		    end
+	      end} || {Qs, E} <- Tests].
 
 parse_qs_identity_test_() ->
 	Tests = [
@@ -107,23 +107,23 @@ parse_qs_identity_test_() ->
 		<<"hl=en&q=erlang+cowboy">>,
 		<<"direction=desc&for=extend%2Franch&sort=updated&state=open">>,
 		<<"i=EWiIXmPj5gl6&v=QowBp0oDLQXdd4x_GwiywA&ip=98.20.31.81&"
-			"la=en&pg=New8.undertonebrandsafe.com%2F698a2525065ee2"
-			"60c0b2f2aaad89ab82&re=&sz=1&fc=1&fr=140&br=3&bv=11.0."
-			"696.16&os=3&ov=&rs=vpl&k=cookies%7Csale%7Cbrowser%7Cm"
-			"ore%7Cprivacy%7Cstatistics%7Cactivities%7Cauction%7Ce"
-			"mail%7Cfree%7Cin...&t=112373&xt=5%7C61%7C0&tz=-1&ev=x"
-			"&tk=&za=1&ortb-za=1&zu=&zl=&ax=U&ay=U&ortb-pid=536454"
-			".55&ortb-sid=112373.8&seats=999&ortb-xt=IAB24&ortb-ugc=">>,
+		"la=en&pg=New8.undertonebrandsafe.com%2F698a2525065ee2"
+		"60c0b2f2aaad89ab82&re=&sz=1&fc=1&fr=140&br=3&bv=11.0."
+		"696.16&os=3&ov=&rs=vpl&k=cookies%7Csale%7Cbrowser%7Cm"
+		"ore%7Cprivacy%7Cstatistics%7Cactivities%7Cauction%7Ce"
+		"mail%7Cfree%7Cin...&t=112373&xt=5%7C61%7C0&tz=-1&ev=x"
+		"&tk=&za=1&ortb-za=1&zu=&zl=&ax=U&ay=U&ortb-pid=536454"
+		".55&ortb-sid=112373.8&seats=999&ortb-xt=IAB24&ortb-ugc=">>,
 		<<"i=9pQNskA&v=0ySQQd1F&ev=12345678&t=12345&sz=3&ip=67.58."
-			"236.89&la=en&pg=http%3A%2F%2Fwww.yahoo.com%2Fpage1.ht"
-			"m&re=http%3A%2F%2Fsearch.google.com&fc=1&fr=1&br=2&bv"
-			"=3.0.14&os=1&ov=XP&k=cars%2Cford&rs=js&xt=5%7C22%7C23"
-			"4&tz=%2B180&tk=key1%3Dvalue1%7Ckey2%3Dvalue2&zl=4%2C5"
-			"%2C6&za=4&zu=competitor.com&ua=Mozilla%2F5.0+%28Windo"
-			"ws%3B+U%3B+Windows+NT+6.1%3B+en-US%29+AppleWebKit%2F5"
-			"34.13+%28KHTML%2C+like+Gecko%29+Chrome%2F9.0.597.98+S"
-			"afari%2F534.13&ortb-za=1%2C6%2C13&ortb-pid=521732&ort"
-			"b-sid=521732&ortb-xt=IAB3&ortb-ugc=">>
+		"236.89&la=en&pg=http%3A%2F%2Fwww.yahoo.com%2Fpage1.ht"
+		"m&re=http%3A%2F%2Fsearch.google.com&fc=1&fr=1&br=2&bv"
+		"=3.0.14&os=1&ov=XP&k=cars%2Cford&rs=js&xt=5%7C22%7C23"
+		"4&tz=%2B180&tk=key1%3Dvalue1%7Ckey2%3Dvalue2&zl=4%2C5"
+		"%2C6&za=4&zu=competitor.com&ua=Mozilla%2F5.0+%28Windo"
+		"ws%3B+U%3B+Windows+NT+6.1%3B+en-US%29+AppleWebKit%2F5"
+		"34.13+%28KHTML%2C+like+Gecko%29+Chrome%2F9.0.597.98+S"
+		"afari%2F534.13&ortb-za=1%2C6%2C13&ortb-pid=521732&ort"
+		"b-sid=521732&ortb-xt=IAB3&ortb-ugc=">>
 	],
 	[{V, fun() -> V = qs(parse_qs(V)) end} || V <- Tests].
 -endif.
@@ -143,26 +143,26 @@ horse_parse_qs_short() ->
 horse_parse_qs_long() ->
 	horse:repeat(20000,
 		parse_qs(<<"i=EWiIXmPj5gl6&v=QowBp0oDLQXdd4x_GwiywA&ip=98.20.31.81&"
-			"la=en&pg=New8.undertonebrandsafe.com%2F698a2525065ee260c0b2f2a"
-			"aad89ab82&re=&sz=1&fc=1&fr=140&br=3&bv=11.0.696.16&os=3&ov=&rs"
-			"=vpl&k=cookies%7Csale%7Cbrowser%7Cmore%7Cprivacy%7Cstatistics%"
-			"7Cactivities%7Cauction%7Cemail%7Cfree%7Cin...&t=112373&xt=5%7C"
-			"61%7C0&tz=-1&ev=x&tk=&za=1&ortb-za=1&zu=&zl=&ax=U&ay=U&ortb-pi"
-			"d=536454.55&ortb-sid=112373.8&seats=999&ortb-xt=IAB24&ortb-ugc"
-			"=">>)
+		"la=en&pg=New8.undertonebrandsafe.com%2F698a2525065ee260c0b2f2a"
+		"aad89ab82&re=&sz=1&fc=1&fr=140&br=3&bv=11.0.696.16&os=3&ov=&rs"
+		"=vpl&k=cookies%7Csale%7Cbrowser%7Cmore%7Cprivacy%7Cstatistics%"
+		"7Cactivities%7Cauction%7Cemail%7Cfree%7Cin...&t=112373&xt=5%7C"
+		"61%7C0&tz=-1&ev=x&tk=&za=1&ortb-za=1&zu=&zl=&ax=U&ay=U&ortb-pi"
+		"d=536454.55&ortb-sid=112373.8&seats=999&ortb-xt=IAB24&ortb-ugc"
+		"=">>)
 	).
 
 horse_parse_qs_longer() ->
 	horse:repeat(20000,
 		parse_qs(<<"i=9pQNskA&v=0ySQQd1F&ev=12345678&t=12345&sz=3&ip=67.58."
-			"236.89&la=en&pg=http%3A%2F%2Fwww.yahoo.com%2Fpage1.htm&re=http"
-			"%3A%2F%2Fsearch.google.com&fc=1&fr=1&br=2&bv=3.0.14&os=1&ov=XP"
-			"&k=cars%2cford&rs=js&xt=5%7c22%7c234&tz=%2b180&tk=key1%3Dvalue"
-			"1%7Ckey2%3Dvalue2&zl=4,5,6&za=4&zu=competitor.com&ua=Mozilla%2"
-			"F5.0%20(Windows%3B%20U%3B%20Windows%20NT%206.1%3B%20en-US)%20A"
-			"ppleWebKit%2F534.13%20(KHTML%2C%20like%20Gecko)%20Chrome%2F9.0"
-			".597.98%20Safari%2F534.13&ortb-za=1%2C6%2C13&ortb-pid=521732&o"
-			"rtb-sid=521732&ortb-xt=IAB3&ortb-ugc=">>)
+		"236.89&la=en&pg=http%3A%2F%2Fwww.yahoo.com%2Fpage1.htm&re=http"
+		"%3A%2F%2Fsearch.google.com&fc=1&fr=1&br=2&bv=3.0.14&os=1&ov=XP"
+		"&k=cars%2cford&rs=js&xt=5%7c22%7c234&tz=%2b180&tk=key1%3Dvalue"
+		"1%7Ckey2%3Dvalue2&zl=4,5,6&za=4&zu=competitor.com&ua=Mozilla%2"
+		"F5.0%20(Windows%3B%20U%3B%20Windows%20NT%206.1%3B%20en-US)%20A"
+		"ppleWebKit%2F534.13%20(KHTML%2C%20like%20Gecko)%20Chrome%2F9.0"
+		".597.98%20Safari%2F534.13&ortb-za=1%2C6%2C13&ortb-pid=521732&o"
+		"rtb-sid=521732&ortb-xt=IAB3&ortb-ugc=">>)
 	).
 -endif.
 
@@ -175,14 +175,14 @@ qs(L) ->
 	qs(L, <<>>).
 
 qs([], Acc) ->
-	<< $&, Qs/bits >> = Acc,
+	<<$&, Qs/bits>> = Acc,
 	Qs;
-qs([{Name, true}|Tail], Acc) ->
-	Acc2 = urlencode(Name, << Acc/bits, $& >>),
+qs([{Name, true} | Tail], Acc) ->
+	Acc2 = urlencode(Name, <<Acc/bits, $&>>),
 	qs(Tail, Acc2);
-qs([{Name, Value}|Tail], Acc) ->
-	Acc2 = urlencode(Name, << Acc/bits, $& >>),
-	Acc3 = urlencode(Value, << Acc2/bits, $= >>),
+qs([{Name, Value} | Tail], Acc) ->
+	Acc2 = urlencode(Name, <<Acc/bits, $&>>),
+	Acc3 = urlencode(Value, <<Acc2/bits, $=>>),
 	qs(Tail, Acc3).
 
 -define(QS_SHORTER, [
@@ -203,7 +203,7 @@ qs([{Name, Value}|Tail], Acc) ->
 	{<<"ip">>, <<"98.20.31.81">>},
 	{<<"la">>, <<"en">>},
 	{<<"pg">>, <<"New8.undertonebrandsafe.com/"
-		"698a2525065ee260c0b2f2aaad89ab82">>},
+	"698a2525065ee260c0b2f2aaad89ab82">>},
 	{<<"re">>, <<>>},
 	{<<"sz">>, <<"1">>},
 	{<<"fc">>, <<"1">>},
@@ -214,7 +214,7 @@ qs([{Name, Value}|Tail], Acc) ->
 	{<<"ov">>, <<>>},
 	{<<"rs">>, <<"vpl">>},
 	{<<"k">>, <<"cookies|sale|browser|more|privacy|statistics|"
-		"activities|auction|email|free|in...">>},
+	"activities|auction|email|free|in...">>},
 	{<<"t">>, <<"112373">>},
 	{<<"xt">>, <<"5|61|0">>},
 	{<<"tz">>, <<"-1">>},
@@ -258,8 +258,8 @@ qs([{Name, Value}|Tail], Acc) ->
 	{<<"za">>, <<"4">>},
 	{<<"zu">>, <<"competitor.com">>},
 	{<<"ua">>, <<"Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) "
-		"AppleWebKit/534.13 (KHTML, like Gecko) Chrome/9.0.597.98 "
-		"Safari/534.13">>},
+	"AppleWebKit/534.13 (KHTML, like Gecko) Chrome/9.0.597.98 "
+	"Safari/534.13">>},
 	{<<"ortb-za">>, <<"1,6,13">>},
 	{<<"ortb-pid">>, <<"521732">>},
 	{<<"ortb-sid">>, <<"521732">>},
@@ -293,11 +293,11 @@ qs_test_() ->
 	],
 	[{lists:flatten(io_lib:format("~p", [Vals])), fun() ->
 		E = try qs(Vals) of
-			R -> R
-		catch _:_ ->
+			    R -> R
+		    catch _:_ ->
 			error
-		end
-	end} || {Vals, E} <- Tests].
+		    end
+	                                              end} || {Vals, E} <- Tests].
 
 qs_identity_test_() ->
 	Tests = [
@@ -309,7 +309,7 @@ qs_identity_test_() ->
 	],
 	[{lists:flatten(io_lib:format("~p", [V])), fun() ->
 		V = parse_qs(qs(V))
-	end} || V <- Tests].
+	                                           end} || V <- Tests].
 -endif.
 
 -ifdef(PERF).
@@ -328,30 +328,30 @@ horse_qs_longer() ->
 
 %% @doc Decode a percent encoded string (x-www-form-urlencoded rules).
 
--spec urldecode(B) -> B when B::binary().
+-spec urldecode(B) -> B when B :: binary().
 urldecode(B) ->
 	urldecode(B, <<>>).
 
-urldecode(<< $%, H, L, Rest/bits >>, Acc) ->
+urldecode(<<$%, H, L, Rest/bits>>, Acc) ->
 	C = (unhex(H) bsl 4 bor unhex(L)),
-	urldecode(Rest, << Acc/bits, C >>);
-urldecode(<< $+, Rest/bits >>, Acc) ->
-	urldecode(Rest, << Acc/bits, " " >>);
-urldecode(<< C, Rest/bits >>, Acc) when C =/= $% ->
-	urldecode(Rest, << Acc/bits, C >>);
+	urldecode(Rest, <<Acc/bits, C>>);
+urldecode(<<$+, Rest/bits>>, Acc) ->
+	urldecode(Rest, <<Acc/bits, " ">>);
+urldecode(<<C, Rest/bits>>, Acc) when C =/= $% ->
+	urldecode(Rest, <<Acc/bits, C>>);
 urldecode(<<>>, Acc) ->
 	Acc.
 
-unhex($0) ->  0;
-unhex($1) ->  1;
-unhex($2) ->  2;
-unhex($3) ->  3;
-unhex($4) ->  4;
-unhex($5) ->  5;
-unhex($6) ->  6;
-unhex($7) ->  7;
-unhex($8) ->  8;
-unhex($9) ->  9;
+unhex($0) -> 0;
+unhex($1) -> 1;
+unhex($2) -> 2;
+unhex($3) -> 3;
+unhex($4) -> 4;
+unhex($5) -> 5;
+unhex($6) -> 6;
+unhex($7) -> 7;
+unhex($8) -> 8;
+unhex($9) -> 9;
 unhex($A) -> 10;
 unhex($B) -> 11;
 unhex($C) -> 12;
@@ -378,11 +378,11 @@ urldecode_test_() ->
 	],
 	[{Qs, fun() ->
 		E = try urldecode(Qs) of
-			R -> R
-		catch _:_ ->
+			    R -> R
+		    catch _:_ ->
 			error
-		end
-	end} || {Qs, E} <- Tests].
+		    end
+	      end} || {Qs, E} <- Tests].
 
 urldecode_identity_test_() ->
 	Tests = [
@@ -391,8 +391,8 @@ urldecode_identity_test_() ->
 		<<"Small+fast+modular+HTTP+server">>,
 		<<"Small%2C+fast%2C+modular+HTTP+server.">>,
 		<<"%E3%83%84%E3%82%A4%E3%83%B3%E3%82%BD%E3%82%A6%E3%83"
-			"%AB%E3%80%9C%E8%BC%AA%E5%BB%BB%E3%81%99%E3%82%8B%E6%97%8B%E5"
-			"%BE%8B%E3%80%9C">>
+		"%AB%E3%80%9C%E8%BC%AA%E5%BB%BB%E3%81%99%E3%82%8B%E6%97%8B%E5"
+		"%BE%8B%E3%80%9C">>
 	],
 	[{V, fun() -> V = urlencode(urldecode(V)) end} || V <- Tests].
 -endif.
@@ -416,8 +416,8 @@ horse_urldecode_hex() ->
 horse_urldecode_jp_hex() ->
 	horse:repeat(100000,
 		urldecode(<<"%E3%83%84%E3%82%A4%E3%83%B3%E3%82%BD%E3%82%A6%E3%83"
-			"%AB%E3%80%9C%E8%BC%AA%E5%BB%BB%E3%81%99%E3%82%8B%E6%97%8B%E5"
-			"%BE%8B%E3%80%9C">>)
+		"%AB%E3%80%9C%E8%BC%AA%E5%BB%BB%E3%81%99%E3%82%8B%E6%97%8B%E5"
+		"%BE%8B%E3%80%9C">>)
 	).
 
 horse_urldecode_mix() ->
@@ -428,93 +428,93 @@ horse_urldecode_mix() ->
 
 %% @doc Percent encode a string (x-www-form-urlencoded rules).
 
--spec urlencode(B) -> B when B::binary().
+-spec urlencode(B) -> B when B :: binary().
 urlencode(B) ->
 	urlencode(B, <<>>).
 
-urlencode(<< $\s, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $+ >>);
-urlencode(<< $-, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $- >>);
-urlencode(<< $., Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $. >>);
-urlencode(<< $0, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $0 >>);
-urlencode(<< $1, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $1 >>);
-urlencode(<< $2, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $2 >>);
-urlencode(<< $3, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $3 >>);
-urlencode(<< $4, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $4 >>);
-urlencode(<< $5, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $5 >>);
-urlencode(<< $6, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $6 >>);
-urlencode(<< $7, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $7 >>);
-urlencode(<< $8, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $8 >>);
-urlencode(<< $9, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $9 >>);
-urlencode(<< $A, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $A >>);
-urlencode(<< $B, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $B >>);
-urlencode(<< $C, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $C >>);
-urlencode(<< $D, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $D >>);
-urlencode(<< $E, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $E >>);
-urlencode(<< $F, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $F >>);
-urlencode(<< $G, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $G >>);
-urlencode(<< $H, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $H >>);
-urlencode(<< $I, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $I >>);
-urlencode(<< $J, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $J >>);
-urlencode(<< $K, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $K >>);
-urlencode(<< $L, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $L >>);
-urlencode(<< $M, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $M >>);
-urlencode(<< $N, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $N >>);
-urlencode(<< $O, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $O >>);
-urlencode(<< $P, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $P >>);
-urlencode(<< $Q, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $Q >>);
-urlencode(<< $R, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $R >>);
-urlencode(<< $S, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $S >>);
-urlencode(<< $T, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $T >>);
-urlencode(<< $U, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $U >>);
-urlencode(<< $V, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $V >>);
-urlencode(<< $W, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $W >>);
-urlencode(<< $X, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $X >>);
-urlencode(<< $Y, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $Y >>);
-urlencode(<< $Z, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $Z >>);
-urlencode(<< $_, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $_ >>);
-urlencode(<< $a, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $a >>);
-urlencode(<< $b, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $b >>);
-urlencode(<< $c, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $c >>);
-urlencode(<< $d, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $d >>);
-urlencode(<< $e, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $e >>);
-urlencode(<< $f, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $f >>);
-urlencode(<< $g, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $g >>);
-urlencode(<< $h, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $h >>);
-urlencode(<< $i, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $i >>);
-urlencode(<< $j, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $j >>);
-urlencode(<< $k, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $k >>);
-urlencode(<< $l, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $l >>);
-urlencode(<< $m, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $m >>);
-urlencode(<< $n, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $n >>);
-urlencode(<< $o, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $o >>);
-urlencode(<< $p, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $p >>);
-urlencode(<< $q, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $q >>);
-urlencode(<< $r, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $r >>);
-urlencode(<< $s, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $s >>);
-urlencode(<< $t, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $t >>);
-urlencode(<< $u, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $u >>);
-urlencode(<< $v, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $v >>);
-urlencode(<< $w, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $w >>);
-urlencode(<< $x, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $x >>);
-urlencode(<< $y, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $y >>);
-urlencode(<< $z, Rest/bits >>, Acc) -> urlencode(Rest, << Acc/bits, $z >>);
-urlencode(<< C, Rest/bits >>, Acc) ->
+urlencode(<<$\s, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $+>>);
+urlencode(<<$-, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $->>);
+urlencode(<<$., Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $.>>);
+urlencode(<<$0, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $0>>);
+urlencode(<<$1, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $1>>);
+urlencode(<<$2, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $2>>);
+urlencode(<<$3, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $3>>);
+urlencode(<<$4, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $4>>);
+urlencode(<<$5, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $5>>);
+urlencode(<<$6, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $6>>);
+urlencode(<<$7, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $7>>);
+urlencode(<<$8, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $8>>);
+urlencode(<<$9, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $9>>);
+urlencode(<<$A, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $A>>);
+urlencode(<<$B, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $B>>);
+urlencode(<<$C, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $C>>);
+urlencode(<<$D, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $D>>);
+urlencode(<<$E, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $E>>);
+urlencode(<<$F, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $F>>);
+urlencode(<<$G, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $G>>);
+urlencode(<<$H, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $H>>);
+urlencode(<<$I, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $I>>);
+urlencode(<<$J, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $J>>);
+urlencode(<<$K, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $K>>);
+urlencode(<<$L, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $L>>);
+urlencode(<<$M, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $M>>);
+urlencode(<<$N, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $N>>);
+urlencode(<<$O, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $O>>);
+urlencode(<<$P, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $P>>);
+urlencode(<<$Q, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $Q>>);
+urlencode(<<$R, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $R>>);
+urlencode(<<$S, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $S>>);
+urlencode(<<$T, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $T>>);
+urlencode(<<$U, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $U>>);
+urlencode(<<$V, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $V>>);
+urlencode(<<$W, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $W>>);
+urlencode(<<$X, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $X>>);
+urlencode(<<$Y, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $Y>>);
+urlencode(<<$Z, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $Z>>);
+urlencode(<<$_, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $_>>);
+urlencode(<<$a, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $a>>);
+urlencode(<<$b, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $b>>);
+urlencode(<<$c, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $c>>);
+urlencode(<<$d, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $d>>);
+urlencode(<<$e, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $e>>);
+urlencode(<<$f, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $f>>);
+urlencode(<<$g, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $g>>);
+urlencode(<<$h, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $h>>);
+urlencode(<<$i, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $i>>);
+urlencode(<<$j, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $j>>);
+urlencode(<<$k, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $k>>);
+urlencode(<<$l, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $l>>);
+urlencode(<<$m, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $m>>);
+urlencode(<<$n, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $n>>);
+urlencode(<<$o, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $o>>);
+urlencode(<<$p, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $p>>);
+urlencode(<<$q, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $q>>);
+urlencode(<<$r, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $r>>);
+urlencode(<<$s, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $s>>);
+urlencode(<<$t, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $t>>);
+urlencode(<<$u, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $u>>);
+urlencode(<<$v, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $v>>);
+urlencode(<<$w, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $w>>);
+urlencode(<<$x, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $x>>);
+urlencode(<<$y, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $y>>);
+urlencode(<<$z, Rest/bits>>, Acc) -> urlencode(Rest, <<Acc/bits, $z>>);
+urlencode(<<C, Rest/bits>>, Acc) ->
 	H = hex(C bsr 4),
 	L = hex(C band 16#0f),
-	urlencode(Rest, << Acc/bits, $%, H, L >>);
+	urlencode(Rest, <<Acc/bits, $%, H, L>>);
 urlencode(<<>>, Acc) ->
 	Acc.
 
-hex( 0) -> $0;
-hex( 1) -> $1;
-hex( 2) -> $2;
-hex( 3) -> $3;
-hex( 4) -> $4;
-hex( 5) -> $5;
-hex( 6) -> $6;
-hex( 7) -> $7;
-hex( 8) -> $8;
-hex( 9) -> $9;
+hex(0) -> $0;
+hex(1) -> $1;
+hex(2) -> $2;
+hex(3) -> $3;
+hex(4) -> $4;
+hex(5) -> $5;
+hex(6) -> $6;
+hex(7) -> $7;
+hex(8) -> $8;
+hex(9) -> $9;
 hex(10) -> $A;
 hex(11) -> $B;
 hex(12) -> $C;
@@ -539,9 +539,9 @@ urlencode_identity_test_() ->
 		<<"nothingnothingnothingnothing">>,
 		<<"Small fast modular HTTP server">>,
 		<<"Small, fast, modular HTTP server.">>,
-		<<227,131,132,227,130,164,227,131,179,227,130,189,227,
-			130,166,227,131,171,227,128,156,232,188,170,229,187,187,227,
-			129,153,227,130,139,230,151,139,229,190,139,227,128,156>>
+		<<227, 131, 132, 227, 130, 164, 227, 131, 179, 227, 130, 189, 227,
+			130, 166, 227, 131, 171, 227, 128, 156, 232, 188, 170, 229, 187, 187, 227,
+			129, 153, 227, 130, 139, 230, 151, 139, 229, 190, 139, 227, 128, 156>>
 	],
 	[{V, fun() -> V = urldecode(urlencode(V)) end} || V <- Tests].
 -endif.
@@ -559,9 +559,9 @@ horse_urlencode_plus() ->
 
 horse_urlencode_jp() ->
 	horse:repeat(100000,
-		urlencode(<<227,131,132,227,130,164,227,131,179,227,130,189,227,
-			130,166,227,131,171,227,128,156,232,188,170,229,187,187,227,
-			129,153,227,130,139,230,151,139,229,190,139,227,128,156>>)
+		urlencode(<<227, 131, 132, 227, 130, 164, 227, 131, 179, 227, 130, 189, 227,
+			130, 166, 227, 131, 171, 227, 128, 156, 232, 188, 170, 229, 187, 187, 227,
+			129, 153, 227, 130, 139, 230, 151, 139, 229, 190, 139, 227, 128, 156>>)
 	).
 
 horse_urlencode_mix() ->

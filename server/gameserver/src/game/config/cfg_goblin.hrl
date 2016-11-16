@@ -3,23 +3,23 @@
 -define(cfg_goblin, 1).
 
 -record(goblinCfg, {
-        %%: 地图id
-        mapid,
+	%%: 地图id
+	mapid,
 
-        %%: 刷新时间
-        refreshtime,
+	%%: 刷新时间
+	refreshtime,
 
-        %%: 要刷的怪物id
-        monsterid,
+	%%: 要刷的怪物id
+	monsterid,
 
-        %%: 刷新坐标
-        refreshpos,
+	%%: 刷新坐标
+	refreshpos,
 
-        %%: boss的id
-        bossid,
+	%%: boss的id
+	bossid,
 
-        bossrefreshpos
+	bossrefreshpos
 
- }).
+}).
 
 -endif.

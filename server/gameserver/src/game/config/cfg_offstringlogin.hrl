@@ -3,10 +3,10 @@
 -define(cfg_offstringlogin, 1).
 
 -record(offstringloginCfg, {
-        id,
+	id,
 
-        offstring
+	offstring
 
- }).
+}).
 
 -endif.

@@ -24,7 +24,7 @@
 	lastRecvHeartBeatTime = 0   %% 最后一次收到客户端心跳时间（这才是真正的心跳，仅客户端发给服务器）
 }).
 
--record(recClientState,{
+-record(recClientState, {
 
 }).
 
@@ -49,8 +49,8 @@
 
 %% ====================================================================
 init([Socket]) ->
-	?LOG_OUT("~p init[~p]",[self(), Socket]),
-	{ok,#recClientState{}}.
+	?LOG_OUT("~p init[~p]", [self(), Socket]),
+	{ok, #recClientState{}}.
 %% ====================================================================
 handle_call(_Request, _From, State) ->
 	{noreply, ok, State}.
@@ -66,10 +66,10 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
 	{ok, State}.
 %% ====================================================================
-handle_exception(Type,Why,State) ->
+handle_exception(Type, Why, State) ->
 	%%先做清理
 	try
-		Reason = misc:term_to_string({exception,Why}),
+		Reason = misc:term_to_string({exception, Why}),
 		doUserOffline(Reason)
 	catch
 		_:_ ->
@@ -83,26 +83,26 @@ handle_exception(Type,Why,State) ->
 	{stop, normal, State}.
 
 %% ====================================================================
-handle_info(Info,State) ->
-	?ERROR_OUT("unhandle info:[~p] in [~p] [~p,~p]",[Info,node(),?MODULE,self()]),
-	{noreply,State}.
+handle_info(Info, State) ->
+	?ERROR_OUT("unhandle info:[~p] in [~p] [~p,~p]", [Info, node(), ?MODULE, self()]),
+	{noreply, State}.
 
 %% ====================================================================
 %%上层会退出本进程
 handle_socket_close(Reason) ->
-	?WARN_OUT("handle_socket_close[~p ~p]",[self(),Reason]),
+	?WARN_OUT("handle_socket_close[~p ~p]", [self(), Reason]),
 	doUserOffline(Reason).
 
 %% ====================================================================
-handle_net_msg(Cmd,Pk,State) ->
-	playerMsg:dealNetMsg(Cmd,Pk),
+handle_net_msg(Cmd, Pk, State) ->
+	playerMsg:dealNetMsg(Cmd, Pk),
 	State.
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
--spec doUserOffline(Reason) -> ok when Reason::term().
-doUserOffline(_) ->
-	ok.
+-spec doUserOffline(Reason) -> ok when Reason :: term().
+doUserOffline(Reason) ->
+	playerLogout:onLogout(Reason).
 

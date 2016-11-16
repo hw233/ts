@@ -3,12 +3,12 @@
 -define(cfg_skillCDGroup, 1).
 
 -record(skillCDGroupCfg, {
-        %%: 冷却组id
-        id,
+	%%: 冷却组id
+	id,
 
-        %%: 冷却时间
-        time
+	%%: 冷却时间
+	time
 
- }).
+}).
 
 -endif.

@@ -26,9 +26,9 @@
 ]).
 
 %%每10分钟更新一次Key
--define(UpdateSessionKeyTime,600000).
+-define(UpdateSessionKeyTime, 600000).
 
--define(SessionKey,[
+-define(SessionKey, [
 	"qxnjiKNVKQIE2014",
 	"iwermnJHPiqijnK2",
 	"KJI&*6%2lk;jHGM?",
@@ -46,49 +46,49 @@
 -ifdef(RELEASE).
 %%Release版发送消息保持原样
 %%发送网络消息
--spec sendNetMsg(Socket,#listenTcpOptions{},MsgDataList) -> ok | {error,Reason} when
-	Socket::port(),MsgDataList::list(),Reason::closed | inet:posix().
-sendNetMsg(Socket,#listenTcpOptions{packetLen = HeaderLen},MsgDataList) when erlang:is_list(MsgDataList)->
+-spec sendNetMsg(Socket, #listenTcpOptions{}, MsgDataList) -> ok | {error, Reason} when
+	Socket :: port(), MsgDataList :: list(), Reason :: closed | inet:posix().
+sendNetMsg(Socket, #listenTcpOptions{packetLen = HeaderLen}, MsgDataList) when erlang:is_list(MsgDataList) ->
 	case getWriteSessionKey() of
 		[] ->
-			{Len,List} = addNetHeader(HeaderLen,MsgDataList),
+			{Len, List} = addNetHeader(HeaderLen, MsgDataList),
 			%%记录发送的字节数
 			setWriteNetMsgSize(getWriteNetMsgSize() + Len),
-			netmsg:sendPackage(Socket,List);
+			netmsg:sendPackage(Socket, List);
 		Key ->
-			[H|T] = MsgDataList,
-			{_,Ret} = encode(T,Key,Key,[]),
-			{Len,List} = addNetHeader(HeaderLen,[H|Ret]),
+			[H | T] = MsgDataList,
+			{_, Ret} = encode(T, Key, Key, []),
+			{Len, List} = addNetHeader(HeaderLen, [H | Ret]),
 			%%记录发送的字节数
 			setWriteNetMsgSize(getWriteNetMsgSize() + Len),
-			netmsg:sendPackage(Socket,List)
+			netmsg:sendPackage(Socket, List)
 	end.
 -else.
 %%debug版发送消息给客户端添加checksum
--spec sendNetMsg(Socket,#listenTcpOptions{},MsgDataList) -> ok | {error,Reason} when
-	Socket::port(),MsgDataList::list(),Reason::closed | inet:posix().
-sendNetMsg(Socket,#listenTcpOptions{packetLen = HeaderLen}, MsgDataList) when erlang:is_list(MsgDataList)->
+-spec sendNetMsg(Socket, #listenTcpOptions{}, MsgDataList) -> ok | {error, Reason} when
+	Socket :: port(), MsgDataList :: list(), Reason :: closed | inet:posix().
+sendNetMsg(Socket, #listenTcpOptions{packetLen = HeaderLen}, MsgDataList) when erlang:is_list(MsgDataList) ->
 	Sum = sumMsgDataList(MsgDataList),
 	case getWriteSessionKey() of
 		[] ->
-			{Len,List} = addNetHeader(HeaderLen,MsgDataList),
+			{Len, List} = addNetHeader(HeaderLen, MsgDataList),
 			%%记录发送的字节数
 			setWriteNetMsgSize(getWriteNetMsgSize() + Len),
 			NewList = changeDataListForSum(HeaderLen, Sum, List),
-			netmsg:sendPackage(Socket,NewList);
+			netmsg:sendPackage(Socket, NewList);
 		Key ->
-			[H|T] = MsgDataList,
-			{_,Ret} = encode(T,Key,Key,[]),
-			{Len,List} = addNetHeader(HeaderLen,[H|Ret]),
+			[H | T] = MsgDataList,
+			{_, Ret} = encode(T, Key, Key, []),
+			{Len, List} = addNetHeader(HeaderLen, [H | Ret]),
 			%%记录发送的字节数
 			setWriteNetMsgSize(getWriteNetMsgSize() + Len),
 			NewList = changeDataListForSum(HeaderLen, Sum, List),
-			netmsg:sendPackage(Socket,NewList)
+			netmsg:sendPackage(Socket, NewList)
 	end.
 
 %% 求和（包含CMD）
 sumMsgDataList(DataList) ->
-	[<<H:8,L:8>>|DataList2] = DataList,
+	[<<H:8, L:8>> | DataList2] = DataList,
 	DataSum =
 		case DataList2 of
 			[] -> 0;
@@ -115,7 +115,7 @@ changeDataListForSum(4, Sum, [<<Len:?U32>> | RightList] = List) ->
 	%% 判断是否打印日志
 	case Len =:= 0 orelse Sum2 =:= 0 orelse Len3 =:= 0 of
 		true ->
-			[<<CMD:16/little>>|_RL] = RightList,
+			[<<CMD:16/little>> | _RL] = RightList,
 %%			?WARN_OUT("NetPid:~p, CMD:~p,OldLen=~w,Sum=~w,Sum2=~w,NewLen=~w,OldData:~w",
 %%				[self(), CMD, Len, Sum, Sum2, Len3, List]),
 			ok;
@@ -126,20 +126,20 @@ changeDataListForSum(4, Sum, [<<Len:?U32>> | RightList] = List) ->
 -endif.
 
 %%发送SessionKey
--spec sendSessionKey(Socket,#listenTcpOptions{}) -> ok when Socket::port().
-sendSessionKey(Socket,#listenTcpOptions{} = Option) ->
+-spec sendSessionKey(Socket, #listenTcpOptions{}) -> ok when Socket :: port().
+sendSessionKey(Socket, #listenTcpOptions{} = Option) ->
 	List = ?SessionKey,
 	Len = erlang:length(List),
 	N = misc:rand(1, Len),
 	Key = lists:nth(N, List),
-	sendNetMsg(Socket,Option,netmsgWrite:packNetMsg(#pk_GS2U_SessionKey{key = Key})),
+	sendNetMsg(Socket, Option, netmsgWrite:packNetMsg(#pk_GS2U_SessionKey{key = Key})),
 	setWriteSessionKey(Key),
 	erlang:send_after(?UpdateSessionKeyTime, self(), updateSessionKey),
 	ok.
 
 %%处理收到客户端回复过来的SessionKey
 -spec onSessionKeyAck(#pk_U2GS_SessionKeyAck{}) -> ok.
-onSessionKeyAck(#pk_U2GS_SessionKeyAck{oldKey = OldKey,newKey = Key}) ->
+onSessionKeyAck(#pk_U2GS_SessionKeyAck{oldKey = OldKey, newKey = Key}) ->
 	case getLastWriteSessionKey() of
 		OldKey ->
 			%%如果客户端回复过来的上次的SessionKey与服务器记录的一致，
@@ -153,7 +153,7 @@ onSessionKeyAck(#pk_U2GS_SessionKeyAck{oldKey = OldKey,newKey = Key}) ->
 				LastKey ->
 					setReadSessionKey(Key);
 				_ ->
-					?ERROR_OUT("Error Client Ack SessionKey[~p] OldKey[~p] require Key[~p]",[Key,OldKey,LastKey]),
+					?ERROR_OUT("Error Client Ack SessionKey[~p] OldKey[~p] require Key[~p]", [Key, OldKey, LastKey]),
 					throw("Error Client Ack SessionKey")
 			end
 	end,
@@ -161,13 +161,13 @@ onSessionKeyAck(#pk_U2GS_SessionKeyAck{oldKey = OldKey,newKey = Key}) ->
 
 %%解密网络消息
 -spec decodeNetMsg(Msg) -> NewMsg when
-	Msg::binary(),NewMsg::binary().
+	Msg :: binary(), NewMsg :: binary().
 decodeNetMsg(Msg) ->
 	case getReadSessionKey() of
 		[] ->
 			Msg;
 		Key ->
-			decode(Msg,Key,Key,[])
+			decode(Msg, Key, Key, [])
 	end.
 
 %%==========================================================================
@@ -175,38 +175,38 @@ decodeNetMsg(Msg) ->
 %%==========================================================================
 
 %%网络消息发送前，添加包头
--spec addNetHeader(2 | 4,List) -> {Len,list()} when Len::uint(),List::list().
-addNetHeader(2,List) ->
+-spec addNetHeader(2 | 4, List) -> {Len, list()} when Len :: uint(), List :: list().
+addNetHeader(2, List) ->
 	Len = erlang:iolist_size(List) + 2,
-	checkNetMsgLen(Len,List),
-	{Len,[<<Len:?U16>> | List]};
-addNetHeader(4,List) ->
+	checkNetMsgLen(Len, List),
+	{Len, [<<Len:?U16>> | List]};
+addNetHeader(4, List) ->
 	Len = erlang:iolist_size(List) + 4,
-	checkNetMsgLen(Len,List),
-	{Len,[<<Len:?U32>> | List]}.
+	checkNetMsgLen(Len, List),
+	{Len, [<<Len:?U32>> | List]}.
 
-encode(<<>>,Key,_,AccIn) ->
-	{Key,lists:reverse(AccIn)};
-encode(<<Msg/binary>>,[],Key,AccIn) ->
-	encode(Msg,Key,Key,AccIn);
-encode(<<H:?BYTE,T/binary>>,[HK|TK],Key,AccIn) ->
+encode(<<>>, Key, _, AccIn) ->
+	{Key, lists:reverse(AccIn)};
+encode(<<Msg/binary>>, [], Key, AccIn) ->
+	encode(Msg, Key, Key, AccIn);
+encode(<<H:?BYTE, T/binary>>, [HK | TK], Key, AccIn) ->
 	HR = H bxor HK,
-	encode(T,TK,Key,[HR | AccIn]);
-encode([],Key,_,AccIn) ->
-	{Key,lists:reverse(AccIn)};
-encode([_H|_] = Data,[],Key,AccIn) ->
-	encode(Data,Key,Key,AccIn);
-encode([H|T],CurKey,Key,AccIn) ->
-	{OutKey,AccOut} = encode(H,CurKey,Key,[]),
-	encode(T,OutKey,Key,[AccOut | AccIn]).
+	encode(T, TK, Key, [HR | AccIn]);
+encode([], Key, _, AccIn) ->
+	{Key, lists:reverse(AccIn)};
+encode([_H | _] = Data, [], Key, AccIn) ->
+	encode(Data, Key, Key, AccIn);
+encode([H | T], CurKey, Key, AccIn) ->
+	{OutKey, AccOut} = encode(H, CurKey, Key, []),
+	encode(T, OutKey, Key, [AccOut | AccIn]).
 
-decode(<<>>,_,_,AccIn) ->
+decode(<<>>, _, _, AccIn) ->
 	erlang:list_to_binary(lists:reverse(AccIn));
-decode(<<Msg/binary>>,[],Key,AccIn) ->
-	decode(Msg,Key,Key,AccIn);
-decode(<<H:?BYTE,T/binary>>,[HK|TK],Key,AccIn) ->
+decode(<<Msg/binary>>, [], Key, AccIn) ->
+	decode(Msg, Key, Key, AccIn);
+decode(<<H:?BYTE, T/binary>>, [HK | TK], Key, AccIn) ->
 	HR = H bxor HK,
-	decode(T,TK,Key,[HR | AccIn]).
+	decode(T, TK, Key, [HR | AccIn]).
 
 %%获取本次的读SessionKey
 -spec getReadSessionKey() -> string().
@@ -220,9 +220,9 @@ getReadSessionKey() ->
 
 %%设置本次的读SessionKey
 -spec setReadSessionKey(String) -> ok when
-	String::string().
+	String :: string().
 setReadSessionKey(String) ->
-	put(readSessionKey,String),
+	put(readSessionKey, String),
 	ok.
 
 %%获取本次的写SessionKey
@@ -237,10 +237,10 @@ getWriteSessionKey() ->
 
 %%设置本次的写SessionKey，同时记录上次的写SessionKey
 -spec setWriteSessionKey(String) -> ok when
-	String::string().
+	String :: string().
 setWriteSessionKey(String) ->
-	put(lastWriteSessionKey,getWriteSessionKey()),
-	put(writeSessionKey,String),
+	put(lastWriteSessionKey, getWriteSessionKey()),
+	put(writeSessionKey, String),
 	ok.
 
 %%获取上次的写SessionKey
@@ -261,8 +261,8 @@ getWriteNetMsgSize() ->
 			N
 	end.
 
-setWriteNetMsgSize(N) when erlang:is_integer(N),N >= 0->
-	put(writeNetMsgSize,N),
+setWriteNetMsgSize(N) when erlang:is_integer(N), N >= 0 ->
+	put(writeNetMsgSize, N),
 	ok.
 
 getReadNetMsgSize() ->
@@ -273,17 +273,17 @@ getReadNetMsgSize() ->
 			N
 	end.
 
-setReadNetMsgSize(N) when erlang:is_integer(N),N >= 0->
-	put(readNetMsgSize,N),
+setReadNetMsgSize(N) when erlang:is_integer(N), N >= 0 ->
+	put(readNetMsgSize, N),
 	ok.
 
 %%由于客户端接收网络消息的Buffer大小只有204800，超过此大小则不会被处理，会导致掉线
 %%为了让Buffer有一定的剩余余地，所以服务器不能发送超过204800字节大小的包
-checkNetMsgLen(Len,List) ->
+checkNetMsgLen(Len, List) ->
 	case Len >= 204800 of
 		true ->
 			Cmd = socketHandler:parseMsgID(List),
-			?ERROR_OUT("NetPid:~p Send NetMsg[~ts] Size:~p Out of BufferSize:204800",[self(),Cmd,Len]);
+			?ERROR_OUT("NetPid:~p Send NetMsg[~ts] Size:~p Out of BufferSize:204800", [self(), Cmd, Len]);
 		_ ->
 			skip
 	end,

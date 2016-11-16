@@ -37,7 +37,7 @@
 ]).
 
 init([#recCreateMapArg{mapId = MapID, createRoleID = CreateRoleID, mapCfg = MapCfg}]) ->
-	?LOG_OUT("gameMapOtp ID[~p] init",[MapID]),
+	?LOG_OUT("gameMapOtp ID[~p] init", [MapID]),
 
 	%% 怪物初始化
 	%%monsterInterface:init(),
@@ -83,7 +83,7 @@ init([#recCreateMapArg{mapId = MapID, createRoleID = CreateRoleID, mapCfg = MapC
 		_ ->
 			skip
 	end,
-	
+
 	gameMapAcKingBattleAll:createKingStatueToMapOnMapInit(),
 	ok.
 
@@ -105,9 +105,9 @@ initGuildHomeMap(MapID, CreateRoleID) ->
 				x = SX,
 				y = SY,
 				guildID = GuildID,
-                playerAreaEts = mapState:getMapPlayerAreaEts(),
-                monsterAreaEts = mapState:getMapMonsterAreaEts(),
-                petAreaEts = mapState:getMapPetAreaEts(),
+				playerAreaEts = mapState:getMapPlayerAreaEts(),
+				monsterAreaEts = mapState:getMapMonsterAreaEts(),
+				petAreaEts = mapState:getMapPetAreaEts(),
 				playerEts = PlayerEts,
 				monsterEts = MonsterEts,
 				petEts = PetEts
@@ -129,9 +129,9 @@ initGuildHomeMap(MapID, CreateRoleID) ->
 								x = X,
 								y = Y,
 								guildID = GuildID,
-                                playerAreaEts = mapState:getMapPlayerAreaEts(),
-                                monsterAreaEts = mapState:getMapMonsterAreaEts(),
-                                petAreaEts = mapState:getMapPetAreaEts(),
+								playerAreaEts = mapState:getMapPlayerAreaEts(),
+								monsterAreaEts = mapState:getMapMonsterAreaEts(),
+								petAreaEts = mapState:getMapPetAreaEts(),
 								playerEts = PlayerEts,
 								monsterEts = MonsterEts,
 								petEts = PetEts
@@ -147,10 +147,10 @@ initGuildHomeMap(MapID, CreateRoleID) ->
 	ok.
 
 %% 初始化副本分组进度
--spec initCopyMapSchedule(GroupID::uint()) -> ok.
+-spec initCopyMapSchedule(GroupID :: uint()) -> ok.
 initCopyMapSchedule(GroupID) ->
 	%%?LOG_OUT("initCopyMapSchedule:~p", [GroupID]),
-	mapState:setMapStartTime(GroupID, time:getUTCNowMS()),			%% 地图开始时间，用于副本结算
+	mapState:setMapStartTime(GroupID, time:getUTCNowMS()),            %% 地图开始时间，用于副本结算
 	mapState:setAllPlayersDeadTimes(GroupID, 0),
 
 	copyMapScheduleState:setOpenBlockList(GroupID, []),
@@ -196,31 +196,31 @@ tickMap(NowTime) ->
 	tickPlayerEts(NowTime),
 	timerMgr:tick(NowTime),
 	monsterInterface:tick(NowTime),
-	mapBase:enableGameObjectState(mapState:getMapCollectStateEts(),NowTime),  %%地图上采集对象可采集状态的tick检查
-	mapBase:enableGameObjectState(mapState:getMapUseItemStateEts(),NowTime),  %%地图上使用物品可使用状态的tick检查
+	mapBase:enableGameObjectState(mapState:getMapCollectStateEts(), NowTime),  %%地图上采集对象可采集状态的tick检查
+	mapBase:enableGameObjectState(mapState:getMapUseItemStateEts(), NowTime),  %%地图上使用物品可使用状态的tick检查
 	ok.
 
 %%检查玩家Ets中保存的进程是否存在，如果不存在了，则从Ets中删除，以防止地图进程不能销毁
--spec tickPlayerEts(NowTime) -> ok when NowTime::uint().
+-spec tickPlayerEts(NowTime) -> ok when NowTime :: uint().
 tickPlayerEts(NowTime) ->
 	Time = mapState:getNextTickPlayerEtsTime(),
 	if
 		Time > 0 andalso NowTime >= Time ->
 			Ets = mapState:getMapPlayerEts(),
 			MS = ets:fun2ms(fun(Obj) ->
-				{Obj#recMapObject.code,Obj#recMapObject.pid}
-				end),
-			List = myEts:selectEts(Ets,MS),
-			Fun = fun({Code,Pid},AccIn) ->
+				{Obj#recMapObject.code, Obj#recMapObject.pid}
+			                end),
+			List = myEts:selectEts(Ets, MS),
+			Fun = fun({Code, Pid}, AccIn) ->
 				case misc:is_process_alive(Pid) of
 					true ->
 						AccIn + 1;
 					_ ->
-						myEts:deleteEts(Ets,Code),
+						myEts:deleteEts(Ets, Code),
 						AccIn
 				end
-			end,
-			TotalNum = lists:foldl(Fun,0,List),
+			      end,
+			TotalNum = lists:foldl(Fun, 0, List),
 			mapState:setMapPlayerNum(TotalNum),
 			%%设置下次检查的时间，30分钟检查一次
 			mapState:setNextTickPlayerEtsTime(NowTime + 30000);
@@ -233,7 +233,7 @@ tickPlayerEts(NowTime) ->
 	ok.
 
 
--spec tickNormalMap(NowTime) -> ok when NowTime::uint().
+-spec tickNormalMap(NowTime) -> ok when NowTime :: uint().
 tickNormalMap(NowTime) ->
 	case mapState:getDestoryTime() of
 		0 ->
@@ -254,15 +254,15 @@ checkDestory() ->
 	%%检查地图中是否有人，如果没人则准备60秒后退出进程
 	case mapState:getMapPlayerNum() =< 0 of
 		true ->
-			?LOG_OUT("MapPid:~p Num =< 0, Will Be Destory",[self()]),
-			prepareDestory(?DestoryNormalMapNoBodyTime,false);
+			?LOG_OUT("MapPid:~p Num =< 0, Will Be Destory", [self()]),
+			prepareDestory(?DestoryNormalMapNoBodyTime, false);
 		_ ->
 			skip
 	end,
 	ok.
 
 %% 活动地图回收心跳
--spec tickActivityMap(NowTime::uint()) -> ok.
+-spec tickActivityMap(NowTime :: uint()) -> ok.
 tickActivityMap(NowTime) ->
 	MaxTime = mapState:getCopyMapExistTime(),
 	case NowTime >= MaxTime of
@@ -296,20 +296,20 @@ tickActivityMap(NowTime) ->
 		_ ->
 			?LOG_OUT("tickActivityMap:[mapid=~p,mappid=~p], nowtime:~p, maxtime=~p", [mapState:getMapId(), self(), NowTime, MaxTime]),
 			%% 大于活动地图存在最大时间了，立即销毁
- 			sendDestoryToSelf("ActivityMap Life End")
+			sendDestoryToSelf("ActivityMap Life End")
 	end,
 	ok.
 
--spec tickNotNormalMap(NowTime) -> ok when NowTime::uint().
+-spec tickNotNormalMap(NowTime) -> ok when NowTime :: uint().
 tickNotNormalMap(NowTime) ->
 	IsEmpty = mapState:getMapPlayerNum() =< 0,
 	%%勇士试炼副本没进度不算完成
 	IsCompleted = case mapState:getMapSubType() of
-					  ?MapSubTypeWarrior ->
-						  false;
-					  _ ->
-						  copyMapScheduleComplete:checkCompleteCopyMap(0, 0)
-				  end,
+		              ?MapSubTypeWarrior ->
+			              false;
+		              _ ->
+			              copyMapScheduleComplete:checkCompleteCopyMap(0, 0)
+	              end,
 	if
 		IsEmpty andalso IsCompleted ->
 			%%如果已经完成且没人则立即销毁
@@ -320,7 +320,7 @@ tickNotNormalMap(NowTime) ->
 			case mapState:getDestoryTime() of
 				0 ->
 					#mapsettingCfg{wait_time = WT} = getCfg:getCfgPStack(cfg_mapsetting, mapState:getMapId()),
-					prepareDestory(WT * 1000,false);
+					prepareDestory(WT * 1000, false);
 				_ ->
 					tickCopyMap(NowTime)
 			end;
@@ -338,7 +338,7 @@ tickNotNormalMap(NowTime) ->
 	end,
 	ok.
 
--spec tickCopyMap(NowTime) -> ok when NowTime::uint().
+-spec tickCopyMap(NowTime) -> ok when NowTime :: uint().
 tickCopyMap(NowTime) ->
 	MaxTime = mapState:getCopyMapExistTime(),
 	case NowTime >= MaxTime of
@@ -377,52 +377,53 @@ tickCopyMap(NowTime) ->
 	ok.
 
 %%没有进度的副本类型tick
--spec noScheduleTick(NowTime) -> ok when NowTime::uint().
+-spec noScheduleTick(NowTime) -> ok when NowTime :: uint().
 noScheduleTick(NowTime) ->
 	tickCopyMap(NowTime),%%包含普通副本的tick
 	AliveMonster = mapState:getMapAliveMonsterNum(),
 	Cnf = mapState:getCnfFromdic(),
-	NeedDestory = 
+	NeedDestory =
 		case Cnf of
-			#copyMapDemonBattleCnf{}->
+			#copyMapDemonBattleCnf{} ->
 				mapState:getGoddessDead();
 			_ ->
 				false
 		end,
-	One = get({one,self()}) =:= undefined,
+	One = get({one, self()}) =:= undefined,
 	case NeedDestory andalso One of
 		true ->
-			put({one,self()},true),
+			put({one, self()}, true),
 			copyMapDemonBattle:noticeScheduleStatus(1),%%挑战失败
 			copyMapGoddess:goddessSettlement(),
-			erlang:send_after(1000*60, self(), {mapOtpAfterDo,fun()->sendDestoryToSelf("First Step Destory") end });
-		false when AliveMonster/= undefined andalso AliveMonster =< 0 ->
-			
+			erlang:send_after(1000 * 60, self(), {mapOtpAfterDo, fun() -> sendDestoryToSelf("First Step Destory") end});
+		false when AliveMonster /= undefined andalso AliveMonster =< 0 ->
+
 			CurrScheduleNum = Cnf#copyMapDemonBattleCnf.fableCurrentSchedule,
 			PrepareTimeNum = Cnf#copyMapDemonBattleCnf.fablePreparetimeNum,
 			ChallengetimeNum = Cnf#copyMapDemonBattleCnf.fableChallengetimeNum,
 			AllScheduleNum = Cnf#copyMapDemonBattleCnf.fableAllSchedule,
-			
+
 			case copyMapGoddess:initBoss() of
 				ok ->
 					ok;
-				Interval when erlang:is_integer(Interval) andalso CurrScheduleNum < AllScheduleNum->
+				Interval when erlang:is_integer(Interval) andalso CurrScheduleNum < AllScheduleNum ->
 					mapState:clearMapAliveMonsterNum(),
 					mapState:setCnf2dic(Cnf#copyMapDemonBattleCnf{
-																		fableCurrentSchedule = CurrScheduleNum+1,
-																		fablePreparetimeEnd = time:getUTCNowSec()+PrepareTimeNum,
-																		fableChallengetimeEnd = time:getUTCNowSec()+PrepareTimeNum+ChallengetimeNum
-																	   }),
+						fableCurrentSchedule = CurrScheduleNum + 1,
+						fablePreparetimeEnd = time:getUTCNowSec() + PrepareTimeNum,
+						fableChallengetimeEnd = time:getUTCNowSec() + PrepareTimeNum + ChallengetimeNum
+					}),
 					copyMapDemonBattle:noticeGift(),%%通知玩家发本关宝箱
 					copyMapDemonBattle:noticeScheduleStatus(0),%%挑战成功
-					erlang:send_after(Interval, self(), {mapOtpAfterDo,fun()->copyMapGoddess:initSchedule() end });
+					erlang:send_after(Interval, self(), {mapOtpAfterDo, fun() -> copyMapGoddess:initSchedule() end});
 				_ ->
 					case One of
 						true ->
-							put({one,self()},true),
+							put({one, self()}, true),
 							copyMapGoddess:goddessSettlement(),
 							%%完成了总进度，出副本
-							erlang:send_after(1000*60, self(), {mapOtpAfterDo,fun()->sendDestoryToSelf("All Complete Destory") end });
+							erlang:send_after(1000 * 60, self(), {mapOtpAfterDo, fun() ->
+								sendDestoryToSelf("All Complete Destory") end});
 						_ ->
 							ok
 					end
@@ -434,10 +435,10 @@ noScheduleTick(NowTime) ->
 	end,
 	ok.
 
--spec prepareDestory(DestoryAfterTime,IsForceDestory) -> ok when DestoryAfterTime::uint(),IsForceDestory::boolean().
-prepareDestory(DestoryAfterTime,IsForceDestory) ->
+-spec prepareDestory(DestoryAfterTime, IsForceDestory) -> ok when DestoryAfterTime :: uint(), IsForceDestory :: boolean().
+prepareDestory(DestoryAfterTime, IsForceDestory) ->
 	?LOG_OUT("prepareDestory Map[~p],PID[~p],DestoryAfterTime[~p],IsForceDestory[~p]",
-		[mapState:getMapId(),self(),DestoryAfterTime,IsForceDestory]),
+		[mapState:getMapId(), self(), DestoryAfterTime, IsForceDestory]),
 
 	mapState:setDestoryTime(DestoryAfterTime + time:getUTCNowMS()),
 	mapState:setForceDestory(IsForceDestory),
@@ -448,14 +449,14 @@ prepareDestory(DestoryAfterTime,IsForceDestory) ->
 			MapID = mapState:getMapId(),
 			case mapState:getGoonCopyMapState() of
 				true -> skip;
-				_ -> core:sendMsgToMapMgr(MapID, prepareDestory, {MapID,self()})
+				_ -> core:sendMsgToMapMgr(MapID, prepareDestory, {MapID, self()})
 			end;
 		_ ->
 			skip
 	end,
 	ok.
 
--spec sendDestoryToSelf(Reason) -> ok when Reason::string().
+-spec sendDestoryToSelf(Reason) -> ok when Reason :: string().
 sendDestoryToSelf(Reason) ->
 	case mapState:getWaitForceDestory() of
 		true ->
@@ -483,14 +484,14 @@ sendDestoryToSelf(Reason) ->
 				true ->
 					GuildID = mapState:getGuildID(),
 					NowTime = time:getSyncTime1970FromDBS(),
-					core:sendMsgToMapMgr(MapID, guildCopyMapOver, {MapID,GuildID}),
+					core:sendMsgToMapMgr(MapID, guildCopyMapOver, {MapID, GuildID}),
 					psMgr:sendMsg2PS(?PsNameGuild, updateLastGuildCopyOverTime, {GuildID, NowTime, 0});
 				_ ->
 					skip
 			end,
 			mapState:setWaitForceDestory(true),
-			?LOG_OUT("MapPid:~p sendDestoryToSelf By:~p",[self(),Reason]),
-			psMgr:sendMsg2PS(self(),destory,{})
+			?LOG_OUT("MapPid:~p sendDestoryToSelf By:~p", [self(), Reason]),
+			psMgr:sendMsg2PS(self(), destory, {})
 	end,
 	ok.
 
@@ -508,32 +509,32 @@ kickAllPlayer() ->
 	MapPid = self(),
 	MatchSpec = ets:fun2ms(fun(Object) when Object#recMapObject.mapPid =:= MapPid ->
 		Object
-	end),
-	List = myEts:selectEts(Ets,MatchSpec),
+	                       end),
+	List = myEts:selectEts(Ets, MatchSpec),
 	case List of
 		[] ->
-			?LOG_OUT("MapPid:~p kickAllPlayer of ETS:~p，no player",[MapPid,Ets]),
+			?LOG_OUT("MapPid:~p kickAllPlayer of ETS:~p，no player", [MapPid, Ets]),
 			skip;
 		_ ->
-			?LOG_OUT("MapPid:~p kickAllPlayer of ETS:~p",[MapPid,Ets]),
+			?LOG_OUT("MapPid:~p kickAllPlayer of ETS:~p", [MapPid, Ets]),
 			[kickPlayer(Object) || Object <- List]
 	end,
 	ok.
 
--spec kickAllPlayer(GroupID) -> ok when GroupID::uint().
+-spec kickAllPlayer(GroupID) -> ok when GroupID :: uint().
 kickAllPlayer(GroupID) ->
 	Ets = mapState:getMapPlayerEts(),
 	MapPid = self(),
-	?LOG_OUT("MapPid:~p kickAllPlayer of ETS:~p By GroupID:~p",[MapPid,Ets,GroupID]),
+	?LOG_OUT("MapPid:~p kickAllPlayer of ETS:~p By GroupID:~p", [MapPid, Ets, GroupID]),
 	MatchSpec = ets:fun2ms(fun(Object) when
 		Object#recMapObject.mapPid =:= MapPid andalso Object#recMapObject.groupID =:= GroupID ->
 		Object
-	end),
-	List = myEts:selectEts(Ets,MatchSpec),
+	                       end),
+	List = myEts:selectEts(Ets, MatchSpec),
 	case List of
 		[] ->
 			eraseGroup(GroupID);
-		[Object|_] ->
+		[Object | _] ->
 			kickPlayer(Object),
 			erlang:send_after(1000, self(), {clearBitMapPlayer, self(), GroupID})
 	end,
@@ -541,7 +542,7 @@ kickAllPlayer(GroupID) ->
 
 eraseGroup(GroupID) when erlang:is_integer(GroupID) andalso GroupID >= 0 ->
 	?DEBUG_OUT("eraseGroup:mapid=~p,mappid=~p,mapgroupid=~p,groupid=~p",
-		[mapState:getMapId(),self(),mapState:getMapId(GroupID),GroupID]),
+		[mapState:getMapId(), self(), mapState:getMapId(GroupID), GroupID]),
 	mapState:deleteAllPlayersDeadTimes(GroupID),
 	mapState:deleteMapStartTIme(GroupID),
 	mapState:deleteGrouMapDelayInit(GroupID),
@@ -557,63 +558,63 @@ eraseGroup(_) ->
 	ok.
 
 -spec kickPlayer(#recMapObject{}) -> ok.
-kickPlayer(#recMapObject{pid = Pid,id = RoleID,name = Name}) ->
-	?LOG_OUT("MapPid:~p kickplayer ID:~p Name:~ts", [self(),RoleID,Name]),
-	psMgr:sendMsg2PS(Pid,kickCopyMapPlayer,{}),
+kickPlayer(#recMapObject{pid = Pid, id = RoleID, name = Name}) ->
+	?LOG_OUT("MapPid:~p kickplayer ID:~p Name:~ts", [self(), RoleID, Name]),
+	psMgr:sendMsg2PS(Pid, kickCopyMapPlayer, {}),
 	ok.
 
 -spec destoryAllMonster() -> ok.
 destoryAllMonster() ->
 	MonEts = mapState:getMapMonsterEts(),
 	MapPid = self(),
-	?LOG_OUT("MapPid:~p destory all monster of map ets tables is [~p]",[self(),MonEts]),
+	?LOG_OUT("MapPid:~p destory all monster of map ets tables is [~p]", [self(), MonEts]),
 	MatchSpec = ets:fun2ms(fun(Object) when erlang:is_pid(Object#recMapObject.pid) andalso Object#recMapObject.mapPid =:= MapPid ->
-		{Object#recMapObject.code,Object#recMapObject.mapPid}
-	end),
-	List = myEts:selectEts(MonEts,MatchSpec),
+		{Object#recMapObject.code, Object#recMapObject.mapPid}
+	                       end),
+	List = myEts:selectEts(MonEts, MatchSpec),
 	case List of
 		[] ->
 			skip;
 		_ ->
-			[destoryMonster(Code1,Pid1) || {Code1,Pid1} <- List]
+			[destoryMonster(Code1, Pid1) || {Code1, Pid1} <- List]
 	end,
 	ok.
 
 %% 销毁指定位面的怪物
--spec destoryAllMonster(GroupID::uint()) -> ok.
+-spec destoryAllMonster(GroupID :: uint()) -> ok.
 destoryAllMonster(GroupID) ->
 	MonEts = mapState:getMapMonsterEts(),
 	MapPid = self(),
-	?LOG_OUT("MapPid:~p destory all monster of map ets tables is [~p]",[self(),MonEts]),
+	?LOG_OUT("MapPid:~p destory all monster of map ets tables is [~p]", [self(), MonEts]),
 	MatchSpec = ets:fun2ms(fun(Object) when
 		erlang:is_pid(Object#recMapObject.pid) andalso Object#recMapObject.mapPid =:= MapPid andalso Object#recMapObject.groupID =:= GroupID ->
-		{Object#recMapObject.code,Object#recMapObject.pid}
-	end),
-	List = myEts:selectEts(MonEts,MatchSpec),
+		{Object#recMapObject.code, Object#recMapObject.pid}
+	                       end),
+	List = myEts:selectEts(MonEts, MatchSpec),
 	case List of
 		[] ->
 			skip;
 		_ ->
-			[destoryMonster(Code1,Pid1) || {Code1,Pid1} <- List]
+			[destoryMonster(Code1, Pid1) || {Code1, Pid1} <- List]
 	end,
 	ok.
 
 %% 销毁指定ID的怪物
--spec destoryAllMonsterByID(MonsterID::uint()) -> ok.
+-spec destoryAllMonsterByID(MonsterID :: uint()) -> ok.
 destoryAllMonsterByID(MonsterID) ->
 	MonEts = mapState:getMapMonsterEts(),
 	MapPid = self(),
-	?LOG_OUT("MapPid:~p destory monster of map ets tables is [~p]",[self(),MonEts]),
+	?LOG_OUT("MapPid:~p destory monster of map ets tables is [~p]", [self(), MonEts]),
 	MatchSpec = ets:fun2ms(fun(Object) when
 		erlang:is_pid(Object#recMapObject.pid) andalso Object#recMapObject.mapPid =:= MapPid andalso MonsterID =:= Object#recMapObject.id ->
-		{Object#recMapObject.code,Object#recMapObject.pid}
-	end),
-	List = myEts:selectEts(MonEts,MatchSpec),
+		{Object#recMapObject.code, Object#recMapObject.pid}
+	                       end),
+	List = myEts:selectEts(MonEts, MatchSpec),
 	case List of
 		[] ->
 			skip;
 		_ ->
-			[destoryMonster(Code1,Pid1) || {Code1,Pid1} <- List]
+			[destoryMonster(Code1, Pid1) || {Code1, Pid1} <- List]
 	end,
 	ok.
 %% 销毁所有的采集物
@@ -621,12 +622,12 @@ destoryAllMonsterByID(MonsterID) ->
 destoryAllCollect() ->
 	CEts = mapState:getMapCollectEts(),
 	MapPid = self(),
-	?LOG_OUT("MapPid:~p destory all collect of map ets tables is [~p]",[self(),CEts]),
+	?LOG_OUT("MapPid:~p destory all collect of map ets tables is [~p]", [self(), CEts]),
 	MatchSpec = ets:fun2ms(fun(Object) when
 		erlang:is_pid(Object#recMapObject.pid) andalso Object#recMapObject.mapPid =:= MapPid ->
-        {Object#recMapObject.code, Object#recMapObject.x, Object#recMapObject.y}
-	end),
-	List = myEts:selectEts(CEts,MatchSpec),
+		{Object#recMapObject.code, Object#recMapObject.x, Object#recMapObject.y}
+	                       end),
+	List = myEts:selectEts(CEts, MatchSpec),
 	case List of
 		[] ->
 			skip;
@@ -636,16 +637,16 @@ destoryAllCollect() ->
 	ok.
 
 %% 销毁所有的采集物
--spec destoryAllCollect(GroupID::uint()) -> ok.
+-spec destoryAllCollect(GroupID :: uint()) -> ok.
 destoryAllCollect(GroupID) ->
 	CEts = mapState:getMapCollectEts(),
 	MapPid = self(),
-	?LOG_OUT("MapPid:~p destory all collect of map ets tables is [~p]",[MapPid,CEts]),
+	?LOG_OUT("MapPid:~p destory all collect of map ets tables is [~p]", [MapPid, CEts]),
 	MatchSpec = ets:fun2ms(fun(Object) when
 		erlang:is_pid(Object#recMapObject.pid) andalso Object#recMapObject.mapPid =:= MapPid andalso Object#recMapObject.groupID =:= GroupID ->
-        {Object#recMapObject.code, Object#recMapObject.x, Object#recMapObject.y}
-	end),
-	List = myEts:selectEts(CEts,MatchSpec),
+		{Object#recMapObject.code, Object#recMapObject.x, Object#recMapObject.y}
+	                       end),
+	List = myEts:selectEts(CEts, MatchSpec),
 	case List of
 		[] ->
 			skip;
@@ -655,19 +656,19 @@ destoryAllCollect(GroupID) ->
 	ok.
 
 %% 清理该地图中，属性该分组的所有对象
--spec clearGroupAllObject(GroupID::uint()) -> ok.
+-spec clearGroupAllObject(GroupID :: uint()) -> ok.
 clearGroupAllObject(GroupID) ->
 	destoryAllMonster(GroupID),
 	destoryAllCollect(GroupID),
 	ok.
 
 %% 删除采集物
--spec destoryCollect({Code::uint(), X::float(), Y::float()}) -> ok.
+-spec destoryCollect({Code :: uint(), X :: float(), Y :: float()}) -> ok.
 destoryCollect({Code, X, Y}) ->
 	%% 注意，要先同步给客户端，服务器再删除
 	Ets = mapState:getMapCollectEts(),
 
-    %% 从区域中移除
+	%% 从区域中移除
 %%    area:delObjFromAreaEts(Code, X, Y, mapState:getMapCollectAreaEts()),
 
 	%% 同步给客户端
@@ -683,13 +684,13 @@ destoryCollect({Code, X, Y}) ->
 	codeMgr:reclaimCode(Code),
 	ok.
 
--spec destoryMonster(Code,Pid) -> ok when Code::uint(),Pid::pid().
-destoryMonster(Code,Pid) ->
+-spec destoryMonster(Code, Pid) -> ok when Code :: uint(), Pid :: pid().
+destoryMonster(Code, Pid) ->
 	monsterInterface:clearSpawn(Code),
 	ok.
 
 %% 获取地图ID，考虑分组
--spec getMapID(GroupID::uint()) -> uint().
+-spec getMapID(GroupID :: uint()) -> uint().
 getMapID(GroupID) ->
 	case groupBase:getMapIDByGroupID(GroupID) of
 		0 ->
@@ -698,21 +699,21 @@ getMapID(GroupID) ->
 			ID
 	end.
 
--spec doFun4AllPlayer(Fun) -> ok when Fun::fun().
-doFun4AllPlayer(Fun) when erlang:is_function(Fun)->
+-spec doFun4AllPlayer(Fun) -> ok when Fun :: fun().
+doFun4AllPlayer(Fun) when erlang:is_function(Fun) ->
 	PlayerEts = mapState:getMapPlayerEts(),
 	PlayerList = ets:tab2list(PlayerEts),
 	lists:foreach(Fun, PlayerList).
 
 -ifndef(ISOpenSaveCopyMapScheduleSwitch).
 %% 直接当成新副本初始化
--spec initMapSchedule(CopyMapID::uint(), OwnerID::uint()) -> boolean().
+-spec initMapSchedule(CopyMapID :: uint(), OwnerID :: uint()) -> boolean().
 initMapSchedule(CopyMapID, OwnerID) ->
 	initNormalCopyMapSchedule(CopyMapID, OwnerID),
 	false.
 -else.
 %% 初始化副本进度，返回false，表示还要全刷地图数据中的怪物
--spec initMapSchedule(CopyMapID::uint(), OwnerID::uint()) -> boolean().
+-spec initMapSchedule(CopyMapID :: uint(), OwnerID :: uint()) -> boolean().
 initMapSchedule(CopyMapID, OwnerID) ->
 	case gameMapMgrCopyMapSchedule:queryCopyMapData(CopyMapID, OwnerID) of
 		{} ->
@@ -736,13 +737,13 @@ initMapSchedule(CopyMapID, OwnerID) ->
 			mapState:setCopyMapExistTime(CopyMapID, NowTime + (ATime - UTime) * 1000),
 
 			GroupID = 0,
-			mapState:setMapStartTime(GroupID, LTime - UTime * 1000),	%% 地图开始时间，用于副本结算
+			mapState:setMapStartTime(GroupID, LTime - UTime * 1000),    %% 地图开始时间，用于副本结算
 			mapState:setMapLevel(GroupID, RoleLevel),
 			mapState:setAllPlayersDeadTimes(GroupID, DeadTimes),
 
 			Fun = fun({SInit, _}) ->
 				SInit /= CS
-			end,
+			      end,
 			{L1, L2} = lists:splitwith(Fun, SConf),
 			ScheduleIndex = length(L1) + 1,
 			copyMapScheduleState:setMapSchedule(GroupID, ScheduleIndex),
@@ -789,7 +790,7 @@ saveCopyMapData() ->
 	OwnerID = mapState:getMapOwnerID(0),
 	MapID = mapState:getMapId(),
 	saveCopyMapData(OwnerID, MapID).
--spec saveCopyMapData(OldOwnerID::uint(), OldMapID::uint()) -> boolean().
+-spec saveCopyMapData(OldOwnerID :: uint(), OldMapID :: uint()) -> boolean().
 saveCopyMapData(OldOwnerID, OldMapID) ->
 	MapID = mapState:getMapId(),
 	case getCfg:getCfgPStack(cfg_mapsetting, MapID) of
@@ -806,8 +807,8 @@ saveCopyMapData(OldOwnerID, OldMapID) ->
 					Schedule = copyMapScheduleState:getMapSchedule(GroupID),
 					{InitCS, _} = copyMapScheduleComplete:getCopyMapScheduleConf(MapID, Schedule),
 
-					NowTime = time:getUTCNowMS(),				%% 当前时间
-					StartTime = mapState:getMapStartTime(GroupID),		%% 开始时间
+					NowTime = time:getUTCNowMS(),                %% 当前时间
+					StartTime = mapState:getMapStartTime(GroupID),        %% 开始时间
 					DiffTime = (NowTime - StartTime) / 1000,
 
 					R = #recCopyMapSchedule{
@@ -854,7 +855,7 @@ deleteMapCallBack() ->
 	end,
 	ok.
 %%勇士试炼种boss
--spec createWarriorTrialBoss(Mission::uint()) -> ok.
+-spec createWarriorTrialBoss(Mission :: uint()) -> ok.
 createWarriorTrialBoss(Mission) ->
 	#warriortrialCfg{bossid = BossID, coordinate = [{PosX, PosY}]} = getCfg:getCfgPStack(cfg_warriortrial, Mission),
 	%%先删除副本中所有的怪
@@ -864,14 +865,14 @@ createWarriorTrialBoss(Mission) ->
 	copyMapScheduleInit:addMonsterToMap(0, [{BossID, 1, PosX, PosY}], 0),
 	ok.
 %% 获得一种怪物的数量
--spec getMonsterNumByID(MonsterID::uint()) -> uint().
+-spec getMonsterNumByID(MonsterID :: uint()) -> uint().
 getMonsterNumByID(MonsterID) ->
 	MonEts = mapState:getMapMonsterEts(),
 	MapPid = self(),
 	MatchSpec = ets:fun2ms(fun(Object) when
 		erlang:is_pid(Object#recMapObject.pid) andalso Object#recMapObject.mapPid =:= MapPid andalso MonsterID =:= Object#recMapObject.id ->
 		{Object#recMapObject.code}
-	end),
-	List = myEts:selectEts(MonEts,MatchSpec),
+	                       end),
+	List = myEts:selectEts(MonEts, MatchSpec),
 	length(List).
 

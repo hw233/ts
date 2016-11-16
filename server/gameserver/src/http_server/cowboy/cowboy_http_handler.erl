@@ -17,13 +17,13 @@
 -type opts() :: any().
 -type state() :: any().
 -type terminate_reason() :: {normal, shutdown}
-	| {normal, timeout} %% Only occurs in loop handlers.
-	| {error, closed} %% Only occurs in loop handlers.
-	| {error, overflow} %% Only occurs in loop handlers.
-	| {error, atom()}.
+| {normal, timeout} %% Only occurs in loop handlers.
+| {error, closed} %% Only occurs in loop handlers.
+| {error, overflow} %% Only occurs in loop handlers.
+| {error, atom()}.
 
 -callback init({atom(), http}, Req, opts())
-	-> {ok, Req, state()}
+		-> {ok, Req, state()}
 	| {loop, Req, state()}
 	| {loop, Req, state(), hibernate}
 	| {loop, Req, state(), timeout()}
@@ -31,7 +31,7 @@
 	| {shutdown, Req, state()}
 	| {upgrade, protocol, module()}
 	| {upgrade, protocol, module(), Req, opts()}
-	when Req::cowboy_req:req().
+	when Req :: cowboy_req:req().
 -callback handle(Req, State) -> {ok, Req, State}
-	when Req::cowboy_req:req(), State::state().
+	when Req :: cowboy_req:req(), State :: state().
 -callback terminate(terminate_reason(), cowboy_req:req(), state()) -> ok.

@@ -22,13 +22,13 @@ getMapId() ->
 	end.
 
 % 获取分组的地图ID
--spec getMapId(GroupID::uint()) -> uint16() .
+-spec getMapId(GroupID :: uint()) -> uint16().
 getMapId(GroupID) ->
 	gameMapLogic:getMapID(GroupID).
 
 % 设置地图ID
--spec setMapId(MapId) -> OldVal | undefined when 
-		  MapId :: number(), OldVal :: number().
+-spec setMapId(MapId) -> OldVal | undefined when
+	MapId :: number(), OldVal :: number().
 setMapId(MapId) when erlang:is_number(MapId) ->
 	put('MapId', MapId).
 
@@ -38,8 +38,8 @@ getMapType() ->
 	get('MapType').
 
 % 设置地图Type
--spec setMapType(MapType) -> OldVal  | undefined when 
-		  MapType :: uint(), OldVal :: uint().
+-spec setMapType(MapType) -> OldVal  | undefined when
+	MapType :: uint(), OldVal :: uint().
 setMapType(MapType) when erlang:is_integer(MapType) andalso MapType >= 0 ->
 	put('MapType', MapType).
 
@@ -49,36 +49,36 @@ getMapLine() ->
 	get('MapLine').
 
 % 设置地图Line
--spec setMapLine(MapLine) -> OldVal  | undefined when 
-		  MapLine :: uint(), OldVal :: uint().
+-spec setMapLine(MapLine) -> OldVal  | undefined when
+	MapLine :: uint(), OldVal :: uint().
 setMapLine(MapLine) when erlang:is_integer(MapLine) andalso MapLine >= 0 ->
 	put('MapLine', MapLine).
 
 %% 区域ETS
 setMapAreaEts({_PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, _PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = ETS) ->
-    put('MapAreaEts', ETS).
+	put('MapAreaEts', ETS).
 
 getMapNpcAreaEts() ->
-    {_PlayerAreaEts, _MonsterAreaEts, NpcAreaEts, _PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
-    NpcAreaEts.
+	{_PlayerAreaEts, _MonsterAreaEts, NpcAreaEts, _PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
+	NpcAreaEts.
 getMapCollectAreaEts() ->
-    {_PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, _PetAreaEts, CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
-    CollectAreaEts.
+	{_PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, _PetAreaEts, CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
+	CollectAreaEts.
 getMapUseItemAreaEts() ->
-    {_PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, _PetAreaEts, _CollectAreaEts, UseItemAreaEts} = getMapAreaEts(),
-    UseItemAreaEts.
+	{_PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, _PetAreaEts, _CollectAreaEts, UseItemAreaEts} = getMapAreaEts(),
+	UseItemAreaEts.
 getMapPlayerAreaEts() ->
-    {PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, _PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
-    PlayerAreaEts.
+	{PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, _PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
+	PlayerAreaEts.
 getMapPetAreaEts() ->
-    {_PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
-    PetAreaEts.
+	{_PlayerAreaEts, _MonsterAreaEts, _NpcAreaEts, PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
+	PetAreaEts.
 getMapMonsterAreaEts() ->
-    {_PlayerAreaEts, MonsterAreaEts, _NpcAreaEts, _PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
-    MonsterAreaEts.
+	{_PlayerAreaEts, MonsterAreaEts, _NpcAreaEts, _PetAreaEts, _CollectAreaEts, _UseItemAreaEts} = getMapAreaEts(),
+	MonsterAreaEts.
 
 getMapAreaEts() ->
-    get('MapAreaEts').
+	get('MapAreaEts').
 
 % 获取地图上玩家的ETS表
 -spec getMapPlayerEts() -> Result | undefined when Result :: etsTab().
@@ -86,8 +86,8 @@ getMapPlayerEts() ->
 	get('MapPlayerEts').
 
 % 设置地图上 玩家的ETS表
--spec setMapPlayerEts(PlayerEts) -> OldVal  | undefined when 
-		  PlayerEts :: etsTab(), OldVal :: etsTab().
+-spec setMapPlayerEts(PlayerEts) -> OldVal  | undefined when
+	PlayerEts :: etsTab(), OldVal :: etsTab().
 setMapPlayerEts(PlayerEts) ->
 	put('MapPlayerEts', PlayerEts).
 
@@ -97,8 +97,8 @@ getMapMonsterEts() ->
 	get('MapMonsterEts').
 
 % 设置地图上怪物的ETS表
--spec setMapMonsterEts(MonsterEts) -> OldVal  | undefined when 
-		  MonsterEts :: etsTab(), OldVal :: etsTab().
+-spec setMapMonsterEts(MonsterEts) -> OldVal  | undefined when
+	MonsterEts :: etsTab(), OldVal :: etsTab().
 setMapMonsterEts(MonsterEts) ->
 	put('MapMonsterEts', MonsterEts).
 
@@ -108,8 +108,8 @@ getMapPetEts() ->
 	get('MapPetEts').
 
 % 设置地图上宠物的ETS表
--spec setMapPetEts(PetEts) -> OldVal  | undefined when 
-		  PetEts :: etsTab(), OldVal :: etsTab().
+-spec setMapPetEts(PetEts) -> OldVal  | undefined when
+	PetEts :: etsTab(), OldVal :: etsTab().
 setMapPetEts(PetEts) ->
 	put('MapPetEts', PetEts).
 
@@ -119,8 +119,8 @@ getMapNpcEts() ->
 	get('MapNpcEts').
 
 % 设置地图上 NPC 的ETS表
--spec setMapNpcEts(NpcEts) -> OldVal  | undefined when 
-		  NpcEts :: etsTab(), OldVal :: etsTab().
+-spec setMapNpcEts(NpcEts) -> OldVal  | undefined when
+	NpcEts :: etsTab(), OldVal :: etsTab().
 setMapNpcEts(NpcEts) ->
 	put('MapNpcEts', NpcEts).
 
@@ -130,8 +130,8 @@ getMapCollectEts() ->
 	get('MapCollectEts').
 
 % 设置地图上 采集对象 的ETS表
--spec setMapCollectEts(CollectEts) -> OldVal  | undefined when 
-		  CollectEts :: etsTab(), OldVal :: etsTab().
+-spec setMapCollectEts(CollectEts) -> OldVal  | undefined when
+	CollectEts :: etsTab(), OldVal :: etsTab().
 setMapCollectEts(CollectEts) ->
 	put('MapCollectEts', CollectEts).
 
@@ -141,18 +141,18 @@ getMapUseItemEts() ->
 	get('MapUseItemEts').
 
 % 设置地图上 使用物品 的ETS表
--spec setMapUseItemEts(UseItemEts) -> OldVal  | undefined when 
-		  UseItemEts :: etsTab(), OldVal :: etsTab().
+-spec setMapUseItemEts(UseItemEts) -> OldVal  | undefined when
+	UseItemEts :: etsTab(), OldVal :: etsTab().
 setMapUseItemEts(UseItemEts) ->
 	put('MapUseItemEts', UseItemEts).
 
 %%地宫配置
--spec setCnf2dic(Cnf::#copyMapDemonBattleCnf{}) ->#copyMapDemonBattleCnf{}.
-setCnf2dic(Cnf) when erlang:is_record(Cnf, copyMapDemonBattleCnf)->
-	put(copyMapDemonBattleCnf,Cnf),
+-spec setCnf2dic(Cnf :: #copyMapDemonBattleCnf{}) -> #copyMapDemonBattleCnf{}.
+setCnf2dic(Cnf) when erlang:is_record(Cnf, copyMapDemonBattleCnf) ->
+	put(copyMapDemonBattleCnf, Cnf),
 	Cnf.
 %%地宫配置
--spec getCnfFromdic() -> Val::#copyMapDemonBattleCnf{} | undefined.
+-spec getCnfFromdic() -> Val :: #copyMapDemonBattleCnf{} | undefined.
 getCnfFromdic() ->
 	get(copyMapDemonBattleCnf).
 
@@ -162,8 +162,8 @@ getMapPlayerNum() ->
 	get('MapPlayerNum').
 
 % 设置地图上所有玩家的人数
--spec setMapPlayerNum(MapPlayerNum) -> OldVal  | undefined when 
-		  MapPlayerNum :: uint(), OldVal :: uint().
+-spec setMapPlayerNum(MapPlayerNum) -> OldVal  | undefined when
+	MapPlayerNum :: uint(), OldVal :: uint().
 setMapPlayerNum(MapPlayerNum) when erlang:is_integer(MapPlayerNum) andalso MapPlayerNum >= 0 ->
 	put('MapPlayerNum', MapPlayerNum).
 
@@ -174,9 +174,9 @@ getMapCollectStateEts() ->
 
 %%设置玩家所在地图的所有采集对象状态 Ets表
 -spec setMapCollectStateEts(CollectStateEts) -> OldVal | undefined when
-		  CollectStateEts :: etsTab(), OldVal::etsTab().
+	CollectStateEts :: etsTab(), OldVal :: etsTab().
 setMapCollectStateEts(CollectStateEts) ->
-	put('MapCollectStateEts',CollectStateEts).
+	put('MapCollectStateEts', CollectStateEts).
 
 %%获取使用物品当前状态 Ets表
 -spec getMapUseItemStateEts() -> etsTab() | undefined.
@@ -185,14 +185,14 @@ getMapUseItemStateEts() ->
 
 %%设置玩家所在地图的所有使用物品状态 Ets表
 -spec setMapUseItemStateEts(UseItemStateEts) -> OldVal | undefined when
-		  UseItemStateEts :: etsTab(), OldVal::etsTab().
+	UseItemStateEts :: etsTab(), OldVal :: etsTab().
 setMapUseItemStateEts(UseItemStateEts) ->
-	put('MapUseItemStateEts',UseItemStateEts).
+	put('MapUseItemStateEts', UseItemStateEts).
 
 %%设置删除时间ms
--spec setDestoryTime(Time) -> ok when Time::uint().
+-spec setDestoryTime(Time) -> ok when Time :: uint().
 setDestoryTime(Time) ->
-	put(destoryTime,Time),
+	put(destoryTime, Time),
 	ok.
 
 %%获取删除时间ms
@@ -213,7 +213,7 @@ deleteDestoryTime() ->
 	ok.
 
 %%设置副本存在最大时间ms
--spec setCopyMapExistTime(Time) -> ok when Time::uint().
+-spec setCopyMapExistTime(Time) -> ok when Time :: uint().
 setCopyMapExistTime(MapID) ->
 	AddTime = case getCfg:getCfgPStack(cfg_mapsetting, MapID) of
 		          #mapsettingCfg{type = MapType, all_time = AT} when
@@ -221,14 +221,14 @@ setCopyMapExistTime(MapID) ->
 			          AT * 1000;
 		          _ ->
 			          %% 其它地图保留时间为一年
-			          12*30*24*3600*1000
+			          12 * 30 * 24 * 3600 * 1000
 	          end,
 	NowTime = time:getUTCNowMS(),
 	put(copyMapExistTime, NowTime + AddTime),
 	?LOG_OUT("setCopyMapExistTime:[mapID=~p,pid=~p], nowtime:~p,addtime:~p", [MapID, self(), NowTime, AddTime]),
 	ok.
 
--spec setCopyMapExistTime(MapID::uint(), Time::uint()) -> ok.
+-spec setCopyMapExistTime(MapID :: uint(), Time :: uint()) -> ok.
 setCopyMapExistTime(_MapID, Time) ->
 	put(copyMapExistTime, Time),
 	ok.
@@ -239,12 +239,12 @@ getCopyMapExistTime() ->
 	get(copyMapExistTime).
 
 %% 获取地图开始时间
--spec getMapStartTime(GroupID::uint()) -> uint().
+-spec getMapStartTime(GroupID :: uint()) -> uint().
 getMapStartTime(GroupID) ->
 	get({'MapStartTime', GroupID}).
 
 %% 设置地图开始时间
--spec setMapStartTime(GroupID::uint(), Time :: uint()) -> ok.
+-spec setMapStartTime(GroupID :: uint(), Time :: uint()) -> ok.
 setMapStartTime(GroupID, Time) when erlang:is_integer(Time), Time > 0 ->
 	put({'MapStartTime', GroupID}, Time),
 	ok.
@@ -253,7 +253,7 @@ deleteMapStartTIme(GroupID) ->
 	erase({'MapStartTime', GroupID}).
 
 %% 获取所有玩家在此地图的死亡次数
--spec getAllPlayersDeadTimes(GroupID::uint()) -> uint().
+-spec getAllPlayersDeadTimes(GroupID :: uint()) -> uint().
 getAllPlayersDeadTimes(GroupID) ->
 	case get({'AllPlayersDeadTimes', GroupID}) of
 		Val when erlang:is_integer(Val) ->
@@ -263,7 +263,7 @@ getAllPlayersDeadTimes(GroupID) ->
 	end.
 
 %% 设置所有玩家在此地图的死亡次数
--spec setAllPlayersDeadTimes(GroupID::uint(), Times :: uint()) -> ok.
+-spec setAllPlayersDeadTimes(GroupID :: uint(), Times :: uint()) -> ok.
 setAllPlayersDeadTimes(GroupID, Times) when erlang:is_integer(Times), Times >= 0 ->
 	put({'AllPlayersDeadTimes', GroupID}, Times),
 	ok.
@@ -273,9 +273,9 @@ deleteAllPlayersDeadTimes(GroupID) ->
 
 %%设置是否强制删除地图，用于副本地图已经完成进度
 -spec setForceDestory(IsForceDestory) -> undefined | boolean() when
-		  IsForceDestory::boolean().
+	IsForceDestory :: boolean().
 setForceDestory(IsForceDestory) ->
-	put(isForceDestory,IsForceDestory).
+	put(isForceDestory, IsForceDestory).
 
 %%获取是否强制删除地图，用于副本地图已经完成进度
 -spec getForceDestory() -> boolean() | undefined.
@@ -284,9 +284,9 @@ getForceDestory() ->
 
 %% 当前副本是否已经等待强制销毁
 -spec setWaitForceDestory(IsWaitForceDestory) -> undefined | boolean() when
-	IsWaitForceDestory::boolean().
+	IsWaitForceDestory :: boolean().
 setWaitForceDestory(IsWaitForceDestory) ->
-	put(isWaitForceDestory,IsWaitForceDestory).
+	put(isWaitForceDestory, IsWaitForceDestory).
 
 %% 当前副本是否已经等待强制销毁
 -spec getWaitForceDestory() -> boolean() | undefined.
@@ -306,15 +306,15 @@ isMapSleep() ->
 %%设置当前地图处于睡眠状态
 -spec setMapSleep() -> ok.
 setMapSleep() ->
-	put(isMapSleep,true),
+	put(isMapSleep, true),
 	ok.
 
 %%设置当前地图等级（等于队长等级或单玩家等级）动态随机怪用
--spec setMapLevel(GroupID, Level)->term() when GroupID::uint(),Level::integer().
+-spec setMapLevel(GroupID, Level) -> term() when GroupID :: uint(), Level :: integer().
 setMapLevel(GroupID, Level) ->
-	put({mapLevel, GroupID},Level).
+	put({mapLevel, GroupID}, Level).
 
--spec getMapLevel(GroupID::uint()) -> integer().
+-spec getMapLevel(GroupID :: uint()) -> integer().
 getMapLevel(GroupID) ->
 	case get({mapLevel, GroupID}) of
 		undefined ->
@@ -325,11 +325,11 @@ getMapLevel(GroupID) ->
 
 
 %%设置当前地图的创建者
--spec setMapOwnerID(GroupID, RoleID)->term() when GroupID::uint(),RoleID::integer().
+-spec setMapOwnerID(GroupID, RoleID) -> term() when GroupID :: uint(), RoleID :: integer().
 setMapOwnerID(GroupID, RoleID) ->
-	put({mapCreateRoleID, GroupID},RoleID).
+	put({mapCreateRoleID, GroupID}, RoleID).
 
--spec getMapOwnerID(GroupID::uint()) -> integer().
+-spec getMapOwnerID(GroupID :: uint()) -> integer().
 getMapOwnerID(GroupID) ->
 	case get({mapCreateRoleID, GroupID}) of
 		undefined ->
@@ -339,21 +339,21 @@ getMapOwnerID(GroupID) ->
 	end.
 
 %% 设置NPC本次改变坐标的时间
--spec setNpcChangePosTime(NpcCode::uint()) -> uint() | undefined.
+-spec setNpcChangePosTime(NpcCode :: uint()) -> uint() | undefined.
 setNpcChangePosTime(NpcCode) ->
 	put({'NpcChangePosTime', NpcCode}, time:getUTCNowSec()).
 
 %% 获取NPC上次改变坐标的时间
--spec getNpcChangePosTime(NpcCode::uint()) -> uint() | undefined.
+-spec getNpcChangePosTime(NpcCode :: uint()) -> uint() | undefined.
 getNpcChangePosTime(NpcCode) ->
 	get({'NpcChangePosTime', NpcCode}).
 
 %%设置地图子类型
--spec setMapSubType(Type) ->term() when Type::term().
+-spec setMapSubType(Type) -> term() when Type :: term().
 setMapSubType(Type) ->
-	put(mapSubType,Type).
+	put(mapSubType, Type).
 %%设置地图子类型
--spec getMapSubType() ->Val::term() | undefined.
+-spec getMapSubType() -> Val :: term() | undefined.
 getMapSubType() ->
 	get(mapSubType).
 
@@ -362,7 +362,7 @@ clearMapAliveMonsterNum() ->
 	erase(mapAliveMonsterNum),
 	ok.
 
--spec addMapAliveMonsterNum(Num) -> ok when Num::int().
+-spec addMapAliveMonsterNum(Num) -> ok when Num :: int().
 addMapAliveMonsterNum(Num) when erlang:is_integer(Num) ->
 	Curr1 =
 		case getMapAliveMonsterNum() of
@@ -371,26 +371,26 @@ addMapAliveMonsterNum(Num) when erlang:is_integer(Num) ->
 			Curr ->
 				Curr
 		end,
-	put(mapAliveMonsterNum,Curr1 + Num),
+	put(mapAliveMonsterNum, Curr1 + Num),
 	ok.
 
--spec getMapAliveMonsterNum()->Val::integer()|undefined.
+-spec getMapAliveMonsterNum() -> Val :: integer()|undefined.
 getMapAliveMonsterNum() ->
 	get(mapAliveMonsterNum).
 
--spec setGoddessBossing(IsBossing::boolean()) ->term().
+-spec setGoddessBossing(IsBossing :: boolean()) -> term().
 setGoddessBossing(IsBossing) ->
-	put(mapGoddessBossing,IsBossing).
+	put(mapGoddessBossing, IsBossing).
 
--spec getGoddessBossing() ->boolean().
+-spec getGoddessBossing() -> boolean().
 getGoddessBossing() ->
 	get(mapGoddessBossing) =:= true.
 
--spec setGoddessCode(Code::uint32()) ->term().
+-spec setGoddessCode(Code :: uint32()) -> term().
 setGoddessCode(Code) ->
-	put(goddessCode,Code).
+	put(goddessCode, Code).
 
--spec getGoddessCode() ->number() |0.
+-spec getGoddessCode() -> number() |0.
 getGoddessCode() ->
 	case get(goddessCode) of
 		undefined ->
@@ -398,14 +398,14 @@ getGoddessCode() ->
 				undefined ->
 					0;
 				Tab ->
-					#globalsetupCfg{setpara =[ID,_X,_Y] } = getCfg:getCfgByArgs(cfg_globalsetup, goddess),
+					#globalsetupCfg{setpara = [ID, _X, _Y]} = getCfg:getCfgByArgs(cfg_globalsetup, goddess),
 					MatchSpec = ets:fun2ms(fun
-											  (Row) when Row#recMapObject.id =:= ID ->
-												   Row#recMapObject.code
-										   end
-										  ),
+						                       (Row) when Row#recMapObject.id =:= ID ->
+							                       Row#recMapObject.code
+					                       end
+					),
 					case myEts:selectEts(Tab, MatchSpec) of
-						[MonsterCode |_] ->
+						[MonsterCode | _] ->
 							setGoddessCode(MonsterCode),
 							MonsterCode;
 						_ ->
@@ -416,28 +416,27 @@ getGoddessCode() ->
 			Code
 	end.
 
--spec setGoddessDead(IsDead::boolean()) ->term().
+-spec setGoddessDead(IsDead :: boolean()) -> term().
 setGoddessDead(IsDead) ->
-	put(goddessDead,IsDead).
+	put(goddessDead, IsDead).
 
--spec getGoddessDead() ->boolean().
+-spec getGoddessDead() -> boolean().
 getGoddessDead() ->
 	get(goddessDead) =:= true.
 
 
-
 %%boss战分配的位面编号
--spec setMapGroupID(add|del,GroupID) -> list() when GroupID::uint().
-setMapGroupID(add,GroupID) ->
+-spec setMapGroupID(add|del, GroupID) -> list() when GroupID :: uint().
+setMapGroupID(add, GroupID) ->
 	List = getMapGroupID(),
-	put(worldBossMapGroupID,[ GroupID| List]);
-setMapGroupID(del,GroupID) ->
+	put(worldBossMapGroupID, [GroupID | List]);
+setMapGroupID(del, GroupID) ->
 	List = getMapGroupID(),
-	put(worldBossMapGroupID,lists:delete(GroupID, List) ).
+	put(worldBossMapGroupID, lists:delete(GroupID, List)).
 -spec getMapGroupID() -> list().
 getMapGroupID() ->
 	case get(worldBossMapGroupID) of
-		[H |_] = Ret when erlang:is_integer(H) ->
+		[H | _] = Ret when erlang:is_integer(H) ->
 			Ret;
 		_Ret ->
 			[]
@@ -447,39 +446,39 @@ getMapGroupID() ->
 getWorldBossPlayerQueue() ->
 	Value = get(worldBossPlayerRequestQueue),
 	case queue:is_queue(Value) of
-		true  ->
+		true ->
 			Value;
 		_ ->
 			queue:new()
 	end.
-setWorldBossPlayerQueue( PlayerQue ) ->
-	case queue:is_queue( PlayerQue ) of
+setWorldBossPlayerQueue(PlayerQue) ->
+	case queue:is_queue(PlayerQue) of
 		true ->
-			put(worldBossPlayerRequestQueue,PlayerQue);
+			put(worldBossPlayerRequestQueue, PlayerQue);
 		false ->
-			put(worldBossPlayerRequestQueue,queue:new())
+			put(worldBossPlayerRequestQueue, queue:new())
 	end.
 
 %%上次请求进入位面的人
-setLastParallelUniverse( Val ) ->
-	put(lastParallelUniverse,Val).
+setLastParallelUniverse(Val) ->
+	put(lastParallelUniverse, Val).
 getLastParallelUniverse() ->
 	get(lastParallelUniverse).
 
 %%boss战进度
--spec setBossSchedule(CurrSchedule::integer()) ->term().
+-spec setBossSchedule(CurrSchedule :: integer()) -> term().
 setBossSchedule(CurrSchedule) ->
-	put(setBossSchedule,CurrSchedule).
--spec getBossSchedule() ->integer() | undefined.
+	put(setBossSchedule, CurrSchedule).
+-spec getBossSchedule() -> integer() | undefined.
 getBossSchedule() ->
 	get(setBossSchedule).
 
 %% 设置分组地图延时初始化(玩家真正进入才初始化)
--spec setGroupMapDelayInit(GroupID::uint(), Value::boolean()) -> undefined | boolean().
+-spec setGroupMapDelayInit(GroupID :: uint(), Value :: boolean()) -> undefined | boolean().
 setGroupMapDelayInit(GroupID, Value) ->
 	put({'GroupMapDelayInit', GroupID}, Value).
 
--spec getGroupMapDelayInit(GroupID::uint()) -> boolean().
+-spec getGroupMapDelayInit(GroupID :: uint()) -> boolean().
 getGroupMapDelayInit(GroupID) ->
 	get({'GroupMapDelayInit', GroupID}).
 
@@ -495,7 +494,7 @@ getNextTickPlayerEtsTime() ->
 	end.
 
 setNextTickPlayerEtsTime(Time) ->
-	put(nextTickPlayerEtsTime,Time),
+	put(nextTickPlayerEtsTime, Time),
 	ok.
 
 %% 采集物复活列表相关
@@ -520,10 +519,10 @@ getGatherWaitReliveList() ->
 			V
 	end.
 %% 如果是军团副本地图，保存个军团ID
--spec setGuildID(GuildID::int64()) ->int64().
+-spec setGuildID(GuildID :: int64()) -> int64().
 setGuildID(GuildID) ->
-	put(guildID,GuildID).
--spec getGuildID() ->int64().
+	put(guildID, GuildID).
+-spec getGuildID() -> int64().
 getGuildID() ->
 	case get(guildID) of
 		undefined ->
@@ -532,10 +531,10 @@ getGuildID() ->
 			GuildID
 	end.
 %% 如果是军团副本地图，保存个队伍ID
--spec setTeamID(TeamID::int64()) ->int64().
+-spec setTeamID(TeamID :: int64()) -> int64().
 setTeamID(TeamID) ->
-	put(teamID,TeamID).
--spec getTeamID() ->int64().
+	put(teamID, TeamID).
+-spec getTeamID() -> int64().
 getTeamID() ->
 	case get(teamID) of
 		undefined ->
@@ -593,8 +592,8 @@ getWildBossDamageFromPlayer_validRoleID() ->
 			FunGet =
 				fun(RoleID, Damage, ListRoleID) ->
 					if
-						%% 此处伤害值实际上为BOSS的HP变动值
-						%% 故有效值为负
+					%% 此处伤害值实际上为BOSS的HP变动值
+					%% 故有效值为负
 						Damage < 0 ->
 							[RoleID | ListRoleID];
 						true ->

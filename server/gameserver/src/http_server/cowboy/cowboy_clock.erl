@@ -67,30 +67,30 @@ init([]) ->
 	B = update_rfc1123(<<>>, undefined, T),
 	TRef = erlang:send_after(1000, self(), update),
 	ets:insert(?MODULE, {rfc1123, B}),
-	{ok, #state{universaltime=T, rfc1123=B, tref=TRef}}.
+	{ok, #state{universaltime = T, rfc1123 = B, tref = TRef}}.
 
 -type from() :: {pid(), term()}.
 -spec handle_call
 	(stop, from(), State) -> {stop, normal, stopped, State}
-	when State::#state{}.
+	when State :: #state{}.
 handle_call(stop, _From, State) ->
 	{stop, normal, stopped, State};
 handle_call(_Request, _From, State) ->
 	{reply, ignored, State}.
 
--spec handle_cast(_, State) -> {noreply, State} when State::#state{}.
+-spec handle_cast(_, State) -> {noreply, State} when State :: #state{}.
 handle_cast(_Msg, State) ->
 	{noreply, State}.
 
--spec handle_info(any(), State) -> {noreply, State} when State::#state{}.
-handle_info(update, #state{universaltime=Prev, rfc1123=B1, tref=TRef0}) ->
+-spec handle_info(any(), State) -> {noreply, State} when State :: #state{}.
+handle_info(update, #state{universaltime = Prev, rfc1123 = B1, tref = TRef0}) ->
 	%% Cancel the timer in case an external process sent an update message.
 	_ = erlang:cancel_timer(TRef0),
 	T = erlang:universaltime(),
 	B2 = update_rfc1123(B1, Prev, T),
 	ets:insert(?MODULE, {rfc1123, B2}),
 	TRef = erlang:send_after(1000, self(), update),
-	{noreply, #state{universaltime=T, rfc1123=B2, tref=TRef}};
+	{noreply, #state{universaltime = T, rfc1123 = B2, tref = TRef}};
 handle_info(_Info, State) ->
 	{noreply, State}.
 
@@ -98,7 +98,7 @@ handle_info(_Info, State) ->
 terminate(_Reason, _State) ->
 	ok.
 
--spec code_change(_, State, _) -> {ok, State} when State::#state{}.
+-spec code_change(_, State, _) -> {ok, State} when State :: #state{}.
 code_change(_OldVsn, State, _Extra) ->
 	{ok, State}.
 
@@ -108,39 +108,39 @@ code_change(_OldVsn, State, _Extra) ->
 	calendar:datetime()) -> binary().
 update_rfc1123(Bin, Now, Now) ->
 	Bin;
-update_rfc1123(<< Keep:23/binary, _/bits >>,
-		{Date, {H, M, _}}, {Date, {H, M, S}}) ->
-	<< Keep/binary, (pad_int(S))/binary, " GMT" >>;
-update_rfc1123(<< Keep:20/binary, _/bits >>,
-		{Date, {H, _, _}}, {Date, {H, M, S}}) ->
-	<< Keep/binary, (pad_int(M))/binary, $:, (pad_int(S))/binary, " GMT" >>;
-update_rfc1123(<< Keep:17/binary, _/bits >>, {Date, _}, {Date, {H, M, S}}) ->
-	<< Keep/binary, (pad_int(H))/binary, $:, (pad_int(M))/binary,
-		$:, (pad_int(S))/binary, " GMT" >>;
-update_rfc1123(<< _:7/binary, Keep:10/binary, _/bits >>,
-		{{Y, Mo, _}, _}, {Date = {Y, Mo, D}, {H, M, S}}) ->
+update_rfc1123(<<Keep:23/binary, _/bits>>,
+	{Date, {H, M, _}}, {Date, {H, M, S}}) ->
+	<<Keep/binary, (pad_int(S))/binary, " GMT">>;
+update_rfc1123(<<Keep:20/binary, _/bits>>,
+	{Date, {H, _, _}}, {Date, {H, M, S}}) ->
+	<<Keep/binary, (pad_int(M))/binary, $:, (pad_int(S))/binary, " GMT">>;
+update_rfc1123(<<Keep:17/binary, _/bits>>, {Date, _}, {Date, {H, M, S}}) ->
+	<<Keep/binary, (pad_int(H))/binary, $:, (pad_int(M))/binary,
+		$:, (pad_int(S))/binary, " GMT">>;
+update_rfc1123(<<_:7/binary, Keep:10/binary, _/bits>>,
+	{{Y, Mo, _}, _}, {Date = {Y, Mo, D}, {H, M, S}}) ->
 	Wday = calendar:day_of_the_week(Date),
-	<< (weekday(Wday))/binary, ", ", (pad_int(D))/binary, Keep/binary,
+	<<(weekday(Wday))/binary, ", ", (pad_int(D))/binary, Keep/binary,
 		(pad_int(H))/binary, $:, (pad_int(M))/binary,
-		$:, (pad_int(S))/binary, " GMT" >>;
-update_rfc1123(<< _:11/binary, Keep:6/binary, _/bits >>,
-		{{Y, _, _}, _}, {Date = {Y, Mo, D}, {H, M, S}}) ->
+		$:, (pad_int(S))/binary, " GMT">>;
+update_rfc1123(<<_:11/binary, Keep:6/binary, _/bits>>,
+	{{Y, _, _}, _}, {Date = {Y, Mo, D}, {H, M, S}}) ->
 	Wday = calendar:day_of_the_week(Date),
-	<< (weekday(Wday))/binary, ", ", (pad_int(D))/binary, " ",
+	<<(weekday(Wday))/binary, ", ", (pad_int(D))/binary, " ",
 		(month(Mo))/binary, Keep/binary,
 		(pad_int(H))/binary, $:, (pad_int(M))/binary,
-		$:, (pad_int(S))/binary, " GMT" >>;
+		$:, (pad_int(S))/binary, " GMT">>;
 update_rfc1123(_, _, {Date = {Y, Mo, D}, {H, M, S}}) ->
 	Wday = calendar:day_of_the_week(Date),
-	<< (weekday(Wday))/binary, ", ", (pad_int(D))/binary, " ",
+	<<(weekday(Wday))/binary, ", ", (pad_int(D))/binary, " ",
 		(month(Mo))/binary, " ", (integer_to_binary(Y))/binary,
 		" ", (pad_int(H))/binary, $:, (pad_int(M))/binary,
-		$:, (pad_int(S))/binary, " GMT" >>.
+		$:, (pad_int(S))/binary, " GMT">>.
 
 %% Following suggestion by MononcQc on #erlounge.
 -spec pad_int(0..59) -> binary().
 pad_int(X) when X < 10 ->
-	<< $0, ($0 + X) >>;
+	<<$0, ($0 + X)>>;
 pad_int(X) ->
 	integer_to_binary(X).
 
@@ -154,15 +154,15 @@ weekday(6) -> <<"Sat">>;
 weekday(7) -> <<"Sun">>.
 
 -spec month(1..12) -> <<_:24>>.
-month( 1) -> <<"Jan">>;
-month( 2) -> <<"Feb">>;
-month( 3) -> <<"Mar">>;
-month( 4) -> <<"Apr">>;
-month( 5) -> <<"May">>;
-month( 6) -> <<"Jun">>;
-month( 7) -> <<"Jul">>;
-month( 8) -> <<"Aug">>;
-month( 9) -> <<"Sep">>;
+month(1) -> <<"Jan">>;
+month(2) -> <<"Feb">>;
+month(3) -> <<"Mar">>;
+month(4) -> <<"Apr">>;
+month(5) -> <<"May">>;
+month(6) -> <<"Jun">>;
+month(7) -> <<"Jul">>;
+month(8) -> <<"Aug">>;
+month(9) -> <<"Sep">>;
 month(10) -> <<"Oct">>;
 month(11) -> <<"Nov">>;
 month(12) -> <<"Dec">>.
@@ -179,23 +179,23 @@ update_rfc1123_test_() ->
 		{<<"Sat, 14 May 2011 14:25:34 GMT">>, {{2011, 5, 14}, {14, 25, 33}},
 			{{2011, 5, 14}, {14, 25, 34}}, <<"Sat, 14 May 2011 14:25:33 GMT">>},
 		{<<"Sat, 14 May 2011 14:26:00 GMT">>, {{2011, 5, 14}, {14, 25, 59}},
-			{{2011, 5, 14}, {14, 26,  0}}, <<"Sat, 14 May 2011 14:25:59 GMT">>},
+			{{2011, 5, 14}, {14, 26, 0}}, <<"Sat, 14 May 2011 14:25:59 GMT">>},
 		{<<"Sat, 14 May 2011 15:00:00 GMT">>, {{2011, 5, 14}, {14, 59, 59}},
-			{{2011, 5, 14}, {15,  0,  0}}, <<"Sat, 14 May 2011 14:59:59 GMT">>},
+			{{2011, 5, 14}, {15, 0, 0}}, <<"Sat, 14 May 2011 14:59:59 GMT">>},
 		{<<"Sun, 15 May 2011 00:00:00 GMT">>, {{2011, 5, 14}, {23, 59, 59}},
-			{{2011, 5, 15}, { 0,  0,  0}}, <<"Sat, 14 May 2011 23:59:59 GMT">>},
+			{{2011, 5, 15}, {0, 0, 0}}, <<"Sat, 14 May 2011 23:59:59 GMT">>},
 		{<<"Wed, 01 Jun 2011 00:00:00 GMT">>, {{2011, 5, 31}, {23, 59, 59}},
-			{{2011, 6,  1}, { 0,  0,  0}}, <<"Tue, 31 May 2011 23:59:59 GMT">>},
+			{{2011, 6, 1}, {0, 0, 0}}, <<"Tue, 31 May 2011 23:59:59 GMT">>},
 		{<<"Sun, 01 Jan 2012 00:00:00 GMT">>, {{2011, 5, 31}, {23, 59, 59}},
-			{{2012, 1,  1}, { 0,  0,  0}}, <<"Sat, 31 Dec 2011 23:59:59 GMT">>}
+			{{2012, 1, 1}, {0, 0, 0}}, <<"Sat, 31 Dec 2011 23:59:59 GMT">>}
 	],
 	[{R, fun() -> R = update_rfc1123(B, P, N) end} || {R, P, N, B} <- Tests].
 
 pad_int_test_() ->
 	Tests = [
-		{ 0, <<"00">>}, { 1, <<"01">>}, { 2, <<"02">>}, { 3, <<"03">>},
-		{ 4, <<"04">>}, { 5, <<"05">>}, { 6, <<"06">>}, { 7, <<"07">>},
-		{ 8, <<"08">>}, { 9, <<"09">>}, {10, <<"10">>}, {11, <<"11">>},
+		{0, <<"00">>}, {1, <<"01">>}, {2, <<"02">>}, {3, <<"03">>},
+		{4, <<"04">>}, {5, <<"05">>}, {6, <<"06">>}, {7, <<"07">>},
+		{8, <<"08">>}, {9, <<"09">>}, {10, <<"10">>}, {11, <<"11">>},
 		{12, <<"12">>}, {13, <<"13">>}, {14, <<"14">>}, {15, <<"15">>},
 		{16, <<"16">>}, {17, <<"17">>}, {18, <<"18">>}, {19, <<"19">>},
 		{20, <<"20">>}, {21, <<"21">>}, {22, <<"22">>}, {23, <<"23">>},

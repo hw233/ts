@@ -54,7 +54,7 @@ initWildBoss() ->
 									#mapsettingCfg{desc = MapName} = getCfg:getCfgPStack(cfg_mapsetting, MapID),
 									#monsterCfg{showName = BossName} = getCfg:getCfgPStack(cfg_monster, BossID),
 									Text = stringCfg:getString(cnTextWildBossRefresh, [BossName, MapName]),
-									?LOG_OUT("initWildBoss:~p,~ts,~p,~ts,~ts", [MapID,MapName,BossID,BossName,Text]),
+									?LOG_OUT("initWildBoss:~p,~ts,~p,~ts,~ts", [MapID, MapName, BossID, BossName, Text]),
 									core:sendBroadcastNoticeLS(?NBroadCastColor, Text),
 									psMgr:sendMsg2PS(?PsNamePlayerMgr, wildBossRefresh, Text),
 
@@ -94,7 +94,7 @@ tick() ->
 	end,
 	ok.
 
--spec spawnWildBoss(BossID :: uint(), Pos :: list()) -> {boolean(), Code::uint32()}.
+-spec spawnWildBoss(BossID :: uint(), Pos :: list()) -> {boolean(), Code :: uint32()}.
 spawnWildBoss(BossID, Pos) ->
 	MapID = mapState:getMapId(),
 	MonsterEts = mapState:getMapMonsterEts(),
@@ -123,13 +123,13 @@ spawnWildBoss(BossID, Pos) ->
 				playerEts = PlayerEts,
 				monsterEts = MonsterEts,
 				petEts = PetEts,
-                playerAreaEts = mapState:getMapPlayerAreaEts(),
-                monsterAreaEts = mapState:getMapMonsterAreaEts(),
-                petAreaEts = mapState:getMapPetAreaEts(),
+				playerAreaEts = mapState:getMapPlayerAreaEts(),
+				monsterAreaEts = mapState:getMapMonsterAreaEts(),
+				petAreaEts = mapState:getMapPetAreaEts(),
 				groupID = 0
 			},
 			Code = monsterInterface:spawnMonster(Arg),
-			?LOG_OUT("wildboss spawn code[~p],BossID[~p],Boss mapPid[~p], MapID[~p]",[Code, BossID, self(), MapID]),
+			?LOG_OUT("wildboss spawn code[~p],BossID[~p],Boss mapPid[~p], MapID[~p]", [Code, BossID, self(), MapID]),
 			case Code > 0 of
 				true ->
 					{true, Code};
@@ -144,7 +144,7 @@ spawnWildBoss(BossID, Pos) ->
 mapRestoryWildBossKilled() ->
 	MapID = mapState:getMapId(),
 	case myEts:lookUpEts(?TABLE_WildBoss, MapID) of
-		[#recWildBossInfo{bossCode = BossCode}] when BossCode /= 0  ->
+		[#recWildBossInfo{bossCode = BossCode}] when BossCode /= 0 ->
 			%% 野外BOSS还没死亡，设置为下次还可刷新状态
 			myEts:updateEts(?TABLE_WildBoss, MapID,
 				[
@@ -205,7 +205,7 @@ wildBossBeKilled(MonsterID, MonsterCode) ->
 						]),
 
 					%% 下面这个只是保护性日志
-					HateList= monsterState:getHateList(MonsterCode),
+					HateList = monsterState:getHateList(MonsterCode),
 
 					%% 直接打印仇恨列表
 					?LOG_OUT("wildBossBeKilled TargetCode=~p, hatelist=~p", [TargetCode, HateList]),
@@ -222,7 +222,7 @@ wildBossBeKilled(MonsterID, MonsterCode) ->
 								RTargetCode
 						end,
 
-					{TarRoleID, TarTeamID} = getRealAttackerRoleIDAndTeamID(MonsterCode,TargetCode2),
+					{TarRoleID, TarTeamID} = getRealAttackerRoleIDAndTeamID(MonsterCode, TargetCode2),
 					?LOG_OUT("wildBoss dead mapid[~p, ~p] killer[~p], realkillercode[~p],tarRoleID[~p],tarTeamID[~p]",
 						[MapID, self(), TargetCode2, RTargetCode, TarRoleID, TarTeamID]),
 					psMgr:sendMsg2PS(?PsNamePlayerMgr, wildBossDead, {MapID, TargetCode2, TarRoleID, TarTeamID}),
@@ -246,17 +246,17 @@ wildBossBeKilled(MonsterID, MonsterCode) ->
 	end,
 	ok.
 
--spec getWildBossTarget(MapID::uint()) -> uint().
+-spec getWildBossTarget(MapID :: uint()) -> uint().
 getWildBossTarget(MapID) ->
 	case myEts:lookUpEts(?TABLE_WildBoss, MapID) of
-		[#recWildBossInfo{targetCode = TargetCode, bossCode = BossCode, isFresh = true}|_] when BossCode > 0 ->
+		[#recWildBossInfo{targetCode = TargetCode, bossCode = BossCode, isFresh = true} | _] when BossCode > 0 ->
 			%% BOSS要自己有Code，已经刷新出来
 			TargetCode;
 		_ -> 0
 	end.
 
 %% 清除野外BOSS目标
--spec updateWildBossCode(MapID::uint(), Code::uint()) -> uint().
+-spec updateWildBossCode(MapID :: uint(), Code :: uint()) -> uint().
 updateWildBossCode(MapID, Code) ->
 	case myEts:lookUpEts(?TABLE_WildBoss, MapID) of
 		[#recWildBossInfo{bossCode = Code, targetCode = TargetCode} = Data] ->
@@ -267,7 +267,7 @@ updateWildBossCode(MapID, Code) ->
 	end.
 
 %% 保存野外BOSS最后一个目标(玩家)
--spec updateWildBossTargetCode(Code::uint(), TargetCode::uint()) -> ok.
+-spec updateWildBossTargetCode(Code :: uint(), TargetCode :: uint()) -> ok.
 updateWildBossTargetCode(Code, TargetCode) ->
 	myEts:updateEts(?TABLE_WildBoss, monsterState:getMapID(Code), {#recWildBossInfo.targetCode, TargetCode}),
 
@@ -288,37 +288,37 @@ getRealAttacker(MonsterCode, TargetCode) ->
 		?ObjTypePet ->
 			PetEts = monsterState:getMapPetEts(MonsterCode),
 			case myEts:lookUpEts(PetEts, TargetCode) of
-				[#recMapObject{ownCode = OwnCode}|_] -> OwnCode;
+				[#recMapObject{ownCode = OwnCode} | _] -> OwnCode;
 				_ -> 0
 			end;
 		?ObjTypeCarrier ->
 			MonsterEts = monsterState:getMapMonsterEts(MonsterCode),
 			case myEts:lookUpEts(MonsterEts, TargetCode) of
-				[#recMapObject{ownCode = OwnCode}|_] -> OwnCode;
+				[#recMapObject{ownCode = OwnCode} | _] -> OwnCode;
 				_ -> 0
 			end;
 		?ObjTypeMonster ->
 			MonsterEts = monsterState:getMapMonsterEts(MonsterCode),
 			case myEts:lookUpEts(MonsterEts, TargetCode) of
-				[#recMapObject{ownCode = OwnCode}|_] -> OwnCode;
+				[#recMapObject{ownCode = OwnCode} | _] -> OwnCode;
 				_ -> 0
 			end;
 		_ -> 0
 	end.
 
 
-getRealAttackerRoleIDAndTeamID(MonsterCode, TargetCode)->
+getRealAttackerRoleIDAndTeamID(MonsterCode, TargetCode) ->
 	case codeMgr:getObjectTypeByCode(TargetCode) of
 		?ObjTypePlayer ->
 			PlayerEts = monsterState:getMapPlayerEts(MonsterCode),
 			case myEts:lookUpEts(PlayerEts, TargetCode) of
-				[#recMapObject{id = ID, teamID = TeamID}|_] ->
-					{ID,TeamID};
+				[#recMapObject{id = ID, teamID = TeamID} | _] ->
+					{ID, TeamID};
 				_ ->
-					{0,0}
+					{0, 0}
 			end;
 		_ ->
-			{0,0}
+			{0, 0}
 	end.
 
 
@@ -331,14 +331,14 @@ getRealAttackerRoleIDAndTeamID(MonsterCode, TargetCode)->
 
 %% 记录伤害值
 -spec recordDamageValue(
-		Flag::boolean(),            %% 是否记录
-		AttackerCode::integer(),    %% 攻击者Code
-		AttackerID::integer(),      %% 攻击者ID
-		AttackerPid::pid(),         %% 攻击者进程ID
-		AttackerName::string(),     %% 攻击者名称
-		InjuredCode::integer(),     %% 被攻击者Code
-		DamageVale::number()        %% 伤害值（传参为血量变化值，故有效值为负）
-) ->ok | skip.
+	Flag :: boolean(),            %% 是否记录
+	AttackerCode :: integer(),    %% 攻击者Code
+	AttackerID :: integer(),      %% 攻击者ID
+	AttackerPid :: pid(),         %% 攻击者进程ID
+	AttackerName :: string(),     %% 攻击者名称
+	InjuredCode :: integer(),     %% 被攻击者Code
+	DamageVale :: number()        %% 伤害值（传参为血量变化值，故有效值为负）
+) -> ok | skip.
 recordDamageValue(true, AttackerCode, AttackerID, AttackerPid, AttackerName, InjuredCode, DamageVale) when
 	InjuredCode =/= AttackerCode andalso erlang:is_number(DamageVale) andalso DamageVale < 0 ->
 	%% 根据攻击者Code定位玩家
@@ -348,13 +348,13 @@ recordDamageValue(true, AttackerCode, AttackerID, AttackerPid, AttackerName, Inj
 				[#recMapObject{ownId = OwnId, ownCode = OwnCode} | _] ->
 					PlayerEts = mapState:getMapPlayerEts(),
 					case myEts:lookUpEts(PlayerEts, OwnCode) of
-						[#recMapObject{pid = OwnPid, name = OwnName }] ->
+						[#recMapObject{pid = OwnPid, name = OwnName}] ->
 							{OwnId, OwnPid, OwnName};
 						_ ->
 							?WARN_OUT("can not find owner info from ets ownid:~p owncode:~p fromline:~p", [OwnId, OwnCode, Line]),
 							{OwnId, skip, undefined}
 					end;
-				_  ->
+				_ ->
 					?ERROR_OUT("can not find attacker info from ets attackerid:~p attackercode:~p fromline:~p", [AttackerID, AttackerCode, Line]),
 					{skip, skip, skip}
 			end
@@ -380,7 +380,7 @@ recordDamageValue(true, AttackerCode, AttackerID, AttackerPid, AttackerName, Inj
 		_ ->
 			mapState:addWildBossDamageFromPlayer(RealAttackerID, DamageVale)
 	end;
-recordDamageValue(_,_,_,_,_,_,_) ->
+recordDamageValue(_, _, _, _, _, _, _) ->
 	skip.
 
 %% 给参与BOSS战的玩家保底奖励
@@ -444,7 +444,7 @@ sendRewardLucky() ->
 	end.
 
 %% 获取击杀者所在队伍的队长名（如果若不存在队伍则使用击杀者代替）
--spec getKillerTeamLeaderName(KillerID::uint(), TeamID::uint()) -> string().
+-spec getKillerTeamLeaderName(KillerID :: uint(), TeamID :: uint()) -> string().
 getKillerTeamLeaderName(KillerID, TeamID) ->
 	KillerTeamLeaderID =
 		case TeamID of
@@ -469,7 +469,7 @@ getKillerTeamLeaderName(KillerID, TeamID) ->
 	end.
 
 %% 发送BOSS死亡公告
--spec sendBroadcastNotice_BossIsDead(RoleNameKillerTeamLeader::string(), RoleNameLucky::string()) -> ok.
+-spec sendBroadcastNotice_BossIsDead(RoleNameKillerTeamLeader :: string(), RoleNameLucky :: string()) -> ok.
 sendBroadcastNotice_BossIsDead(RoleNameKillerTeamLeader, RoleNameLucky) ->
 	MapID = mapState:getMapId(),
 	case getCfg:getCfgByKey(cfg_wildboss, MapID) of
