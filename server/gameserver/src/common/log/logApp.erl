@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
-%%% @copyright (C) 2014, 好玩一二三科技
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%%
 %%% @end
 %%% Created : 27. 六月 2014 11:19
 %%%-------------------------------------------------------------------
 -module(logApp).
--author("ZhongYuanWei").
+-author("someone").
 
 -behaviour(application).
 

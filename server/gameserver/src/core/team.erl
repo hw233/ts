@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
+%%% @author someone
 %%% @copyright (C) 2015, <公司>
 %%% @doc
 %%%
@@ -7,7 +7,7 @@
 %%% Created : 27. 一月 2015 19:43
 %%%-------------------------------------------------------------------
 -module(team).
--author("ZhongYuanWei").
+-author("someone").
 
 -include("gsInc.hrl").
 

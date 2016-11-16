@@ -1,13 +1,12 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
-%%% @copyright (C) 2016, <雨墨>
+%%% @author someone
 %%% @doc
 %%% 玩家数据管理进程，管理玩家数据进程
 %%% @end
 %%% Created : 22. 九月 2016 14:23
 %%%-------------------------------------------------------------------
 -module(httpServerOtp).
--author("wenshaofei").
+-author("xxx").
 
 -behaviour(myGenServer).
 

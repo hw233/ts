@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
+%%% @author someone
 %%% @copyright (C) 2016, <COMPANY>
 %%% @doc
 %%% 主要处理对象之间的同步逻辑等，配合mapView使用
@@ -7,7 +7,7 @@
 %%% Created : 20. 九月 2016 16:40
 %%%-------------------------------------------------------------------
 -module(view).
--author("tiancheng").
+-author("someone").
 
 -include("gsInc.hrl").
 

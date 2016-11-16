@@ -1,9 +1,9 @@
-%% @author luowei
+%% @author someone
 %% @doc @todo buff伤害计算.
 
 
 -module(buff).
--author(luowei).
+-author(someone).
 
 -include("gsInc.hrl").
 

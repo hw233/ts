@@ -1,4 +1,4 @@
-%% @author zhengzhichun
+%% @author someone
 %% @doc @todo 日常玩法--魔神地宫（基于副本）.
 
 

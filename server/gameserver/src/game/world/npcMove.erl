@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
-%%% @copyright (C) 2014, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%% NPC移动消息
 %%% @end
 %%% Created : 27. 十月 2014 17:08
 %%%-------------------------------------------------------------------
 -module(npcMove).
--author("tiancheng").
+-author("someone").
 
 -include("copyMapScheduleDefine.hrl").
 

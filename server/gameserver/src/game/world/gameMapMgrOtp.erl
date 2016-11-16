@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
-%%% @copyright (C) 2014, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%%
 %%% @end
 %%% Created : 12. 九月 2014 11:09
 %%%-------------------------------------------------------------------
 -module(gameMapMgrOtp).
--author("ZhongYuanWei").
+-author("someone").
 
 -behaviour(myGenServer).
 

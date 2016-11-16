@@ -1,10 +1,10 @@
 %%
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo 地图视图、周围信息，本模块可以供玩家进程、怪物进程以及地图进程访问
 
 
 -module(mapView).
--author(zhongyuanwei).
+-author(someone).
 
 -include("gsInc.hrl").
 -include_lib("stdlib/include/ms_transform.hrl").

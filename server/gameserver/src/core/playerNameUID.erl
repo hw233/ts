@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
+%%% @author someone
 %%% @copyright (C) 2014, <COMPANY>
 %%% @doc
 %%% 玩家角色与姓名相互转换接口模块
@@ -7,7 +7,7 @@
 %%% Created : 09. 六月 2014 16:07
 %%%-------------------------------------------------------------------
 -module(playerNameUID).
--author("tiancheng").
+-author("someone").
 
 -include("common.hrl").
 -include("dataDefine.hrl").

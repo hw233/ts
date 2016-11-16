@@ -1,9 +1,9 @@
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo 时间进程.
 
 
 -module(timeOtp).
--author(zhongyuanwei).
+-author(someone).
 
 -include("type.hrl").
 -include("logger.hrl").

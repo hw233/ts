@@ -1,6 +1,6 @@
 %%
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
+%%% @author someone
 %%% @copyright (C) 2014, <COMPANY>
 %%% @doc
 %%% 用于处理单个副本中的逻辑
@@ -8,7 +8,7 @@
 %%% Created : 04. 七月 2014 14:22
 %%%-------------------------------------------------------------------
 -module(gameMapLogic).
--author("tiancheng").
+-author("someone").
 
 -include("mapPrivate.hrl").
 

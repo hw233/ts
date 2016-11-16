@@ -3,7 +3,7 @@
 
 
 -module(mapState).
--author(zhongyuanwei).
+-author(someone).
 
 -include("mapPrivate.hrl").
 %% ====================================================================

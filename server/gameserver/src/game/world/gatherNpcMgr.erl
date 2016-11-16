@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
+%%% @author someone
 %%% @copyright (C) 2015, <COMPANY>
 %%% @doc
 %%% 采集npc管理模块
@@ -7,7 +7,7 @@
 %%% Created : 24. 一月 2015 14:24
 %%%-------------------------------------------------------------------
 -module(gatherNpcMgr).
--author("tiancheng").
+-author("someone").
 
 -include("mapPrivate.hrl").
 -include("copyMapScheduleDefine.hrl").

@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
-%%% @copyright (C) 2014, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%%
 %%% @end
 %%% Created : 15. 九月 2014 20:48
 %%%-------------------------------------------------------------------
 -module(core).
--author("ZhongYuanWei").
+-author("someone").
 
 -include("gsInc.hrl").
 -include("activityDef.hrl").

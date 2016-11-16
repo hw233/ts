@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
-%%% @copyright (C) 2014, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%%
 %%% @end
 %%% Created : 12. 十一月 2014 14:20
 %%%-------------------------------------------------------------------
 -module(socketSup).
--author("ZhongYuanWei").
+-author("someone").
 
 -include("logger.hrl").
 -include("commonDef.hrl").

@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
+%%% @author someone
 %%% @copyright (C) 2015, <公司>
 %%% @doc
 %%%
@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 
 -module(memDBCache).
--author("ZhongYuanWei").
+-author("someone").
 
 -include("db.hrl").
 

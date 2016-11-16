@@ -1,9 +1,9 @@
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo 战斗属性相关计算.
 
 
 -module(battleProp).
--author(zhongyuanwei).
+-author(someone).
 
 -include("type.hrl").
 -include("char.hrl").

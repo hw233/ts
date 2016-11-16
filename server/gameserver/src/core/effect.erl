@@ -1,9 +1,9 @@
-%% @author luowei
+%% @author someone
 %% @doc @todo 技能效果公共函数.
 
 
 -module(effect).
--author(luowei).
+-author(someone).
 
 -include("gsInc.hrl").
 

@@ -1,9 +1,9 @@
-%% @author zhongyuanwei
+%% @author someone
 %% @doc @todo 命名进程间消息通信接口.
 
 
 -module(gsSendMsg).
--author(zhongyuanwei).
+-author(someone).
 
 -include("gsInc.hrl").
 

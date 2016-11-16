@@ -1,7 +1,7 @@
 %%%对象流水号管理
 
 -module(codeMgr).
--author(zhongyuanwei).
+-author(someone).
 
 -include("gsInc.hrl").
 

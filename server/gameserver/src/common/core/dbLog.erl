@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
+%%% @author someone
 %%% @copyright (C) 2015, <公司>
 %%% @doc
 %%%
@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 
 -module(dbLog).
--author("ZhongYuanWei").
+-author("someone").
 
 -include("gsInc.hrl").
 -include("playerLog.hrl").

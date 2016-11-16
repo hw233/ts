@@ -1,4 +1,4 @@
-%% Author: luowei
+%% Author: someone
 %% Created: 2014-3-27
 %% Description: TODO: Add description to update
 -module(update).

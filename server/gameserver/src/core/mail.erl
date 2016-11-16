@@ -1,9 +1,9 @@
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo Add description to mail.
 
 
 -module(mail).
--author(zhongyuanwei).
+-author(someone).
 
 -include("gsInc.hrl").
 -include("logRecord.hrl").

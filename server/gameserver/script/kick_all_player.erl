@@ -1,9 +1,9 @@
-%% @author luowei
+%% @author someone
 %% @doc @todo Add description to kick.
 
 
 -module(kick_all_player).
--author(luowei).
+-author(someone).
 
 %% ====================================================================
 %% API functions

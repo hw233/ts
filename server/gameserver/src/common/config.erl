@@ -2,7 +2,7 @@
 %%%读取配置文件模块
 
 -module(config).
--author(zhongyuanwei).
+-author(someone).
 
 -behaviour(myGenServer).
 

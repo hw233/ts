@@ -2,7 +2,7 @@
 %%%此模块为地图管理进程调用
 
 -module(mapReader).
--author(zhongyuanwei).
+-author(someone).
 
 -include("mapPrivate.hrl").
 

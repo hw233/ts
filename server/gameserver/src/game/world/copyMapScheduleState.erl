@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
-%%% @copyright (C) 2014, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%% 副本或者位面进度状态
 %%% @end
 %%% Created : 04. 九月 2014 10:55
 %%%-------------------------------------------------------------------
 -module(copyMapScheduleState).
--author("tiancheng").
+-author("someone").
 
 -include("mapPrivate.hrl").
 

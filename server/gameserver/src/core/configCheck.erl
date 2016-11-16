@@ -1,4 +1,4 @@
-%% @author zhengzhichun
+%% @author someone
 %% @doc @todo Add description to configCheck.
 
 

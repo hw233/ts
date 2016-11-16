@@ -1,9 +1,9 @@
-%% @author luowei
+%% @author someone
 %% @doc @todo 战斗相关.
 
 
 -module(battle).
--author(luowei).
+-author(someone).
 
 -include("gsInc.hrl").
 

@@ -2,7 +2,7 @@
 %%%游戏地图进程，每张地图一个进程
 %%%游戏地图进程主要负责玩家的战斗、怪物及怪物的AI等等功能
 -module(gameMapOtp).
--author(zhongyuanwei).
+-author(someone).
 
 -behaviour(myGenServer).
 
@@ -21,7 +21,7 @@ start_link(#recCreateMapArg{} = CreateMapArg) ->
 
 init([#recCreateMapArg{mapId = MapID, mapLine = MapLine, createRoleID = CreateRoleID}] = Msg) ->
 
-  %% 区域管理ETS author:tiancheng
+  %% 区域管理ETS author:someone
 %%    PlayerAreaEts = ets:new(mapPlayerAreaEts, [public, {keypos, #recMapArea.areaID},{write_concurrency, true},{read_concurrency, true}]),
 %%    MonsterAreaEts = ets:new(mapMonsterAreaEts, [protected, {keypos, #recMapArea.areaID},{write_concurrency, true},{read_concurrency, true}]),
 %%    NpcAreaEts = ets:new(mapNcAreaEts, [public, {keypos, #recMapArea.areaID},{write_concurrency, true},{read_concurrency, true}]),

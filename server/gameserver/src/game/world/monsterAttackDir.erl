@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
-%%% @copyright (C) 2014, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%% 怪物追击玩家，八方向处理
 %%% @end
 %%% Created : 03. 九月 2014 16:44
 %%%-------------------------------------------------------------------
 -module(monsterAttackDir).
--author("tiancheng").
+-author("someone").
 
 -include("mapPrivate.hrl").
 

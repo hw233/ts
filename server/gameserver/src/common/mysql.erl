@@ -1,6 +1,6 @@
 %%%Mysql数据库相关处理
 -module(mysql).
--author(zhongyuanwei).
+-author(someone).
 
 -include("logger.hrl").
 -include("mysql.hrl").

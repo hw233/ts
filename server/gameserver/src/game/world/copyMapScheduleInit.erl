@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
-%%% @copyright (C) 2014, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%% 副本或者位面进程初始化
 %%% @end
 %%% Created : 04. 九月 2014 10:53
 %%%-------------------------------------------------------------------
 -module(copyMapScheduleInit).
--author("tiancheng").
+-author("someone").
 
 -include("copyMapScheduleDefine.hrl").
 

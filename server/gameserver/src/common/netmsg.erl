@@ -1,7 +1,7 @@
 %%%网络消息处理的基础模块
 
 -module(netmsg).
--author(zhongyuanwei).
+-author(someone).
 
 %% ====================================================================
 %% API functions

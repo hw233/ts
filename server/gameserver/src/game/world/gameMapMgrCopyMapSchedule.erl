@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
+%%% @author someone
 %%% @copyright (C) 2015, <COMPANY>
 %%% @doc
 %%% 保存副本进度处理逻辑
@@ -7,7 +7,7 @@
 %%% Created : 09. 一月 2015 16:37
 %%%-------------------------------------------------------------------
 -module(gameMapMgrCopyMapSchedule).
--author("tiancheng").
+-author("someone").
 
 -include("copyMapScheduleDefine.hrl").
 

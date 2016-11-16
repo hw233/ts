@@ -1,4 +1,4 @@
-%% @author zhengzhichun
+%% @author someone
 %% @doc @todo Add description to copyMapGoddess.
 %% 新地宫（守护女神）策划：王亚栋
 

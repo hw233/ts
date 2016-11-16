@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
-%%% @copyright (C) 2015, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2015, someone
 %%% @doc
 %%% 活动模块
 %%% @end
 %%% Created : 23. 三月 2015 14:13
 %%%-------------------------------------------------------------------
 -module(activity).
--author("tiancheng").
+-author("someone").
 
 -include("gsInc.hrl").
 -include("activityDef.hrl").

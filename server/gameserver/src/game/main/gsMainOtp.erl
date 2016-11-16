@@ -1,7 +1,7 @@
 %%%main进程
 
 -module(gsMainOtp).
--author(zhongyuanwei).
+-author(someone).
 
 -behaviour(myGenServer).
 

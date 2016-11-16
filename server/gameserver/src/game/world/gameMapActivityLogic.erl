@@ -1,13 +1,13 @@
 %%%-------------------------------------------------------------------
-%%% @author tiancheng
-%%% @copyright (C) 2015, 好玩一二三
+%%% @author someone
+%%% @copyright (C) 2015, someone
 %%% @doc
 %%% 地图模块，活动相关的处理逻辑
 %%% @end
 %%% Created : 09. 二月 2015 15:44
 %%%-------------------------------------------------------------------
 -module(gameMapActivityLogic).
--author("tiancheng").
+-author("someone").
 
 -include("mapPrivate.hrl").
 -include("activityDef.hrl").

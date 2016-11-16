@@ -1,9 +1,9 @@
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo 技能相关.
 
 
 -module(skill).
--author(zhongyuanwei).
+-author(someone).
 
 -include("gsInc.hrl").
 

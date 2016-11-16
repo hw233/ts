@@ -2,7 +2,7 @@
 
 -module(myGenServer).
 
--author(zhongyuanwei).
+-author(someone).
 
 -behaviour(gen_server).
 

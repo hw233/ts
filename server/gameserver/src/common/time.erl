@@ -1,9 +1,9 @@
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo 时间相关函数.
 %%
 
 -module(time).
--author(zhongyuanwei).
+-author(someone).
 
 -include("type.hrl").
 -include("common.hrl").

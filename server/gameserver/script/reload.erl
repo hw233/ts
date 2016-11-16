@@ -1,9 +1,9 @@
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo Add description to reload.
 
 
 -module(reload).
--author(zhongyuanwei).
+-author(someone).
 
 %% ====================================================================
 %% API functions

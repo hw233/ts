@@ -2,7 +2,7 @@
 %%%地图监督进程，每张地图会有一个进程。
 
 -module(gameMapSup).
--author(zhongyuanwei).
+-author(someone).
 
 -behaviour(supervisor).
 

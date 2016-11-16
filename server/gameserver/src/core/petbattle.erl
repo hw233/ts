@@ -1,9 +1,9 @@
-%% @author luowei
+%% @author someone
 %% @doc @todo 宠物战斗.
 
 
 -module(petbattle).
--author(luowei).
+-author(someone).
 
 -include("gsInc.hrl").
 -define(MaxBrlNum, 10).

@@ -1,6 +1,6 @@
 %%游戏地图模块，供gameMap模块中的进程调用
 -module(mapBase).
--author(zhongyuanwei).
+-author(someone).
 
 -include("mapPrivate.hrl").
 -include("collect.hrl").

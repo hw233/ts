@@ -1,14 +1,14 @@
 %%
 %%%-------------------------------------------------------------------
-%%% @author ZhongYuanWei
-%%% @copyright (C) 2014, 好玩一二三科技
+%%% @author someone
+%%% @copyright (C) 2014, someone
 %%% @doc
 %%%
 %%% @end
 %%% Created : 08. 五月 2014 14:54
 %%%-------------------------------------------------------------------
 -module(mapMgrState).
--author("ZhongYuanWei").
+-author("someone").
 
 -include("mapPrivate.hrl").
 

@@ -1,9 +1,9 @@
-%% @author zhongyunawei
+%% @author someone
 %% @doc @todo erlang内置数据库相关.
 
 
 -module(edb).
--author(zhongyuanwei).
+-author(someone).
 
 -include("common.hrl").
 

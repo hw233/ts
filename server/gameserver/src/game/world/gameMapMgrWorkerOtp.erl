@@ -8,7 +8,7 @@
 %%%这样做可以极大的减小地图动态创建与删除的开销。
 %%%
 -module(gameMapMgrWorkerOtp).
--author(zhongyuanwei).
+-author(someone).
 
 -behaviour(myGenServer).
 %%地图线创建多少时间后禁止玩家再进入地图线
