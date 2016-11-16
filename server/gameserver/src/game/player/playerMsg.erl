@@ -22,11 +22,20 @@
 dealNetMsg(Cmd,Pk) ->
 	?DEBUG_OUT("recive msg:~p,~w",[Cmd, Pk]),
 	Status = playerDBLocal:getPlayerStatus(),
-	multiplexer(Status, Cmd, Pk),
+	filterMsg(Status, Cmd, Pk),
 	ok.
 
-multiplexer(Status,Cmd, Pk) when Status =< ?PS_SERVER_LOGIN_MARK ->
-	playerMsgHandler:onMsg(Cmd, Pk).
+%%%-------------------------------------------------------------------
+filterMsg(Status,Cmd, Pk) when Status =< ?PS_SERVER_QUEUED ->
+	playerMsgHandler:onMsg(Cmd, Pk);
+filterMsg(Status,Cmd, Pk) when Status =< ?PS_SERVER_SELECTEDROLE ->
+	playerMsgHandler:onMsg(Cmd, Pk);
+filterMsg(Status,Cmd, Pk) when Status =< ?PS_SERVER_ROLEDATALOADED ->
+	playerMsgHandler:onMsg(Cmd, Pk);
+filterMsg(Status,Cmd, Pk) when Status =< ?PS_SERVER_CHANGELINE ->
+	playerMsgHandler:onMsg(Cmd, Pk);
+filterMsg(Status,Cmd, Pk) ->
+	?DEBUG_OUT("recive msg:~p,~w,status:~w",[Cmd,Pk,Status]).
 
 %%%-------------------------------------------------------------------
 %%发送网络消息

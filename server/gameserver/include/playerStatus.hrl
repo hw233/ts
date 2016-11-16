@@ -29,4 +29,4 @@
 -define(PS_SERVER_OFFLINESAVE,116).
 -define(PS_SERVER_OFFLINE,117).
 
--type player_status()::100 .. 117.
+-type player_status()::0 .. 117.

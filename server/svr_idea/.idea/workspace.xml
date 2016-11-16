@@ -21,101 +21,31 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="playerOtpHandler.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerOtpHandler.erl">
+      <file leaf-file-name="playerMsg.erl" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerMsg.erl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="368">
-              <caret line="16" column="22" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="22" />
+            <state relative-caret-position="621">
+              <caret line="27" column="70" selection-start-line="27" selection-start-column="70" selection-end-line="27" selection-end-column="70" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gsSubSup.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/src/app/gsSubSup.erl">
+      <file leaf-file-name="playerMsgHandler.erl" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerMsgHandler.erl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="200">
-              <caret line="140" column="21" selection-start-line="140" selection-start-column="12" selection-end-line="140" selection-end-column="21" />
+            <state relative-caret-position="391">
+              <caret line="17" column="10" selection-start-line="17" selection-start-column="10" selection-end-line="17" selection-end-column="10" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="socketSup.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/src/common/network/socketSup.erl">
+      <file leaf-file-name="playerStatus.hrl" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerStatus.hrl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="230">
-              <caret line="46" column="22" selection-start-line="46" selection-start-column="8" selection-end-line="46" selection-end-column="22" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="socketAccepter.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/src/common/network/socketAccepter.erl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="755">
-              <caret line="89" column="8" selection-start-line="89" selection-start-column="8" selection-end-line="89" selection-end-column="8" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="hdlt_logger.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/src/common/log/hdlt_logger.erl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="611">
-              <caret line="104" column="40" selection-start-line="104" selection-start-column="40" selection-end-line="104" selection-end-column="40" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="erlang.erl" pinned="false" current-in-tab="true">
-        <entry file="file://C:/Program Files/erl5.10.4/lib/erts-5.10.4/src/erlang.erl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="381">
-              <caret line="2153" column="20" selection-start-line="2153" selection-start-column="20" selection-end-line="2153" selection-end-column="20" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="saslrb.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/script/saslrb.erl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="207">
-              <caret line="9" column="25" selection-start-line="9" selection-start-column="25" selection-end-line="9" selection-end-column="25" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="socketHandler.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/src/common/network/socketHandler.erl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="598">
-              <caret line="86" column="38" selection-start-line="86" selection-start-column="38" selection-end-line="86" selection-end-column="38" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="rb.erl" pinned="false" current-in-tab="false">
-        <entry file="file://C:/Program Files/erl5.10.4/lib/sasl-2.3.4/src/rb.erl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="279">
-              <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="gameServerSup.erl" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../gameserver/src/app/gameServerSup.erl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="37" column="22" selection-start-line="37" selection-start-column="13" selection-end-line="37" selection-end-column="22" />
+            <state relative-caret-position="614">
+              <caret line="27" column="28" selection-start-line="27" selection-start-column="8" selection-end-line="27" selection-end-column="28" />
               <folding />
             </state>
           </provider>
@@ -155,13 +85,13 @@
         <option value="$PROJECT_DIR$/../gameserver/src/game/player/playerLogout.erl" />
         <option value="$PROJECT_DIR$/../gameserver/src/common/core/battleProp.erl" />
         <option value="$PROJECT_DIR$/../gameserver/src/core/battleProp.erl" />
-        <option value="$PROJECT_DIR$/../gameserver/src/game/player/playerMsgHandler.erl" />
         <option value="$PROJECT_DIR$/../gameserver/src/common/task_pool.erl" />
-        <option value="$PROJECT_DIR$/../gameserver/src/game/player/playerStatus.hrl" />
-        <option value="$PROJECT_DIR$/../gameserver/src/game/player/playerMsg.erl" />
         <option value="$PROJECT_DIR$/../gameserver/src/app/gsSubSup.erl" />
         <option value="$PROJECT_DIR$/../gameserver/script/saslrb.erl" />
         <option value="$PROJECT_DIR$/../gameserver/src/common/network/socketHandler.erl" />
+        <option value="$PROJECT_DIR$/../gameserver/src/game/player/playerStatus.hrl" />
+        <option value="$PROJECT_DIR$/../gameserver/src/game/player/playerMsgHandler.erl" />
+        <option value="$PROJECT_DIR$/../gameserver/src/game/player/playerMsg.erl" />
       </list>
     </option>
   </component>
@@ -242,7 +172,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
+              <option name="myItemId" value="game" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -256,7 +186,15 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="script" />
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="game" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="player" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -735,7 +673,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -748,7 +686,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924107" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13432837" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13432837" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -931,14 +869,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerPrivate.hrl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23">
-          <caret line="1" column="15" selection-start-line="1" selection-start-column="15" selection-end-line="1" selection-end-column="15" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerInit.erl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="23">
@@ -1011,34 +941,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerStatus.hrl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="17" column="33" selection-start-line="17" selection-start-column="33" selection-end-line="17" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerSave.erl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="23">
           <caret line="1" column="15" selection-start-line="1" selection-start-column="15" selection-end-line="1" selection-end-column="15" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerMsg.erl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="536">
-          <caret line="32" column="32" selection-start-line="32" selection-start-column="32" selection-end-line="32" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerMsgHandler.erl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -1063,14 +969,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1610">
           <caret line="8" column="8" selection-start-line="8" selection-start-column="8" selection-end-line="8" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerOtpHandler.erl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="368">
-          <caret line="16" column="22" selection-start-line="16" selection-start-column="21" selection-end-line="16" selection-end-column="22" />
           <folding />
         </state>
       </provider>
@@ -1141,8 +1039,48 @@
     </entry>
     <entry file="file://C:/Program Files/erl5.10.4/lib/erts-5.10.4/src/erlang.erl">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="381">
-          <caret line="2153" column="20" selection-start-line="2153" selection-start-column="20" selection-end-line="2153" selection-end-column="20" />
+        <state relative-caret-position="680">
+          <caret line="2166" column="28" selection-start-line="2166" selection-start-column="28" selection-end-line="2166" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerPrivate.hrl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="230">
+          <caret line="10" column="20" selection-start-line="10" selection-start-column="20" selection-end-line="10" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerOtpHandler.erl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="552">
+          <caret line="24" column="3" selection-start-line="24" selection-start-column="3" selection-end-line="24" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerMsgHandler.erl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="17" column="10" selection-start-line="17" selection-start-column="10" selection-end-line="17" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerStatus.hrl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="614">
+          <caret line="27" column="28" selection-start-line="27" selection-start-column="8" selection-end-line="27" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gameserver/src/game/player/playerMsg.erl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="621">
+          <caret line="27" column="70" selection-start-line="27" selection-start-column="70" selection-end-line="27" selection-end-column="70" />
           <folding />
         </state>
       </provider>
