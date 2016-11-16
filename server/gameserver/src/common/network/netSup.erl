@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 12. 十一月 2014 14:20
 %%%-------------------------------------------------------------------
--module(socketSup).
+-module(netSup).
 -author("someone").
 
 -include("logger.hrl").

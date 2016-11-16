@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 12. 十一月 2014 14:18
 %%%-------------------------------------------------------------------
--module(socketAccepter).
+-module(netAccepter).
 -author("someone").
 
 -behaviour(myGenServer).
@@ -53,7 +53,7 @@
 		 handle_exception/3]).
 
 start_link(Module,#listenTcpOptions{port = Port} = Option) when is_integer(Port), is_atom(Module) ->
-	Name = socketSup:concatToAtom(?MODULE,Port),
+	Name = netSup:concatToAtom(?MODULE,Port),
 	myGenServer:start_link({local,Name},?MODULE, [Module, Option], [{timeout,?Start_Link_TimeOut_ms}]).
 
 init([Module,#listenTcpOptions{port = Port,listenDelay = ListenDelay} = Option]) ->
@@ -194,7 +194,7 @@ setAcceptedOption(ListSock,CliSocket,Module,Option) ->
 	case Ret2 of
 		ok ->
 			%% New client connected - spawn a new process using the simple_one_for_one supervisor.
-			case socketSup:start_child(Module,CliSocket,Option) of
+			case netSup:start_child(Module,CliSocket,Option) of
 				{ok, Pid} ->
 					case gen_tcp:controlling_process(CliSocket, Pid) of
 						ok ->
