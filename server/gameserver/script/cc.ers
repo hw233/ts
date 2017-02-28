@@ -1,4 +1,4 @@
-%%#!/usr/bin/env escript
+#!/usr/bin/env escript
 -module(cc).
 -author(mwh).
 
@@ -6,13 +6,13 @@
 %% API functions
 %% ====================================================================
 
--export([
-	go/0
-]).
+%%-export([
+%%	go/0
+%%]).
 %% API
 -define(CompileEts, compileEts).
 
-go() ->
+main(_) ->
 	ets:new(?CompileEts, [public, named_table, {keypos, 1}]),
 	menu(),
 	ok.
@@ -41,7 +41,7 @@ menu() ->
 	{InputNo, _Rest} = string:to_integer(InputNoStr),
 	dispatchInput(InputNo).
 
-dispatchInput(0) -> erlang:halt();
+dispatchInput(0) -> ok;
 dispatchInput(1) -> menu2(chs);
 dispatchInput(2) -> menu2(cht);
 dispatchInput(3) -> menu2(enu);
@@ -85,7 +85,7 @@ getCompileServer(_) -> gsD.
 
 jump_package() ->
 	os:cmd(" cd ../../tools/ && start misc_menu.ers"),
-	erlang:halt().
+	ok.
 
 
 compile(Lang, V) ->
@@ -124,7 +124,7 @@ compile(Lang, V) ->
 			erlang:spawn(
 				fun() ->
 					Atom = list_to_atom("compile_" ++ integer_to_list(Idx)),
-					true = erlang:register(Atom, self()),
+					true = erlang:register(Atom, self()),	
 					lists:foreach(fun(File) -> compile2(File, Opts, LogFile) end, FLMe),
 					ParentPid ! finishi
 				end),
