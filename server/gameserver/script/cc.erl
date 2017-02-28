@@ -76,7 +76,7 @@ getCompileServer(_) -> gsD.
 compile(Lang, V) ->
 	{LogFile, Opts, FileList} = make(Lang, V),
 
-	L1 = ssplit_all(50, FileList),
+	L1 = ssplit_all(50000, FileList),
 	TaskNum = length(L1),
 
 	ParentPid = self(),
@@ -112,20 +112,20 @@ wait(N) ->
 	end.
 
 compile2(SrcFile,Opts,LogFile)->
-    Ret = compile:file(SrcFile, [report,error_summary|Opts]), %% return,
-	NewString = io_lib:format("[~ts] Recompile ~s ~p~n",[time_format(), SrcFile, check_return(Ret)]),
+    Ret = compile:file(SrcFile, [return,error_summary|Opts]), %% report,
+	NewString = io_lib:format("[~ts] Recompile ~s ~ts~n",[time_format(), SrcFile, check_return(Ret)]),
 	io:format(NewString),
     file:write_file(LogFile,NewString,[append]),
 	ok.
 
-check_return({ok,_})->
-	ok;
+check_return({ok,_Mod, []})->
+	"ok";
+check_return({ok,_Mod,Warnings})->
+	io_lib:format("~n~ts",[report_warnings(Warnings)]);
 check_return(error)->
-	failed_compile;
-check_return({ok,Warnings})->
-	io_lib:format("[ok]~n~p",[Warnings]);
+	"failed_compile";
 check_return({error,Errors,Warnings})->
-	io_lib:format("[error]~n~p~n~w",[Errors, Warnings]);
+	io_lib:format("[error]~n~ts~n~ts",[report_errors(Errors), report_warnings(Warnings)]);
 check_return(V)->
 	V.
 
@@ -153,9 +153,9 @@ make(Lang, V)->
 	{FileName, makeOpts(Opts, Lang, V), FileList}.
 
 makeOpts(Opts, Lang, 11)->
-	[{d, 'Cur_Lang',Lang}, debug_info | Opts];
+	[{d, 'Region',Lang}, debug_info | Opts];
 makeOpts(Opts, Lang, 1)->
-	[{d, 'Cur_Lang',Lang},  Opts].
+	[{d, 'Region',Lang},  Opts].
 
 setTitle(Lang, Mode)->
 	case os:type() of
@@ -193,3 +193,60 @@ do_ssplit1(N, L, Len) when N =< Len ->
 	lists:split(N, L);
 do_ssplit1(_N, L, _Len)->
 	{L,[]}.
+
+
+report_errors(Errors) ->
+	Es  =
+		lists:foldl(
+		fun ({{F,_L},Eds},Acc) ->
+				list_errors(F, Eds,Acc);
+			({F,Eds},Acc) ->
+				list_errors(F, Eds,Acc)
+		end, [], Errors),
+	lists:flatten(lists:reverse(Es)).
+
+report_warnings(Ws0) ->
+	P = "Warning: ",
+	Ws = lists:foldl(
+		fun({{F, _L}, Eds}, Acc) ->
+				format_message(F, P, Eds, Acc);
+			({F, Eds}, Acc) ->
+				format_message(F, P, Eds, Acc)
+		end, [], Ws0),
+%%	Ws = lists:sort(Ws1),
+
+	lists:flatten(lists:reverse(Ws)).
+
+format_message(F, P, [{none,Mod,E}|Es], Acc) ->
+	Msg = io_lib:format("[~ts] ~ts: ~s~ts\n", [time_format(), F,P,Mod:format_error(E)]),
+	format_message(F, P, Es,[Msg | Acc]);
+format_message(F, P, [{{Line,Column}=Loc,Mod,E}|Es], Acc) ->
+	Msg = io_lib:format("[~ts] ~ts:~w:~w ~s~ts\n",
+		[time_format(),F,Line,Column,P,Mod:format_error(E)]),
+	format_message(F, P, Es,[Msg | Acc]);
+format_message(F, P, [{Line,Mod,E}|Es], Acc) ->
+	Msg = io_lib:format("[~ts] ~ts:~w: ~s~ts\n",
+		[time_format(),F,Line,P,Mod:format_error(E)]),
+	format_message(F, P, Es,[Msg | Acc]);
+format_message(F, P, [{Mod,E}|Es], Acc) ->
+	%% Not documented and not expected to be used any more, but
+	%% keep a while just in case.
+	Msg = io:format("[~ts] ~ts: ~s~ts\n", [time_format(),F,P,Mod:format_error(E)]),
+	format_message(F, P, Es,[Msg | Acc]);
+format_message(_, _, [], Acc) -> Acc.
+
+list_errors(F, [{none,Mod,E}|Es], Acc) ->
+	Msg = io_lib:format("[~ts] ~ts: ~ts\n", [time_format(),F,Mod:format_error(E)]),
+	list_errors(F, Es, [Msg | Acc]);
+list_errors(F, [{{Line,Column},Mod,E}|Es], Acc) ->
+	Msg = io_lib:format("[~ts] ~ts:~w:~w: ~ts\n", [time_format(),F,Line,Column,Mod:format_error(E)]),
+	list_errors(F, Es, [Msg | Acc]);
+list_errors(F, [{Line,Mod,E}|Es], Acc) ->
+	Msg = io_lib:format("[~ts] ~ts:~w: ~ts\n", [time_format(),F,Line,Mod:format_error(E)]),
+	list_errors(F, Es, [Msg | Acc]);
+list_errors(F, [{Mod,E}|Es], Acc) ->
+	%% Not documented and not expected to be used any more, but
+	%% keep a while just in case.
+	Msg = io_lib:format("[~ts] ~ts: ~ts\n", [time_format(),F,Mod:format_error(E)]),
+	list_errors(F, Es, [Msg | Acc]);
+list_errors(_F, [], Acc) -> Acc.
