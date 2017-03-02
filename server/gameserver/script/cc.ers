@@ -55,7 +55,7 @@ dispatchInput(888) -> jump_package();
 dispatchInput(_) -> menu().
 
 
-menu2(V) ->
+menu2(Lang) ->
 	io:format(
 		"~n##########################################################~n"
 		"\t\tselect compile sub order~n#~n"
@@ -67,10 +67,10 @@ menu2(V) ->
 		"\t888.jump package~n"
 		"~n##########################################################~n~n"
 	),
-	set_title(V, "unknown"),
+	set_title(Lang, "unknown"),
 	InputNoStr = io:get_line("Please enter your choice:"),
 	{InputNo, _Rest} = string:to_integer(InputNoStr),
-	dispatchInput2(V, InputNo).
+	dispatchInput2(Lang, InputNo).
 
 
 dispatchInput2(Lang, 1) -> compile(Lang, 1);
@@ -89,17 +89,19 @@ jump_package() ->
 
 
 compile(Lang, V) ->
+
+	Target = getCompileServer(V),
 	ets:delete_all_objects(?CompileEts),
 
-	{Schedulers, LogFile, Opts, FileList} = make_cfg(Lang, V),
+	{Schedulers, LogFile, Opts, FileList} = make_cfg(Lang, Target),
 
-	{TaskNum, Ms} = make_worker(FileList, Schedulers, LogFile, Lang, V, Opts),
+	{TaskNum, Ms} = make_worker(FileList, Schedulers, LogFile, Lang, Target, Opts),
 
 	loop_wait(TaskNum),
 
-	compile_done(Ms,LogFile, Lang, V),
+	compile_done(Ms,LogFile, Lang, Target),
 
-	menu2(V),
+	menu2(Lang),
 	ok.
 
 loop_wait(0) ->
@@ -145,7 +147,7 @@ check_compile_error(_FileName) ->
 %%			V
 %%	end.
 
-make_worker(FileList, Schedulers, LogFile, Lang, V,  Opts)->
+make_worker(FileList, Schedulers, LogFile, Lang, Target,  Opts)->
 
 	FileNumbers = erlang:length(FileList),
 	Once = trunc(FileNumbers / Schedulers),
@@ -160,7 +162,7 @@ make_worker(FileList, Schedulers, LogFile, Lang, V,  Opts)->
 			"*  ~ts ~p ~p ~p files ~p workers\t*~n"
 			"*********************************************************~n"
 			"*********************************************************~n",
-			[time_format(), getCompileServer(V), Lang, FileNumbers, TaskNum]),
+			[time_format(), Target, Lang, FileNumbers, TaskNum]),
 	io:format(StartString),
 	file:write_file(LogFile, StartString, [append]),
 
@@ -184,7 +186,7 @@ make_worker(FileList, Schedulers, LogFile, Lang, V,  Opts)->
 		end, 1, L1),
 	{TaskNum, StartTime}.
 
-compile_done(StartTime, LogFile, Lang, V)->
+compile_done(StartTime, LogFile, Lang, Target)->
 	DiffMs = os:system_time(milli_seconds) - StartTime,
 	Now = time_format(),
 	io:format("~n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~n~n"),
@@ -192,7 +194,7 @@ compile_done(StartTime, LogFile, Lang, V)->
 		case check_compile_error(LogFile) of
 			0 ->
 				io_lib:format("~n@@@compile [~p,~p] success@@@ at ~ts ~p seconds ~n",
-					[Lang, getCompileServer(V), Now, DiffMs / 1000]);
+					[Lang, Target, Now, DiffMs / 1000]);
 			_ ->
 				ets:foldl(
 					fun({SrcFile, ErrMsg}, _) ->
@@ -202,15 +204,14 @@ compile_done(StartTime, LogFile, Lang, V)->
 						ok
 					end, 0, ?CompileEts),
 				io_lib:format("~n!!!! compile [~p,~p] ERROR ERROR ERROR !!!*** at ~ts  ~p seconds ~n",
-					[Lang, getCompileServer(V), Now, DiffMs / 1000])
+					[Lang, Target, Now, DiffMs / 1000])
 		end,
 	io:format(CompileResult),
 	file:write_file(LogFile, CompileResult, [append]),
-	io:format("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~n"),
+	io:format("~n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~n"),
 	ok.
 
-make_cfg(Lang, V) ->
-	Target = getCompileServer(V),
+make_cfg(Lang, Target) ->
 	FileName = io_lib:format("compile_~p_~p.txt", [Lang, Target]),
 	file:write_file(FileName, ""),
 
@@ -219,7 +220,7 @@ make_cfg(Lang, V) ->
 	Schedulers = schedulers(),
 	{FileList, Opts} = scan_files(),
 
-	{Schedulers, FileName, make_opts(Opts, Lang, V), FileList}.
+	{Schedulers, FileName, make_opts(Opts, Lang, Target), FileList}.
 
 scan_files()->
 	{ok, Config} = file:consult("./mm.config"),
@@ -239,7 +240,7 @@ schedulers()->
 make_opts(Opts, Lang, 11) ->
 	[{d, 'Region', Lang}, debug_info | Opts];
 make_opts(Opts, Lang, 1) ->
-	[{d, 'Region', Lang}, Opts].
+	[{d, 'Region', Lang},{d,'RELEASE'}, Opts].
 
 set_title(Lang, Mode) ->
 	case os:type() of
