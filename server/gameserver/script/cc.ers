@@ -93,7 +93,7 @@ compile(Lang, V) ->
 	Target = getCompileServer(V),
 	ets:delete_all_objects(?CompileEts),
 
-	{Schedulers, LogFile, Opts, FileList} = make_cfg(Lang, Target),
+	{Schedulers, LogFile, Opts, FileList} = make_cfg(Lang, Target, V),
 
 	{TaskNum, Ms} = make_worker(FileList, Schedulers, LogFile, Lang, Target, Opts),
 
@@ -107,31 +107,31 @@ compile(Lang, V) ->
 loop_wait(0) ->
 	skip;
 loop_wait(N) ->
-	put(finishi, 0),
 	receive
-		finishi ->
-			loop_wait(N - 1)
-	after 100000000 ->
-		skip
-	end.
+		{'DOWN', MRef, process, Pid, Reason} ->
+			io:format("~p|~p finished ~p~n",[Pid, MRef, Reason]);
+		{Pid, Result} ->
+			io:format("~p finished ~p~n",[Pid,  Result])
+	end,
+	loop_wait(N - 1).
 
 compile2(SrcFile, Opts, LogFile) ->
-	Ret = compile:file(SrcFile, [return, error_summary | Opts]), %% report,
-	NewString = io_lib:format("[~ts] compile ~s ~ts~n", [time_format(), SrcFile, check_return(SrcFile, Ret)]),
-	io:format(NewString),
-	file:write_file(LogFile, NewString, [append]),
+	Ret = compile:file(SrcFile, [return, error_summary,basic_validation | Opts]), %% report,
+	NewString = io_lib:format("[~ts] compiled ~s ~ts~n",
+		[time_format(), filename:basename(SrcFile), check_return(SrcFile, Ret)]),
+	d_log(LogFile, NewString),
 	ok.
 
 check_return(_SrcFile, {ok,_}) ->
-	"ok";
+	"";
 check_return(_SrcFile, {ok, _Mod, []}) ->
-	"ok";
+	"";
 check_return(_SrcFile, {ok, _Mod, Warnings}) ->
-	io_lib:format("ok ~n~ts", [report_warnings(Warnings)]);
+	io_lib:format("~n~ts", [report_warnings(Warnings)]);
 check_return(SrcFile, {error, Errors, Warnings}) ->
 	Msg = report_errors(Errors),
 	ets:insert(?CompileEts, {SrcFile, Msg}),
-	io_lib:format("[error]~n~ts~n~ts", [Msg, report_warnings(Warnings)]);
+	io_lib:format("~n~ts~n~ts", [Msg, report_warnings(Warnings)]);
 check_return(SrcFile, error) ->
 	ets:insert(?CompileEts, {SrcFile, "error"}),
 	"error".
@@ -163,14 +163,13 @@ make_worker(FileList, Schedulers, LogFile, Lang, Target,  Opts)->
 			"*********************************************************~n"
 			"*********************************************************~n",
 			[time_format(), Target, Lang, FileNumbers, TaskNum]),
-	io:format(StartString),
-	file:write_file(LogFile, StartString, [append]),
+
+	d_log(LogFile, StartString),
 
 	StartTime = os:system_time(milli_seconds),
-	ParentPid = self(),
 	lists:foldl(
 		fun(FLMe,Idx) ->
-			erlang:spawn(
+			erlang:spawn_monitor(
 				fun() ->
 					try
 						Atom = list_to_atom("compile_" ++ integer_to_list(Idx)),
@@ -179,8 +178,7 @@ make_worker(FileList, Schedulers, LogFile, Lang, Target,  Opts)->
 					catch
 					   _ : _  ->
 						   skip
-					end,
-					ParentPid ! finishi
+					end
 				end),
 			Idx + 1
 		end, 1, L1),
@@ -189,7 +187,8 @@ make_worker(FileList, Schedulers, LogFile, Lang, Target,  Opts)->
 compile_done(StartTime, LogFile, Lang, Target)->
 	DiffMs = os:system_time(milli_seconds) - StartTime,
 	Now = time_format(),
-	io:format("~n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~n~n"),
+
+	d_log(LogFile, "~n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~n~n"),
 	CompileResult =
 		case check_compile_error(LogFile) of
 			0 ->
@@ -198,20 +197,19 @@ compile_done(StartTime, LogFile, Lang, Target)->
 			_ ->
 				ets:foldl(
 					fun({SrcFile, ErrMsg}, _) ->
-						FmtMs = io_lib:format("~ts~n~ts",[SrcFile, ErrMsg]),
-						io:format(FmtMs),
-						file:write_file(LogFile, FmtMs, [append]),
+						FmtMs = io_lib:format("~ts~n~ts",[filename:basename(SrcFile), ErrMsg]),
+						d_log(LogFile, FmtMs),
 						ok
 					end, 0, ?CompileEts),
 				io_lib:format("~n!!!! compile [~p,~p] ERROR ERROR ERROR !!!*** at ~ts  ~p seconds ~n",
 					[Lang, Target, Now, DiffMs / 1000])
 		end,
-	io:format(CompileResult),
-	file:write_file(LogFile, CompileResult, [append]),
-	io:format("~n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~n"),
+
+	d_log(LogFile, CompileResult),
+	d_log(LogFile, "~n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^~n"),
 	ok.
 
-make_cfg(Lang, Target) ->
+make_cfg(Lang, Target, _V) ->
 	FileName = io_lib:format("compile_~p_~p.txt", [Lang, Target]),
 	file:write_file(FileName, ""),
 
@@ -225,8 +223,7 @@ make_cfg(Lang, Target) ->
 scan_files()->
 	{ok, Config} = file:consult("./mm.config"),
 	[{[SrcDir], Opts} | _] = Config,
-	FileList1 = filelib:fold_files(SrcDir, ".erl", true, fun(File, Acc) -> [File | Acc] end, []),
-	FileList = [FileName1 || FileName1 <- FileList1, filename:extension(FileName1) =:= ".erl"],
+	FileList = filelib:fold_files(SrcDir, ".erl$$", true, fun(File, Acc) -> [File | Acc] end, []),
 	{FileList, Opts}.
 
 schedulers()->
@@ -237,9 +234,19 @@ schedulers()->
 			Cpu * 2
 	end.
 
-make_opts(Opts, Lang, 11) ->
+d_log(File,Fmt)->
+	io:format(Fmt),
+	file:write_file(File, Fmt, [append]).
+
+d_log(File,Fmt, Args)->
+	Str = io_lib:format(Fmt, Args),
+	io:format(Str),
+	file:write_file(File, Str, [append]).
+
+
+make_opts(Opts, Lang, gsD) ->
 	[{d, 'Region', Lang}, debug_info | Opts];
-make_opts(Opts, Lang, 1) ->
+make_opts(Opts, Lang, gs) ->
 	[{d, 'Region', Lang},{d,'RELEASE'}, Opts].
 
 set_title(Lang, Mode) ->
@@ -303,35 +310,41 @@ report_warnings(Ws0) ->
 	lists:flatten(lists:reverse(Ws)).
 
 format_message(F, P, [{none, Mod, E} | Es], Acc) ->
-	Msg = io_lib:format("\t~ts: ~s~ts\n", [F, P, Mod:format_error(E)]),
+	Msg = io_lib:format("[~ts] ~ts: ~s~ts\n",
+		[time_format(), filename:basename(F), P, Mod:format_error(E)]),
 	format_message(F, P, Es, [Msg | Acc]);
 format_message(F, P, [{{Line, Column} = _Loc, Mod, E} | Es], Acc) ->
-	Msg = io_lib:format("\t~ts:~w:~w ~s~ts\n",
-		[F, Line, Column, P, Mod:format_error(E)]),
+	Msg = io_lib:format("[~ts] ~ts:~w:~w ~s~ts\n",
+		[time_format(),filename:basename(F), Line, Column, P, Mod:format_error(E)]),
 	format_message(F, P, Es, [Msg | Acc]);
 format_message(F, P, [{Line, Mod, E} | Es], Acc) ->
-	Msg = io_lib:format("\t~ts:~w: ~s~ts\n",
-		[F, Line, P, Mod:format_error(E)]),
+	Msg = io_lib:format("[~ts] ~ts:~w: ~s~ts\n",
+		[time_format(),filename:basename(F), Line, P, Mod:format_error(E)]),
 	format_message(F, P, Es, [Msg | Acc]);
 format_message(F, P, [{Mod, E} | Es], Acc) ->
 	%% Not documented and not expected to be used any more, but
 	%% keep a while just in case.
-	Msg = io:format("\t~ts: ~s~ts\n", [F, P, Mod:format_error(E)]),
+	Msg = io:format("[~ts] ~ts: ~s~ts\n",
+		[time_format(),filename:basename(F), P, Mod:format_error(E)]),
 	format_message(F, P, Es, [Msg | Acc]);
 format_message(_, _, [], Acc) -> Acc.
 
 list_errors(F, [{none, Mod, E} | Es], Acc) ->
-	Msg = io_lib:format("\t~ts: ~ts\n", [F, Mod:format_error(E)]),
+	Msg = io_lib:format("[~ts] ~ts: ~ts\n",
+		[time_format(),filename:basename(F), Mod:format_error(E)]),
 	list_errors(F, Es, [Msg | Acc]);
 list_errors(F, [{{Line, Column}, Mod, E} | Es], Acc) ->
-	Msg = io_lib:format("\t~ts:~w:~w: ~ts\n", [F, Line, Column, Mod:format_error(E)]),
+	Msg = io_lib:format("[~ts] ~ts:~w:~w: ~ts\n",
+		[time_format(),filename:basename(F), Line, Column, Mod:format_error(E)]),
 	list_errors(F, Es, [Msg | Acc]);
 list_errors(F, [{Line, Mod, E} | Es], Acc) ->
-	Msg = io_lib:format("\t~ts:~w: ~ts\n", [F, Line, Mod:format_error(E)]),
+	Msg = io_lib:format("[~ts] ~ts:~w: ~ts\n",
+		[time_format(),filename:basename(F), Line, Mod:format_error(E)]),
 	list_errors(F, Es, [Msg | Acc]);
 list_errors(F, [{Mod, E} | Es], Acc) ->
 	%% Not documented and not expected to be used any more, but
 	%% keep a while just in case.
-	Msg = io_lib:format("\t~ts: ~ts\n", [F, Mod:format_error(E)]),
+	Msg = io_lib:format("[~ts] ~ts: ~ts\n",
+		[time_format(),filename:basename(F), Mod:format_error(E)]),
 	list_errors(F, Es, [Msg | Acc]);
 list_errors(_F, [], Acc) -> Acc.
