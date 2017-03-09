@@ -124,7 +124,7 @@ compile2(SrcFile, Opts, LogFile) ->
 
 check_return(_SrcFile, {ok,_}) ->
 	"";
-check_return(_SrcFile, {ok, _Mod, []}) ->
+check_return(_SrcFile, {ok, _Mod, []}) -> 
 	"";
 check_return(_SrcFile, {ok, _Mod, Warnings}) ->
 	io_lib:format("~n~ts", [report_warnings(Warnings)]);
