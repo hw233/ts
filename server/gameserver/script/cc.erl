@@ -116,7 +116,7 @@ loop_wait(N) ->
 	loop_wait(N - 1).
 
 compile2(SrcFile, Opts, LogFile) ->
-	Ret = compile:file(SrcFile, [return, error_summary,basic_validation | Opts]), %% report,
+	Ret = compile:file(SrcFile, [return, error_summary | Opts]), %% report,
 	NewString = io_lib:format("[~ts] compiled ~s ~ts~n",
 		[time_format(), filename:basename(SrcFile), check_return(SrcFile, Ret)]),
 	d_log(LogFile, NewString),
